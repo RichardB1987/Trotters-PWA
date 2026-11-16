@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heads Up! - Game Hub</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --pass-color: #ef4444;
+            --correct-color: #22c55e;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.25rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.selected {
+            border: 4px solid white;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        }
+
+        .start-btn {
+            width: 100%;
+            background-color: var(--correct-color);
+            font-size: 1.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .start-btn:hover {
+            background-color: #16a34a;
+        }
+
+        /* Gameplay screen taking full interactive space */
+        #game-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            padding: 0;
+            border-radius: 0;
+            max-width: none;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #game-screen.active {
+            display: flex;
+        }
+
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.2);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .word-display-area {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tap-zone {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            opacity: 0.15;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .tap-zone.top { top: 0; background-color: var(--pass-color); }
+        .tap-zone.bottom { bottom: 0; background-color: var(--correct-color); }
+        
+        .word-display-area:hover .tap-zone { opacity: 0.3; }
+
+        #current-word {
+            font-size: 4.5rem;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            padding: 0 2rem;
+            z-index: 2;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .instructions-hint {
+            font-size: 1rem;
+            color: var(--text-muted);
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 2rem 0;
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.2);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            flex: 1;
+            margin: 0 0.5rem;
+        }
+
+        .stat-box span {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .stat-box.correct span { color: var(--correct-color); }
+        .stat-box.pass span { color: var(--pass-color); }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: Category Selection -->
+    <div id="category-screen" class="screen active">
+        <h1>Heads Up!</h1>
+        <h2>Select Category</h2>
+        <div class="grid">
+            <button class="btn cat-btn selected" onclick="selectCategory('celebs')">Celebrities</button>
+            <button class="btn cat-btn" onclick="selectCategory('film')">Film & TV</button>
+            <button class="btn cat-btn" onclick="selectCategory('sports')">Sports</button>
+            <button class="btn cat-btn" onclick="selectCategory('cartoons')">Cartoons</button>
+            <button class="btn cat-btn" style="grid-column: span 2;" onclick="selectCategory('mixed')">Mixed Deck</button>
+        </div>
+        <button class="btn" onclick="goToTimerScreen()">Next: Select Timer</button>
+    </div>
+
+    <!-- SCREEN 2: Timer Selection -->
+    <div id="timer-screen" class="screen">
+        <h1>Heads Up!</h1>
+        <h2>Select Round Time</h2>
+        <div class="grid">
+            <button class="btn timer-btn" onclick="selectTimer(30)">30 Seconds</button>
+            <button class="btn timer-btn selected" onclick="selectTimer(60)">60 Seconds</button>
+            <button class="btn timer-btn" style="grid-column: span 2;" onclick="selectTimer(90)">90 Seconds</button>
+        </div>
+        <div style="display: flex; gap: 1rem; width: 100%;">
+            <button class="btn" style="background-color: var(--text-muted); flex: 1;" onclick="backToCategories()">Back</button>
+            <button class="btn start-btn" style="flex: 2; margin-top: 0;" onclick="startGame()">Start Game!</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: Active Gameplay Screen -->
+    <div id="game-screen" class="screen" onclick="handleGameClick(event)">
+        <div class="game-header">
+            <div id="timer-display">Time: 60s</div>
+            <div id="score-display">Score: 0</div>
+        </div>
+
+        <div class="word-display-area">
+            <div class="tap-zone top">TOP HALF: TAP TO PASS</div>
+            <div id="current-word">READY?</div>
+            <div class="tap-zone bottom">BOTTOM HALF: TAP FOR CORRECT</div>
+        </div>
+
+        <div class="instructions-hint">
+            👆 Top Half = Pass &nbsp;|&nbsp; 👇 Bottom Half = Correct
+        </div>
+    </div>
+
+    <!-- SCREEN 4: Summary Screen -->
+    <div id="summary-screen" class="screen">
+        <h1>Time's Up!</h1>
+        <h2>Round Results</h2>
+        
+        <div class="summary-stats">
+            <div class="stat-box correct">
+                Correct
+                <span id="final-score">0</span>
+            </div>
+            <div class="stat-box pass">
+                Passed
+                <span id="final-passes">0</span>
+            </div>
+        </div>
+
+        <button class="btn start-btn" onclick="resetToMenu()">Play Again</button>
+    </div>
+    <script>
+        // Word Banks per Category
+        const wordBanks = {
+            celebs: [
+                "Tom Cruise", "David Beckham", "Taylor Swift", "Dwayne Johnson", 
+                "Gordon Ramsay", "Ed Sheeran", "Ryan Reynolds", "Beyoncé", 
+                "Arnold Schwarzenegger", "Emma Watson", "Brad Pitt", "Lady Gaga", 
+                "John Travolta", "Michael Jackson", "Elvis Presley"
+            ],
+            film: [
+                "Titanic", "Jurassic Park", "The Matrix", "Harry Potter", 
+                "Star Wars", "Breaking Bad", "Peaky Blinders", "The Dark Knight", 
+                "Lord of the Rings", "Sherlock", "Toy Story", "Gladiator", "The Godfather"
+            ],
+            sports: [
+                "Wimbledon", "Premier League", "World Cup", "Formula 1", 
+                "Six Nations", "The Ashes", "Super Bowl", "Tour de France", 
+                "Champions League", "Ryder Cup", "PGA Tour", "Wembley", 
+                "The Open", "The Masters", "The US Open", "The Australian Open"
+            ],
+            cartoons: [
+                "The Simpsons", "Family Guy", "Scooby-Doo", "Tom and Jerry", 
+                "SpongeBob", "Mickey Mouse", "Batman", "Shrek", 
+                "South Park", "Pokémon", "Looney Tunes", "Peppa Pig"
+            ]
+        };
+        wordBanks.mixed = [...wordBanks.celebs, ...wordBanks.film, ...wordBanks.sports, ...wordBanks.cartoons];
+    
+    let selectedCat = 'celebs';
+    let selectedTime = 60;
+    let currentWords = [];
+    let score = 0;
+    let passes = 0;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let gameActive = false;
+
+        function selectCategory(cat) {
+            selectedCat = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+</script>
+<script>
+        function goToTimerScreen() {
+            document.getElementById('category-screen').classList.remove('active');
+            document.getElementById('timer-screen').classList.add('active');
+        }
+
+        function backToCategories() {
+            document.getElementById('timer-screen').classList.remove('active');
+            document.getElementById('category-screen').classList.add('active');
+        }
+
+        function selectTimer(seconds) {
+            selectedTime = seconds;
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function startGame() {
+            // Prepare deck
+            currentWords = [...wordBanks[selectedCat]].sort(() => Math.random() - 0.5);
+            score = 0;
+            passes = 0;
+            timeLeft = selectedTime;
+
+            document.getElementById('timer-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            document.getElementById('score-display').innerText = `Score: ${score}`;
+            document.getElementById('timer-display').innerText = `Time: ${timeLeft}s`;
+
+            gameActive = true;
+            nextWord();
+
+            // Start countdown clock
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `Time: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function nextWord() {
+            if (currentWords.length === 0) {
+                currentWords = [...wordBanks[selectedCat]].sort(() => Math.random() - 0.5);
+            }
+            document.getElementById('current-word').innerText = currentWords.pop();
+        }
+
+        function handleGameClick(event) {
+            if (!gameActive) return;
+
+            const screenHeight = window.innerHeight;
+            const clickY = event.clientY;
+
+            // Top half = Pass, Bottom half = Correct
+            if (clickY < screenHeight / 2) {
+                passes++;
+            } else {
+                score++;
+                document.getElementById('score-display').innerText = `Score: ${score}`;
+            }
+
+            nextWord();
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('summary-screen').classList.add('active');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-passes').innerText = passes;
+        }
+
+        function resetToMenu() {
+            document.getElementById('summary-screen').classList.remove('active');
+            document.getElementById('category-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>

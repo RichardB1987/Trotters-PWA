@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Radio Stations - Music Hub</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        :root {
+            --bg-color: #0c0d12;
+            --card-bg: #1e222d;
+            --card-hover: #262b38;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 160px;
+            box-sizing: border-box;
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover { color: var(--text-main); }
+
+        h1 {
+            font-size: 1.75rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .custom-stream-box {
+            width: 100%;
+            max-width: 1000px;
+            background-color: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .custom-stream-box input {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .custom-stream-box input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .custom-stream-box button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .custom-stream-box button:hover {
+            background-color: #2563eb;
+        }
+
+        .station-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .station-card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .station-card:hover {
+            transform: translateY(-3px);
+            background-color: var(--card-hover);
+            border-color: var(--accent-blue);
+            box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.3);
+        }
+
+        .station-card.active {
+            border-color: var(--accent-green);
+            background-color: var(--card-hover);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .station-info h3 {
+            margin: 0 0 0.4rem 0;
+            font-size: 1.25rem;
+        }
+
+        .station-info p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .live-badge {
+            margin-top: 1rem;
+            display: inline-block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-weight: 600;
+            background-color: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+            width: fit-content;
+        }
+
+        .station-card.active .live-badge {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+        }
+
+        .player-content {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .now-playing {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        audio {
+            width: 300px;
+            outline: none;
+        }
+
+        @media (max-width: 600px) {
+            .player-content { flex-direction: column; gap: 0.75rem; }
+            audio { width: 100%; }
+            .custom-stream-box { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="music.html" class="back-btn">&larr; Music Hub</a>
+        <h1>Live Radio Stations</h1>
+        <div style="width: 85px;"></div>
+    </div>
+
+    <!-- Custom Stream URL Input -->
+    <div class="custom-stream-box">
+        <input type="text" id="custom-url" placeholder="Paste custom direct stream URL (.mp3 / .aac)..." />
+        <button onclick="playCustomStream()">Play Custom Stream</button>
+    </div>
+
+    <div class="station-grid" id="station-grid"></div>
+
+    <div class="player-bar">
+        <div class="player-content">
+            <div id="now-playing" class="now-playing">Select a station to start listening</div>
+            <audio id="audio-player" controls></audio>
+        </div>
+    </div>
+
+    <script>
+        const rawStations = [
+            { id: 1, name: "MKFM (Milton Keynes)", genre: "Local Hit Music & News", url: "https://mkfmradioplayer.radioca.st/stream" },
+            { id: 2, name: "Boom Radio", genre: "Great Songs, Great Times", url: "https://listen-boomradio.sharp-stream.com/65_boom_radio_live_128?platform=website" },
+            { id: 3, name: "Capital UK", genre: "The World's Biggest Hits", url: "https://media-ice.musicradio.com/CapitalMP3" },
+            { id: 4, name: "Capital Dance", genre: "Non-Stop Dance Anthems", url: "https://media-ice.musicradio.com/CapitalDanceMP3" },
+            { id: 5, name: "Heart FM", genre: "Turn Up The Feel Good", url: "https://media-ice.musicradio.com/HeartUKMP3" },
+            { id: 6, name: "Heart 80s", genre: "Feel Good 1980s Hits", url: "https://media-ice.musicradio.com/Heart80sMP3" },
+            { id: 7, name: "Heart 90s", genre: "Feel Good 1990s Hits", url: "https://media-ice.musicradio.com/Heart90sMP3" },
+            { id: 8, name: "Heart Dance", genre: "Feel Good Dance Tracks", url: "https://media-ice.musicradio.com/HeartDanceMP3" },
+            { id: 9, name: "Smooth Radio", genre: "Your Relaxing Music Mix", url: "https://media-ice.musicradio.com/SmoothUKMP3" },
+            { id: 10, name: "Virgin Radio UK", genre: "Great Music & Chris Evans", url: "https://radio.virginradio.co.uk/stream" },
+            { id: 11, name: "Gold Radio", genre: "Gold Hits", url: "https://media-ice.musicradio.com/GoldMP3" },
+            { id: 12, name: "Classic FM", genre: "Classical Masterpieces", url: "https://media-ice.musicradio.com/ClassicFMMP3" }
+        ];
+
+        const grid = document.getElementById('station-grid');
+        const audioPlayer = document.getElementById('audio-player');
+        const nowPlaying = document.getElementById('now-playing');
+        let activeStationId = null;
+
+        function renderStations() {
+            grid.innerHTML = '';
+            rawStations.forEach(station => {
+                const card = document.createElement('div');
+                card.className = `station-card ${activeStationId === station.id ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="station-info">
+                        <h3>${station.name}</h3>
+                        <p>${station.genre}</p>
+                    </div>
+                    <span class="live-badge">${activeStationId === station.id ? '● Playing Live' : 'Tap to Tune In'}</span>
+                `;
+                card.onclick = () => playStation(station);
+                grid.appendChild(card);
+            });
+        }
+
+        function playStation(station) {
+            audioPlayer.pause();
+            audioPlayer.src = '';
+            activeStationId = station.id;
+            nowPlaying.innerText = `Switching to ${station.name}...`;
+            renderStations();
+
+            setTimeout(() => {
+                const proxyUrl = `/proxy-stream?url=${encodeURIComponent(station.url)}&_t=${Date.now()}`;
+                audioPlayer.src = proxyUrl;
+                audioPlayer.play().then(() => {
+                    nowPlaying.innerText = `Now Playing: ${station.name}`;
+                }).catch(e => {
+                    console.log("Playback error:", e);
+                    nowPlaying.innerText = `Error playing ${station.name} (Stream reconnecting...)`;
+                });
+            }, 700);
+        }
+
+        function playCustomStream() {
+            const urlInput = document.getElementById('custom-url').value.trim();
+            if (!urlInput) return;
+            
+            audioPlayer.pause();
+            audioPlayer.src = '';
+            activeStationId = null;
+            nowPlaying.innerText = `Connecting to Custom Stream...`;
+
+            setTimeout(() => {
+                const proxyUrl = `/proxy-stream?url=${encodeURIComponent(urlInput)}&_t=${Date.now()}`;
+                audioPlayer.src = proxyUrl;
+                audioPlayer.play().then(() => {
+                    nowPlaying.innerText = `Now Playing: Custom Stream`;
+                }).catch(e => {
+                    console.log("Custom stream error:", e);
+                    nowPlaying.innerText = `Error playing custom stream`;
+                });
+            }, 700);
+        }
+
+        renderStations();
+    </script>
+</body>
+</html>

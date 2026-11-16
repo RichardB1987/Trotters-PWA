@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Screen - Gibberish Party</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        // Ensure QRCode is available globally if needed, though it's usually defined by the CDN.
+        // We'll rely on the CDN, but checking if something failed.
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-hover: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --correct-color: #22c55e;
+            --pass-color: #ef4444;
+            --warning-bg: rgba(245, 158, 11, 0.15);
+            --warning-border: rgba(245, 158, 11, 0.4);
+            --warning-text: #f59e0b;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        header {
+            text-align: center;
+        }
+        h1 {
+            margin: 0 0 0.25rem 0;
+            font-size: 2.2rem;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            text-align: center;
+        }
+        #qrcode {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn-pass {
+            background-color: #8b5cf6;
+        }
+        .btn-back {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
+        }
+        .btn-back:hover {
+            background-color: var(--card-hover);
+            color: var(--text-main);
+            opacity: 1;
+        }
+        .input-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            text-align: left;
+        }
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .input-group input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--card-hover);
+            color: var(--text-main);
+            padding: 0.65rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .warning-box {
+            background-color: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            color: var(--warning-text);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #game-screen {
+            display: none;
+        }
+        .phrase-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+        .score-display {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gibberish Party</h1>
+            <p class="subtitle">Host Display & Game Screen</p>
+        </header>
+
+        <!-- Setup / Pairing Screen -->
+        <div id="setup-screen" class="card">
+            <div class="input-group">
+                <label for="network-ip">PC Network IP (Saved automatically):</label>
+                <input type="text" id="network-ip" placeholder="e.g. 192.168.0.242" oninput="saveAndRefreshIP()">
+            </div>
+
+            <div id="qrcode"></div>
+            <div id="session-info" style="font-size: 0.9rem; color: var(--text-muted);">Generating Session ID...</div>
+            
+            <div class="warning-box">
+                <strong>Saved!</strong> Your browser will remember this IP address for next time so you won't need to type it again.
+            </div>
+
+            <button class="btn btn-pass" onclick="startPassAndPlay()">Pass & Play Fallback (Single Screen)</button>
+            <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box;">← Back to Game Hub</a>
+        </div>
+
+        <!-- Active Game Screen -->
+        <div id="game-screen" class="card">
+            <div class="score-display">Score: <span id="score-val">0</span> | Time: <span id="timer-val">60s</span></div>
+
+            <div class="subtitle" id="category-val">Category</div>
+            <div class="phrase-display" id="phrase-val">Ready?</div>
+            <div style="display: flex; gap: 1rem; width: 100%;">
+                <button class="btn" style="background-color: var(--pass-color);" onclick="nextCard('skip')">Skip</button>
+                <button class="btn" style="background-color: var(--correct-color);" onclick="nextCard('correct')">Correct!</button>
+            </div>
+            <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box; width: 100%;">← Exit to Game Hub</a>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let timerInterval = null;
+        let timeLeft = 60;
+        let score = 0;
+        let currentIndex = 0;
+        let allCards = [];
+        let peer = null;
+        let conn = null;
+        let currentPeerId = '';
+
+        // Initialize PeerJS and QR Code
+        function initPeer() {
+            const randomId = 'gibberish-' + Math.random().toString(36).substring(2, 8);
+            peer = new Peer(randomId);
+
+            peer.on('open', (id) => {
+                currentPeerId = id;
+                document.getElementById('session-info').innerText = 'Session ID: ' + id;
+                
+                // Load saved IP from localStorage or auto-detect from hostname
+                const savedIp = localStorage.getItem('trotters_host_ip');
+                const hostname = window.location.hostname;
+
+                if (savedIp) {
+                    document.getElementById('network-ip').value = savedIp;
+                } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                    document.getElementById('network-ip').value = hostname;
+                    localStorage.setItem('trotters_host_ip', hostname);
+                }
+
+                updateQRCode();
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupConnection();
+            });
+
+            peer.on('error', (err) => {
+                console.error('PeerJS error:', err);
+                document.getElementById('session-info').innerText = 'Offline / PeerJS Error. Use Pass & Play below.';
+            });
+        }
+
+        function saveAndRefreshIP() {
+            const ipInput = document.getElementById('network-ip').value.trim();
+            if (ipInput) {
+                localStorage.setItem('trotters_host_ip', ipInput);
+            }
+            updateQRCode();
+        }
+
+        function updateQRCode() {
+            if (!currentPeerId) return;
+
+            let ipInput = document.getElementById('network-ip').value.trim();
+            const host = ipInput || window.location.hostname || 'localhost';
+            const port = window.location.port ? ':' + window.location.port : '';
+            
+            const baseUrl = window.location.protocol + '//' + host + port;
+            const judgeUrl = baseUrl + window.location.pathname.replace('gibberish-host.html', 'gibberish-judge.html') + '?id=' + currentPeerId;
+            
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: judgeUrl,
+                width: 180,
+                height: 180,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function setupConnection() {
+            conn.on('open', () => {
+                console.log('Judge connected!');
+                document.getElementById('setup-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'flex';
+                loadCardsAndStart();
+            });
+
+            conn.on('data', (data) => {
+                if (data.action === 'correct') {
+                    score++;
+                    updateScore();
+                    nextCardData();
+                } else if (data.action === 'skip') {
+                    nextCardData();
+                }
+            });
+        }
+        // Removed duplicate state block
+
+
+        function loadCardsAndStart() {
+            fetch('./gibberish-cards.json')
+                .then(res => res.json())
+                .then(data => {
+                    allCards = data.sort(() => Math.random() - 0.5);
+                    currentIndex = 0;
+                    showCurrentCard();
+                })
+                .catch(err => console.error('Failed to load cards:', err));
+        }
+
+            showCurrentCard();
+            startTimer();
+
+        function showCurrentCard() {
+            if (allCards.length === 0) return;
+            if (currentIndex >= allCards.length) {
+                currentIndex = 0;
+                allCards.sort(() => Math.random() - 0.5);
+            }
+            const card = allCards[currentIndex];
+            startTimer();
+
+            
+            // Fallback safety to grab text regardless of JSON property names
+            const phraseText = card.gibberish || card.phrase || card.text || card.question || 'Loading...';
+            const categoryText = card.category || card.genre || 'Gibberish Party';
+            const hintText = card.hint || card.clue || card.translation || 'No hint available';
+
+            document.getElementById('phrase-val').innerText = phraseText;
+            document.getElementById('category-val').innerText = categoryText;
+            document.getElementById('score-val').innerText = score !== undefined ? score : '0';
+
+            // Sync to judge with valid non-undefined fields
+            if (conn && conn.open) {
+                conn.send({
+                    type: 'STATE_UPDATE',
+                    gibberish: phraseText,
+                    category: categoryText,
+                    answer: card.answer || 'N/A',
+                    hint: hintText,
+                    score: score !== undefined ? score : 0,
+                    timeLeft: timeLeft,
+                    isTickUpdate: false,
+                    revealed: true
+                });
+            }
+        }
+
+        // Removed local duplicate declarations below.
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 60;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                } else {
+                    syncState();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const el = document.getElementById('timer-val');
+            if (el) el.innerText = timeLeft + 's';
+        }
+
+        function handleTimeout() {
+            const el = document.getElementById('phrase-val');
+            if (el) el.innerText = 'TIME IS UP!';
+            if (conn && conn.open) {
+                conn.send({ type: 'TIMEOUT' });
+            }
+        }
+
+        function syncState() {
+            if (conn && conn.open) {
+                conn.send({
+                    type: 'STATE_UPDATE',
+                    isTickUpdate: true,
+                    timeLeft: timeLeft
+                });
+            }
+        }
+
+        function saveAndRefreshIP() {
+            console.log("IP updated");
+        }
+
+        function nextCard(action) {
+            if (action === 'correct') {
+                score++;
+            }
+            updateScore();
+            currentIndex++;
+            startTimer();
+            showCurrentCard();
+        }
+
+        function nextCardData() {
+            currentIndex++;
+            showCurrentCard();
+        }
+
+        function updateScore() {
+            document.getElementById('score-val').innerText = score;
+        }
+
+        function startPassAndPlay() {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            loadCardsAndStart();
+        }
+
+        // Run on load
+        window.onload = function() {
+            initPeer();
+        };
+    </script>
+</body>
+</html>

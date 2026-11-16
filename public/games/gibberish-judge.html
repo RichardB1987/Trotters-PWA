@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge Controller - Gibberish Party</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --primary: #3b82f6; --correct-color: #22c55e; --pass-color: #ef4444;
+        }
+        body { font-family: system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 1.5rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; user-select: none; }
+        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 1.25rem; }
+        .status-banner { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: var(--primary); padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; text-align: center; }
+        .status-banner.connected { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: var(--correct-color); }
+        .status-banner.error { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: var(--pass-color); }
+        .card-panel { background-color: var(--card-bg); border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        #judge-gibberish { font-size: 2.2rem; font-weight: 900; color: #facc15; line-height: 1.2; word-break: break-word; }
+        .answer-box { font-size: 1.3rem; font-weight: bold; color: var(--correct-color); min-height: 1.6rem; }
+        .hint-box { background: rgba(59,130,246,0.1); border-left: 3px solid var(--primary); padding: 0.75rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.95rem; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
+        .btn { border: none; padding: 1.5rem 1rem; font-size: 1.25rem; font-weight: bold; border-radius: 1rem; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .btn:active { transform: scale(0.96); }
+        .btn-skip { background-color: var(--pass-color); }
+        .btn-correct { background-color: var(--correct-color); }
+        .game-stats { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.75rem; font-weight: bold; font-size: 1.1rem; }
+        .waiting-screen { text-align: center; padding: 3rem 1.5rem; background-color: var(--card-bg); border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .waiting-screen h1 { margin-top: 0; font-size: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="status-banner" class="status-banner">Connecting...</div>
+        <div id="waiting-panel" class="waiting-screen">
+            <h1>Judge Controller</h1>
+            <p id="connection-details" style="color: var(--text-muted);">Pairing...</p>
+        </div>
+        <div id="active-panel" style="display: none; flex-direction: column; gap: 1.25rem;">
+            <div class="game-stats">
+                <div id="hud-score">Score: 0</div>
+                <div id="hud-timer">Time: 60s</div>
+            </div>
+            <div class="card-panel">
+                <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);" id="hud-category">Category</div>
+                <div id="judge-gibberish">Waiting...</div>
+                <div class="answer-box" id="judge-answer"></div>
+                <div class="hint-box" id="judge-hint">Hint: ...</div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-skip" onclick="sendAction('skip')">SKIP &rarr;</button>
+                <button class="btn btn-correct" onclick="sendAction('correct')">CORRECT &check;</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let peer = null, conn = null, hostId = '';
+        window.addEventListener('DOMContentLoaded', () => {
+            hostId = new URLSearchParams(window.location.search).get('id');
+            if (!hostId) {
+                document.getElementById('status-banner').className = 'status-banner error';
+                document.getElementById('status-banner').innerText = 'Error: No Session ID';
+                return;
+            }
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(hostId);
+                conn.on('open', () => {
+                    document.getElementById('status-banner').className = 'status-banner connected';
+                    document.getElementById('status-banner').innerText = 'Connected!';
+                    document.getElementById('waiting-panel').style.display = 'none';
+                    document.getElementById('active-panel').style.display = 'flex';
+                });
+                conn.on('data', (d) => {
+                    if (d.type === 'STATE_UPDATE') {
+                        if (d.isTickUpdate) {
+                            document.getElementById('hud-timer').innerText = `Time: ${d.timeLeft !== undefined ? d.timeLeft + 's' : '--'}`;
+                        } else {
+                            document.getElementById('hud-category').innerText = d.category || 'Unknown Category';
+                            document.getElementById('judge-gibberish').innerText = d.gibberish || 'Waiting for phrase...';
+                            document.getElementById('judge-answer').innerText = d.revealed ? `Answer: ${d.answer || 'N/A'}` : '(Hidden)';
+                            document.getElementById('judge-hint').innerText = `Hint: ${d.hint || 'No hint available'}`;
+                            document.getElementById('hud-score').innerText = `Score: ${d.score !== undefined ? d.score : 0}`;
+                            document.getElementById('hud-timer').innerText = `Time: ${d.timeLeft !== undefined ? d.timeLeft + 's' : '--'}`;
+                        }
+                    } else if (d.type === 'TIMEOUT') {
+                        document.getElementById('hud-timer').innerText = 'Time: 0s';
+                        document.getElementById('judge-gibberish').innerText = 'TIME IS UP!';
+                    }
+                });
+            });
+        });
+        function sendAction(a) { if (conn && conn.open) conn.send({ action: a }); }
+    </script>
+

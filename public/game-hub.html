@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Hub - Trotters Portal</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-hover: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 350px));
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+        }
+
+        .hub-card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hub-card:hover {
+            background-color: var(--card-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .icon-box {
+            background: rgba(59, 130, 246, 0.15);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-box svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .card-footer {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .back-link {
+            margin-top: 3rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.15s;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Game Hub</h1>
+    <div class="subtitle">Select a game mode for your session</div>
+
+    <div class="hub-grid">
+        <!-- Buzzer Arena -->
+        <a href="buzzer.html" class="hub-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4m-2-2v4M15 11h.01M18 13h.01"></path></svg>
+                    </div>
+                    <h2>Buzzer Arena</h2>
+                </div>
+                <p>Interactive game show buzzers and multiplayer response panels for family game sessions.</p>
+            </div>
+            <div class="card-footer">Launch Buzzer &rarr;</div>
+        </a>
+
+        <!-- Heads Up! -->
+        <a href="heads-up.html" class="hub-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
+                    </div>
+                    <h2>Heads Up!</h2>
+                </div>
+                <p>Fast-paced word guessing game with customizable timers and live category tracking.</p>
+            </div>
+            <div class="card-footer">Play Heads Up &rarr;</div>
+        </a>
+
+        <!-- Gibberish Party -->
+        <a href="games/gibberish-host.html" class="hub-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+                    </div>
+                    <h2>Gibberish Party</h2>
+                </div>
+                <p>Scan Once & Auto-Update party game. Translate phonetically mangled phrases with live phone judge sync.</p>
+            </div>
+            <div class="card-footer">Play Gibberish &rarr;</div>
+        </a>
+    </div>
+
+    <a href="index.html" class="back-link">&larr; Back to Trotters Portal</a>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Trotters">
+  <rect width="128" height="128" rx="28" fill="#0c0d12"/>
+  <circle cx="64" cy="68" r="34" fill="#c41010"/>
+  <circle cx="64" cy="68" r="34" fill="none" stroke="#f5c451" stroke-width="6"/>
+  <path d="M40 46h48v8H72v28h-8V54H40z" fill="#f5c451"/>
+</svg>

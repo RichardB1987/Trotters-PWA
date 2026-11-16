@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer Arena - Game Hub</title>
+    <!-- Include Socket.io client library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --p1-red: #ef4444;
+            --p2-blue: #3b82f6;
+            --p3-green: #10b981;
+            --p4-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 { margin-top: 0; font-size: 1.75rem; }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .role-btn {
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.1s ease;
+        }
+
+        .role-btn:active { transform: scale(0.98); }
+        .role-btn[data-role="1"] { background-color: var(--p1-red); }
+        .role-btn[data-role="2"] { background-color: var(--p2-blue); }
+        .role-btn[data-role="3"] { background-color: var(--p3-green); }
+        .role-btn[data-role="4"] { background-color: var(--p4-yellow); }
+
+        #buzzer-section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #buzzer-btn {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 8px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.1s ease;
+        }
+
+        #buzzer-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        #buzzer-btn:disabled {
+            background-color: #475569 !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+            animation: none;
+            box-shadow: none;
+        }
+
+        .status-display {
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <span>Trotters-PWA Buzzer Arena</span>
+        <span id="player-indicator" style="font-weight: bold;">Not Selected</span>
+    </div>
+
+    <div class="container">
+        <h1>Select Your Player Role</h1>
+        
+        <!-- Role Selection Screen -->
+        <div id="role-section" class="role-selector">
+            <button class="role-btn" data-role="1" onclick="selectRole(1)">Player 1 (Red)</button>
+            <button class="role-btn" data-role="2" onclick="selectRole(2)">Player 2 (Blue)</button>
+            <button class="role-btn" data-role="3" onclick="selectRole(3)">Player 3 (Green)</button>
+            <button class="role-btn" data-role="4" onclick="selectRole(4)">Player 4 (Yellow)</button>
+        </div>
+
+        <!-- Active Buzzer Screen -->
+        <div id="buzzer-section">
+            <div id="status-text" class="status-display">BUZZERS OPEN!</div>
+            <button id="buzzer-btn" onclick="triggerBuzz()">BUZZ</button>
+            <button onclick="switchRole()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; text-decoration: underline; margin-top: 1rem;">Change Player Role</button>
+        </div>
+    </div>
+
+    <!-- Hidden audio elements for preloading -->
+    <audio id="buzzer-sound" src="/sounds/buzzer.mp3" preload="auto"></audio>
+    <audio id="lockout-sound" src="/sounds/lockout.mp3" preload="auto"></audio>
+
+    <script>
+        const socket = io();
+        let myRole = null;
+        let isLocked = false;
+
+        const playerColors = {
+            1: '#ef4444', // Red
+            2: '#3b82f6', // Blue
+            3: '#10b981', // Green
+            4: '#f59e0b'  // Yellow
+        };
+
+        const playerNames = {
+            1: 'Red',
+            2: 'Blue',
+            3: 'Green',
+            4: 'Yellow'
+        };
+
+        function selectRole(role) {
+            myRole = role;
+            isLocked = false;
+            document.getElementById('role-section').style.display = 'none';
+            document.getElementById('buzzer-section').style.display = 'flex';
+            
+            const indicator = document.getElementById('player-indicator');
+            indicator.innerText = `Player ${role} (${playerNames[role]})`;
+            indicator.style.color = playerColors[role];
+
+            // Apply player's specific color to the buzzer button
+            const btn = document.getElementById('buzzer-btn');
+            btn.disabled = false;
+            btn.style.backgroundColor = playerColors[role];
+            
+            document.getElementById('status-text').innerText = "BUZZERS OPEN!";
+            document.getElementById('status-text').style.color = "var(--text-main)";
+            
+            socket.emit('set-role', role);
+        }
+
+        function switchRole() {
+            myRole = null;
+            document.getElementById('buzzer-section').style.display = 'none';
+            document.getElementById('role-section').style.display = 'grid';
+            
+            const indicator = document.getElementById('player-indicator');
+            indicator.innerText = 'Not Selected';
+            indicator.style.color = 'var(--text-main)';
+            
+            const btn = document.getElementById('buzzer-btn');
+            btn.disabled = true;
+            btn.style.backgroundColor = '';
+            
+            socket.emit('set-role', null);
+        }
+
+        function playSound(audioId) {
+            const audioElem = document.getElementById(audioId);
+            if (audioElem) {
+                const clone = audioElem.cloneNode();
+                clone.play().catch(e => console.log("Audio play blocked:", e));
+            }
+        }
+
+        function triggerBuzz() {
+            if (isLocked || !myRole) return;
+            
+            // Play linked MP3 sound effect
+            playSound('buzzer-sound');
+
+            socket.emit('player-buzz', { role: myRole });
+        }
+
+        socket.on('state-update', (state) => {
+            isLocked = state.locked;
+            const btn = document.getElementById('buzzer-btn');
+            const statusText = document.getElementById('status-text');
+
+            if (state.buzzedPlayer) {
+                if (state.buzzedPlayer === myRole) {
+                    statusText.innerText = "YOU BUZZED FIRST!";
+                    statusText.style.color = playerColors[myRole];
+                } else {
+                    statusText.innerText = `Player ${state.buzzedPlayer} (${playerNames[state.buzzedPlayer]}) buzzed in!`;
+                    statusText.style.color = "var(--text-muted)";
+                }
+                btn.disabled = true;
+            } else if (isLocked) {
+                statusText.innerText = "BUZZERS LOCKED";
+                statusText.style.color = "var(--text-muted)";
+                btn.disabled = true;
+            } else {
+                statusText.innerText = "BUZZERS OPEN!";
+                statusText.style.color = "var(--text-main)";
+                btn.disabled = false;
+                if (myRole) {
+                    btn.style.backgroundColor = playerColors[myRole];
+                }
+            }
+        });
+
+        // Handle 5-second lockout event and play lockout sound
+        socket.on('lockout-triggered', () => {
+            isLocked = true;
+            playSound('lockout-sound');
+            const statusText = document.getElementById('status-text');
+            const btn = document.getElementById('buzzer-btn');
+            statusText.innerText = "LOCKED OUT (5s)";
+            statusText.style.color = "#f59e0b";
+            btn.disabled = true;
+        });
+    </script>
+</body>
+</html>
