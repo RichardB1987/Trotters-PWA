@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hub - Trotters Portal</title>
+    <title>Hitster - Game Hub</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -27,18 +27,8 @@
             box-sizing: border-box;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.025em;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-        }
-
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: -0.025em; }
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 3rem; }
         .hub-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 350px));
@@ -47,7 +37,6 @@
             max-width: 800px;
             justify-content: center;
         }
-
         .hub-card {
             background-color: var(--card-bg);
             border-radius: 1rem;
@@ -61,69 +50,20 @@
             transition: all 0.2s ease;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .hub-card:hover {
             background-color: var(--card-hover);
             transform: translateY(-4px);
             box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
             border-color: rgba(59, 130, 246, 0.4);
         }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .icon-box {
-            background: rgba(59, 130, 246, 0.15);
-            padding: 0.75rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-box svg {
-            width: 28px;
-            height: 28px;
-            fill: none;
-            stroke: var(--primary);
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin: 0 0 1.5rem 0;
-        }
-
-        .card-footer {
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 0.95rem;
-        }
-
-        .back-link {
-            margin-top: 3rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.15s;
-        }
-
-        .back-link:hover {
-            color: var(--text-main);
-        }
+        .card-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .icon-box { background: rgba(59, 130, 246, 0.15); padding: 0.75rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+        .icon-box svg { width: 28px; height: 28px; fill: none; stroke: var(--primary); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        h2 { margin: 0; font-size: 1.5rem; }
+        p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin: 0 0 1.5rem 0; }
+        .card-footer { font-weight: 600; color: var(--primary); font-size: 0.95rem; }
+        .back-link { margin-top: 3rem; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; transition: color 0.15s; }
+        .back-link:hover { color: var(--text-main); }
     </style>
 </head>
 <body>
@@ -144,6 +84,20 @@
                 <p>Interactive game show buzzers and multiplayer response panels for family game sessions.</p>
             </div>
             <div class="card-footer">Launch Buzzer &rarr;</div>
+        </a>
+
+        <!-- Hitster -->
+        <a href="games/hitster/hitster.html" class="hub-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                    </div>
+                    <h2>Hitster</h2>
+                </div>
+                <p>Music card revealer. Listen to iconic hits and build your chronological timeline.</p>
+            </div>
+            <div class="card-footer">Play Hitster &rarr;</div>
         </a>
 
         <!-- Heads Up! -->
@@ -173,6 +127,20 @@
             </div>
             <div class="card-footer">Play Gibberish &rarr;</div>
         </a>
+        <!-- Hitster Bingo -->
+        <a href="games/hitster/hitster-bingo.html" class="hub-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"></path></svg>
+                    </div>
+                    <h2>Hitster Bingo</h2>
+                </div>
+                <p>Music bingo variant. Mark off the hits on your board as they play in the mix.</p>
+            </div>
+            <div class="card-footer">Play Hitster Bingo &rarr;</div>
+        </a>
+
     </div>
 
     <a href="index.html" class="back-link">&larr; Back to Trotters Portal</a>

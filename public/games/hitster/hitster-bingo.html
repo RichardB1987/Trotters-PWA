@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitster Bingo - Music Card Game</title>
+    <style>
+        :root {
+            --bg: #0c0d12;
+            --panel: #161820;
+            --text: #f4f1ea;
+            --gold: #f5c451;
+            --primary: #3b82f6;
+            --expert: #e02323;
+            --green: #3ddc97;
+            --danger: #e02323;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        @media (min-width: 769px) {
+            .container {
+                grid-template-columns: 300px 1fr;
+                align-items: start;
+            }
+        }
+
+        /* Visual Spinning Wheel Banner */
+        .category-banner {
+            background: linear-gradient(135deg, #1e2230, var(--panel));
+            border: 2px dashed var(--gold);
+            border-radius: 16px;
+            padding: 16px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .top-banner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .category-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+        .mode-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+        .wheel-container {
+            position: relative;
+            width: 230px;
+            height: 230px;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #3b82f6 0deg 72deg,
+                #8b5cf6 72deg 144deg,
+                #ec4899 144deg 216deg,
+                #f59e0b 216deg 288deg,
+                #10b981 288deg 360deg
+            );
+            border: 4px solid var(--gold);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            transition: transform 4s cubic-bezier(0.15, 0.9, 0.2, 1);
+            position: relative;
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 16px solid var(--gold);
+            z-index: 10;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+        }
+        .wheel-center {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            background: var(--panel);
+            border: 3px solid var(--gold);
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .selected-category-text {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            min-height: 1.5rem;
+            text-align: center;
+            margin-top: 2px;
+        }
+        .card {
+            background: var(--panel);
+            border: 2px solid rgba(245, 196, 81, 0.3);
+            border-radius: 16px;
+            padding: 24px 20px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .card-line {
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            font-weight: 800;
+            color: var(--gold);
+            letter-spacing: 2px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        .timer-container {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+        .timer-container.warning {
+            color: var(--danger);
+            animation: pulse 0.5s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--green);
+            transition: width 0.1s linear, background-color 0.3s ease;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            margin-top: 4px;
+        }
+        button, .btn-link {
+            min-height: 48px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            text-decoration: none;
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+        button:active, .btn-link:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-wheel { background: #8b5cf6; color: white; grid-column: span 2; font-size: 1.1rem; }
+        .btn-gold { background: var(--gold); color: #0c0d12; grid-column: span 2; }
+        .btn-back { background: #374151; color: white; grid-column: span 2; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--panel);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content h2 { color: var(--gold); margin-bottom: 16px; }
+        .years-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .year-badge {
+            background: rgba(245, 196, 81, 0.1);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Visual Spinning Wheel Banner with Mode Toggle -->
+        <div class="category-banner">
+            <div class="top-banner-header">
+                <div class="category-title" id="bannerTitle">🎯 Beginner Mode Wheel</div>
+                <button id="modeToggleBtn" class="mode-btn" onclick="toggleGameMode()">Switch to Expert</button>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="categoryWheel">
+                    <div class="wheel-center">🎯</div>
+                </div>
+            </div>
+            <div id="categoryDisplay" class="selected-category-text">Click Spin Wheel to Start!</div>
+        </div>
+
+        <div class="card">
+            <div id="yearDisplay" class="card-line">Year?</div>
+            <div id="songTitle" class="card-line">Song?</div>
+            <div id="artistName" class="card-line">Artist/Band?</div>
+
+            <!-- 25-Second Disco Timer & Progress Bar -->
+            <div>
+                <div id="timerDisplay" class="timer-container">0:25 / 0:25 remaining</div>
+                <div class="progress-bar-bg">
+                    <div id="progressBar" class="progress-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-wheel" onclick="spinCategoryWheel()">🎡 Spin Category Wheel</button>
+                <button class="btn-primary" onclick="togglePlay()">Play / Pause</button>
+                <button class="btn-primary" onclick="replayTrack()">Replay 25s</button>
+                <button class="btn-primary" onclick="revealCard()">Reveal Card</button>
+                <button class="btn-primary" onclick="loadNextTrack()">Next Song</button>
+                <button class="btn-gold" onclick="openStartingYearsModal()">Deal 4 Starting Years</button>
+                <a href="/game-hub.html" class="btn-link btn-back">Back to Games Hub</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Starting Years Modal -->
+    <div id="startingYearsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Starting Years</h2>
+            <div id="yearsGrid" class="years-grid"></div>
+            <button class="btn-primary" style="width:100%;" onclick="closeStartingYearsModal()">Close</button>
+        </div>
+    </div>
+
+    <audio id="audioPreview"></audio>
+
+    <script>
+        const DECADE_SEEDS = {
+            "1970s": [
+                { artist: "ABBA", title: "Dancing Queen", year: 1976 },
+                { artist: "Queen", title: "Bohemian Rhapsody", year: 1975 },
+                { artist: "Bee Gees", title: "Stayin' Alive", year: 1977 },
+                { artist: "Elton John", title: "Rocket Man", year: 1972 },
+                { artist: "Fleetwood Mac", title: "Go Your Own Way", year: 1977 }
+            ],
+            "1980s": [
+                { artist: "Michael Jackson", title: "Billie Jean", year: 1982 },
+                { artist: "Whitney Houston", title: "I Wanna Dance with Somebody", year: 1987 },
+                { artist: "A-ha", title: "Take On Me", year: 1985 },
+                { artist: "Prince", title: "Purple Rain", year: 1984 },
+                { artist: "George Michael", title: "Careless Whisper", year: 1984 }
+            ],
+            "1990s": [
+                { artist: "Oasis", title: "Wonderwall", year: 1995 },
+                { artist: "Britney Spears", title: "...Baby One More Time", year: 1998 },
+                { artist: "Spice Girls", title: "Wannabe", year: 1996 },
+                { artist: "Robbie Williams", title: "Angels", year: 1997 },
+                { artist: "Blur", title: "Song 2", year: 1997 }
+            ],
+            "2000s": [
+                { artist: "Coldplay", title: "Viva La Vida", year: 2008 },
+                { artist: "Beyonce", title: "Crazy In Love", year: 2003 },
+                { artist: "The Killers", title: "Mr. Brightside", year: 2003 },
+                { artist: "Rihanna", title: "Umbrella", year: 2007 },
+                { artist: "Outkast", title: "Hey Ya!", year: 2003 }
+            ],
+            "2010s": [
+                { artist: "Adele", title: "Rolling in the Deep", year: 2010 },
+                { artist: "Ed Sheeran", title: "Shape of You", year: 2017 },
+                { artist: "Bruno Mars", title: "Uptown Funk", year: 2014 },
+                { artist: "Taylor Swift", title: "Shake It Off", year: 2014 },
+                { artist: "Katy Perry", title: "Firework", year: 2010 }
+            ],
+            "2020s": [
+                { artist: "Dua Lipa", title: "Levitating", year: 2020 },
+                { artist: "Harry Styles", title: "As It Was", year: 2022 },
+                { artist: "The Weeknd", title: "Blinding Lights", year: 2020 },
+                { artist: "Olivia Rodrigo", title: "drivers license", year: 2021 },
+                { artist: "Miley Cyrus", title: "Flowers", year: 2023 }
+            ]
+        };
+
+        // Official Hitster Bingo Categories
+        const BINGO_CATEGORIES_BEGINNER = [
+            "🎤 Solo or Group",
+            "⏳ Before 2000?",
+            "📅 Within 4 years",
+            "🎶 Decade",
+            "⏱️ Within 2 years"
+        ];
+
+        const BINGO_CATEGORIES_EXPERT = [
+            "🎵 Song Title",
+            "🎯 Exact Year",
+            "🎤 Artist or Group Name",
+            "🎶 Decade",
+            "⏱️ Within 3 years"
+        ];
+
+        let currentMode = 'beginner';
+        let deck = [];
+        let currentIndex = 0;
+        let currentTrack = null;
+        let isRevealed = false;
+        let currentRotation = 0;
+        const BINGO_TIME_LIMIT = 25;
+        const audio = document.getElementById('audioPreview');
+
+        function getActiveCategories() {
+            return currentMode === 'beginner' ? BINGO_CATEGORIES_BEGINNER : BINGO_CATEGORIES_EXPERT;
+        }
+
+        function toggleGameMode() {
+            currentMode = currentMode === 'beginner' ? 'expert' : 'beginner';
+            const btn = document.getElementById('modeToggleBtn');
+            const bannerTitle = document.getElementById('bannerTitle');
+            
+            if (currentMode === 'expert') {
+                btn.textContent = "Switch to Beginner";
+                btn.style.background = "var(--expert)";
+                bannerTitle.textContent = "🔥 Expert Mode Wheel";
+            } else {
+                btn.textContent = "Switch to Expert";
+                btn.style.background = "var(--primary)";
+                bannerTitle.textContent = "🎯 Beginner Mode Wheel";
+            }
+            
+            document.getElementById('categoryDisplay').textContent = `Switched to ${currentMode.toUpperCase()} Mode!`;
+        }
+
+        async function initGame() {
+            deck = [];
+            for (const decade in DECADE_SEEDS) {
+                const songs = DECADE_SEEDS[decade];
+                for (const songInfo of songs) {
+                    try {
+                        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songInfo.artist + ' ' + songInfo.title)}&country=GB&media=music&entity=song&limit=5`);
+                        const data = await res.json();
+                        const song = data.results.find(s => s.previewUrl);
+                        if (song) {
+                            deck.push({
+                                title: songInfo.title,
+                                artist: songInfo.artist,
+                                year: songInfo.year,
+                                previewUrl: song.previewUrl
+                            });
+                        }
+                    } catch (e) {
+                        console.error("API error", e);
+                    }
+                }
+            }
+            deck.sort(() => Math.random() - 0.5);
+            if (deck.length > 0) {
+                loadTrack(0);
+            }
+        }
+        function loadTrack(index) {
+            if (deck.length === 0) return;
+            currentIndex = index % deck.length;
+            currentTrack = deck[currentIndex];
+            isRevealed = false;
+
+            document.getElementById('yearDisplay').textContent = "Year?";
+            document.getElementById('songTitle').textContent = "Song?";
+            document.getElementById('artistName').textContent = "Artist/Band?";
+            document.getElementById('categoryDisplay').textContent = "Click Spin Wheel to Start!";
+
+            audio.src = currentTrack.previewUrl;
+            audio.onerror = () => loadNextTrack();
+            audio.pause();
+            updateTimerDisplay(0, BINGO_TIME_LIMIT);
+        }
+
+        function spinCategoryWheel() {
+            const wheel = document.getElementById('categoryWheel');
+            const display = document.getElementById('categoryDisplay');
+            const categories = getActiveCategories();
+            
+            display.textContent = "Spinning...";
+            display.style.color = 'var(--text)';
+
+            const randomIndex = Math.floor(Math.random() * categories.length);
+            const sliceDegree = 360 / categories.length;
+            const extraSpins = 360 * (5 + Math.floor(Math.random() * 3));
+            const targetDegree = extraSpins + (randomIndex * sliceDegree) + (sliceDegree / 2);
+            
+            currentRotation += targetDegree;
+            wheel.style.transform = `rotate(-${currentRotation}deg)`;
+
+            setTimeout(() => {
+                display.textContent = categories[randomIndex];
+                display.style.color = 'var(--gold)';
+            }, 4000);
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            const current = audio.currentTime;
+            
+            if (current >= BINGO_TIME_LIMIT && !audio.paused) {
+                audio.pause();
+                audio.currentTime = BINGO_TIME_LIMIT;
+                document.getElementById('timerDisplay').textContent = "⏱️ TIME UP! Put Pens Down!";
+                return;
+            }
+
+            updateTimerDisplay(current, BINGO_TIME_LIMIT);
+            
+            const progressPercent = (current / BINGO_TIME_LIMIT) * 100;
+            const fill = document.getElementById('progressBar');
+            fill.style.width = `${Math.min(100, progressPercent)}%`;
+
+            const timeLeft = BINGO_TIME_LIMIT - current;
+            const timerEl = document.getElementById('timerDisplay');
+            if (timeLeft <= 5) {
+                timerEl.classList.add('warning');
+                fill.style.background = 'var(--danger)';
+            } else {
+                timerEl.classList.remove('warning');
+                fill.style.background = 'var(--green)';
+            }
+        });
+
+        function updateTimerDisplay(current, limit) {
+            const timeLeft = Math.max(0, limit - current);
+            const secs = Math.floor(timeLeft).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').textContent = `0:${secs} / 0:${limit} remaining`;
+        }
+
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play().catch(() => {});
+            } else {
+                audio.pause();
+            }
+        }
+
+        function replayTrack() {
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+        }
+
+        function revealCard() {
+            if (!currentTrack) return;
+            isRevealed = true;
+            document.getElementById('yearDisplay').textContent = currentTrack.year;
+            document.getElementById('songTitle').textContent = currentTrack.title;
+            document.getElementById('artistName').textContent = currentTrack.artist;
+            audio.pause();
+        }
+
+        function loadNextTrack() {
+            loadTrack(currentIndex + 1);
+        }
+
+        function openStartingYearsModal() {
+            const grid = document.getElementById('yearsGrid');
+            grid.innerHTML = '';
+            
+            const years = [];
+            while(years.length < 4) {
+                const randomYear = Math.floor(Math.random() * (2025 - 1970 + 1)) + 1970;
+                if(!years.includes(randomYear)) years.push(randomYear);
+            }
+            years.sort((a, b) => a - b);
+
+            years.forEach(year => {
+                const badge = document.createElement('div');
+                badge.className = 'year-badge';
+                badge.textContent = year;
+                grid.appendChild(badge);
+            });
+
+            document.getElementById('startingYearsModal').style.display = 'flex';
+        }
+
+        function closeStartingYearsModal() {
+            document.getElementById('startingYearsModal').style.display = 'none';
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

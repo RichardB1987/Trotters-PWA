@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitster - Music Card Game</title>
+    <style>
+        :root {
+            --bg: #0c0d12;
+            --panel: #161820;
+            --text: #f4f1ea;
+            --gold: #f5c451;
+            --primary: #3b82f6;
+            --green: #3ddc97;
+            --danger: #e02323;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 550px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        .card {
+            background: var(--panel);
+            border: 2px solid rgba(245, 196, 81, 0.3);
+            border-radius: 16px;
+            padding: 30px 20px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .card-line {
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 800;
+            color: var(--gold);
+            letter-spacing: 2px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        /* Timer styling */
+        .timer-container {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #9ca3af;
+            letter-spacing: 1px;
+            margin-top: -4px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--gold);
+            transition: width 0.1s linear;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            margin-top: 6px;
+        }
+        button, .btn-link {
+            min-height: 52px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            text-decoration: none;
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+        button:active, .btn-link:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-full { grid-column: span 2; }
+        .btn-gold { background: var(--gold); color: #0c0d12; grid-column: span 2; }
+        .btn-back { background: #374151; color: white; grid-column: span 2; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--panel);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content h2 { color: var(--gold); margin-bottom: 16px; }
+        .years-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .year-badge {
+            background: rgba(245, 196, 81, 0.1);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div id="yearDisplay" class="card-line">Year?</div>
+            <div id="songTitle" class="card-line">Song?</div>
+            <div id="artistName" class="card-line">Artist/Band?</div>
+
+            <!-- Live Countdown & Progress Bar -->
+            <div>
+                <div id="timerDisplay" class="timer-container">0:30 / 0:30</div>
+                <div class="progress-bar-bg">
+                    <div id="progressBar" class="progress-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-primary" onclick="togglePlay()">Play / Pause</button>
+                <button class="btn-primary" onclick="replayTrack()">Replay</button>
+                <button class="btn-primary" onclick="revealCard()">Reveal Card</button>
+                <button class="btn-primary" onclick="loadNextTrack()">Next Song</button>
+                <button class="btn-primary btn-full" onclick="drawFaceUp()">Draw Face-Up</button>
+                <button class="btn-gold" onclick="openStartingYearsModal()">Deal 4 Starting Years</button>
+                <a href="/game-hub.html" class="btn-link btn-back">Back to Games Hub</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Starting Years Modal -->
+    <div id="startingYearsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Starting Years</h2>
+            <div id="yearsGrid" class="years-grid"></div>
+            <button class="btn-primary" style="width:100%;" onclick="closeStartingYearsModal()">Close</button>
+        </div>
+    </div>
+
+    <audio id="audioPreview"></audio>
+
+    <script>
+        const DECADE_SEEDS = {
+            "1970s": [
+                { artist: "ABBA", title: "Dancing Queen", year: 1976 },
+                { artist: "Queen", title: "Bohemian Rhapsody", year: 1975 },
+                { artist: "Bee Gees", title: "Stayin' Alive", year: 1977 },
+                { artist: "Elton John", title: "Rocket Man", year: 1972 },
+                { artist: "Fleetwood Mac", title: "Go Your Own Way", year: 1977 }
+            ],
+            "1980s": [
+                { artist: "Michael Jackson", title: "Billie Jean", year: 1982 },
+                { artist: "Whitney Houston", title: "I Wanna Dance with Somebody", year: 1987 },
+                { artist: "A-ha", title: "Take On Me", year: 1985 },
+                { artist: "Prince", title: "Purple Rain", year: 1984 },
+                { artist: "George Michael", title: "Careless Whisper", year: 1984 }
+            ],
+            "1990s": [
+                { artist: "Oasis", title: "Wonderwall", year: 1995 },
+                { artist: "Britney Spears", title: "...Baby One More Time", year: 1998 },
+                { artist: "Spice Girls", title: "Wannabe", year: 1996 },
+                { artist: "Robbie Williams", title: "Angels", year: 1997 },
+                { artist: "Blur", title: "Song 2", year: 1997 }
+            ],
+            "2000s": [
+                { artist: "Coldplay", title: "Viva La Vida", year: 2008 },
+                { artist: "Beyonce", title: "Crazy In Love", year: 2003 },
+                { artist: "The Killers", title: "Mr. Brightside", year: 2003 },
+                { artist: "Rihanna", title: "Umbrella", year: 2007 },
+                { artist: "Outkast", title: "Hey Ya!", year: 2003 }
+            ],
+            "2010s": [
+                { artist: "Adele", title: "Rolling in the Deep", year: 2010 },
+                { artist: "Ed Sheeran", title: "Shape of You", year: 2017 },
+                { artist: "Bruno Mars", title: "Uptown Funk", year: 2014 },
+                { artist: "Taylor Swift", title: "Shake It Off", year: 2014 },
+                { artist: "Katy Perry", title: "Firework", year: 2010 }
+            ],
+            "2020s": [
+                { artist: "Dua Lipa", title: "Levitating", year: 2020 },
+                { artist: "Harry Styles", title: "As It Was", year: 2022 },
+                { artist: "The Weeknd", title: "Blinding Lights", year: 2020 },
+                { artist: "Olivia Rodrigo", title: "drivers license", year: 2021 },
+                { artist: "Miley Cyrus", title: "Flowers", year: 2023 }
+            ]
+        };
+
+        let deck = [];
+        let currentIndex = 0;
+        let currentTrack = null;
+        let isRevealed = false;
+        const audio = document.getElementById('audioPreview');
+
+        async function initGame() {
+            deck = [];
+            for (const decade in DECADE_SEEDS) {
+                const songs = DECADE_SEEDS[decade];
+                for (const songInfo of songs) {
+                    try {
+                        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songInfo.artist + ' ' + songInfo.title)}&country=GB&media=music&entity=song&limit=5`);
+                        const data = await res.json();
+                        const song = data.results.find(s => s.previewUrl);
+                        if (song) {
+                            deck.push({
+                                title: songInfo.title,
+                                artist: songInfo.artist,
+                                year: songInfo.year,
+                                previewUrl: song.previewUrl
+                            });
+                        }
+                    } catch (e) {
+                        console.error("API error", e);
+                    }
+                }
+            }
+            deck.sort(() => Math.random() - 0.5);
+            if (deck.length > 0) {
+                loadTrack(0);
+            }
+        }
+
+        function loadTrack(index) {
+            if (deck.length === 0) return;
+            currentIndex = index % deck.length;
+            currentTrack = deck[currentIndex];
+            isRevealed = false;
+
+            document.getElementById('yearDisplay').textContent = "Year?";
+            document.getElementById('songTitle').textContent = "Song?";
+            document.getElementById('artistName').textContent = "Artist/Band?";
+
+            audio.src = currentTrack.previewUrl;
+            audio.onerror = () => loadNextTrack();
+            audio.pause();
+            updateTimerDisplay(0, 30);
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            if (!audio.duration) return;
+            const current = audio.currentTime;
+            const duration = audio.duration;
+            updateTimerDisplay(current, duration);
+            
+            const progressPercent = (current / duration) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+        });
+
+        function updateTimerDisplay(current, duration) {
+            const timeLeft = Math.max(0, duration - current);
+            const secs = Math.floor(timeLeft % 60).toString().padStart(2, '0');
+            const mins = Math.floor(timeLeft / 60);
+            const totalSecs = Math.floor(duration % 60).toString().padStart(2, '0');
+            const totalMins = Math.floor(duration / 60);
+            document.getElementById('timerDisplay').textContent = `${mins}:${secs} / ${totalMins}:${totalSecs} remaining`;
+        }
+
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play().catch(() => {});
+            } else {
+                audio.pause();
+            }
+        }
+
+        function replayTrack() {
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+        }
+
+        function revealCard() {
+            if (!currentTrack) return;
+            isRevealed = true;
+            document.getElementById('yearDisplay').textContent = currentTrack.year;
+            document.getElementById('songTitle').textContent = currentTrack.title;
+            document.getElementById('artistName').textContent = currentTrack.artist;
+            audio.pause();
+        }
+
+        function loadNextTrack() {
+            loadTrack(currentIndex + 1);
+        }
+
+        function drawFaceUp() {
+            if (deck.length === 0) return;
+            const randomCard = deck[Math.floor(Math.random() * deck.length)];
+            currentTrack = randomCard;
+            currentIndex = deck.indexOf(randomCard);
+            audio.src = currentTrack.previewUrl;
+            revealCard();
+            updateTimerDisplay(0, audio.duration || 30);
+        }
+
+        function openStartingYearsModal() {
+            const grid = document.getElementById('yearsGrid');
+            grid.innerHTML = '';
+            
+            const years = [];
+            while(years.length < 4) {
+                const randomYear = Math.floor(Math.random() * (2025 - 1970 + 1)) + 1970;
+                if(!years.includes(randomYear)) years.push(randomYear);
+            }
+            years.sort((a, b) => a - b);
+
+            years.forEach(year => {
+                const badge = document.createElement('div');
+                badge.className = 'year-badge';
+                badge.textContent = year;
+                grid.appendChild(badge);
+            });
+
+            document.getElementById('startingYearsModal').style.display = 'flex';
+        }
+
+        function closeStartingYearsModal() {
+            document.getElementById('startingYearsModal').style.display = 'none';
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
