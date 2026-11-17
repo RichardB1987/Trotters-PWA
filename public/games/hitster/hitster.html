@@ -180,78 +180,25 @@
 
     <audio id="audioPreview"></audio>
 
+    <script src="js/tracks.js"></script>
     <script>
-        const DECADE_SEEDS = {
-            "1970s": [
-                { artist: "ABBA", title: "Dancing Queen", year: 1976 },
-                { artist: "Queen", title: "Bohemian Rhapsody", year: 1975 },
-                { artist: "Bee Gees", title: "Stayin' Alive", year: 1977 },
-                { artist: "Elton John", title: "Rocket Man", year: 1972 },
-                { artist: "Fleetwood Mac", title: "Go Your Own Way", year: 1977 }
-            ],
-            "1980s": [
-                { artist: "Michael Jackson", title: "Billie Jean", year: 1982 },
-                { artist: "Whitney Houston", title: "I Wanna Dance with Somebody", year: 1987 },
-                { artist: "A-ha", title: "Take On Me", year: 1985 },
-                { artist: "Prince", title: "Purple Rain", year: 1984 },
-                { artist: "George Michael", title: "Careless Whisper", year: 1984 }
-            ],
-            "1990s": [
-                { artist: "Oasis", title: "Wonderwall", year: 1995 },
-                { artist: "Britney Spears", title: "...Baby One More Time", year: 1998 },
-                { artist: "Spice Girls", title: "Wannabe", year: 1996 },
-                { artist: "Robbie Williams", title: "Angels", year: 1997 },
-                { artist: "Blur", title: "Song 2", year: 1997 }
-            ],
-            "2000s": [
-                { artist: "Coldplay", title: "Viva La Vida", year: 2008 },
-                { artist: "Beyonce", title: "Crazy In Love", year: 2003 },
-                { artist: "The Killers", title: "Mr. Brightside", year: 2003 },
-                { artist: "Rihanna", title: "Umbrella", year: 2007 },
-                { artist: "Outkast", title: "Hey Ya!", year: 2003 }
-            ],
-            "2010s": [
-                { artist: "Adele", title: "Rolling in the Deep", year: 2010 },
-                { artist: "Ed Sheeran", title: "Shape of You", year: 2017 },
-                { artist: "Bruno Mars", title: "Uptown Funk", year: 2014 },
-                { artist: "Taylor Swift", title: "Shake It Off", year: 2014 },
-                { artist: "Katy Perry", title: "Firework", year: 2010 }
-            ],
-            "2020s": [
-                { artist: "Dua Lipa", title: "Levitating", year: 2020 },
-                { artist: "Harry Styles", title: "As It Was", year: 2022 },
-                { artist: "The Weeknd", title: "Blinding Lights", year: 2020 },
-                { artist: "Olivia Rodrigo", title: "drivers license", year: 2021 },
-                { artist: "Miley Cyrus", title: "Flowers", year: 2023 }
-            ]
-        };
-
         let deck = [];
         let currentIndex = 0;
         let currentTrack = null;
         let isRevealed = false;
         const audio = document.getElementById('audioPreview');
 
-        async function initGame() {
+        function initGame() {
             deck = [];
             for (const decade in DECADE_SEEDS) {
                 const songs = DECADE_SEEDS[decade];
                 for (const songInfo of songs) {
-                    try {
-                        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songInfo.artist + ' ' + songInfo.title)}&country=GB&media=music&entity=song&limit=5`);
-                        const data = await res.json();
-                        const song = data.results.find(s => s.previewUrl);
-                        if (song) {
-                            deck.push({
-                                title: songInfo.title,
-                                artist: songInfo.artist,
-                                year: songInfo.year,
-                                previewUrl: song.previewUrl
-                            });
-                        }
-                    } catch (e) {
-                        console.error("API error", e);
-                    }
+                    deck.push({
+                        title: songInfo.title,
+                        artist: songInfo.artist,
+                        year: songInfo.year,
+                        previewUrl: '' // No preview URL available without external API
+                    });
                 }
             }
             deck.sort(() => Math.random() - 0.5);
@@ -260,20 +207,99 @@
             }
         }
 
-        function loadTrack(index) {
+        function cleanString(str) {
+            // Remove text inside parentheses/brackets and non-alphanumeric characters
+            return str
+                .replace(/\s*\(.*?\)\s*/g, '')
+                .replace(/\s*\[.*?\]\s*/g, '')
+                .replace(/[^a-zA-Z0-9\s]/g, '')
+                .trim();
+        }
+
+        async function fetchPreviewUrl(track, isRetry = false) {
+            return new Promise((resolve) => {
+                const cleanTitle = cleanString(track.title);
+                const cleanArtist = cleanString(track.artist);
+                const term = isRetry ? cleanArtist : `${cleanTitle} ${cleanArtist}`;
+                const callbackName = 'itunesCallback_' + Date.now();
+                
+                window[callbackName] = (data) => {
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                    if (data.results && data.results.length > 0) {
+                        resolve(data.results[0].previewUrl);
+                    } else {
+                        resolve(null);
+                    }
+                };
+
+                const script = document.createElement('script');
+                script.src = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&limit=1&callback=${callbackName}`;
+                script.onerror = () => {
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                    resolve(null);
+                };
+                document.body.appendChild(script);
+            }).then(async (url) => {
+                if (url) return url;
+                if (!isRetry) return await fetchPreviewUrl(track, true);
+                return await fetchDeezerPreview(track);
+            });
+        }
+
+        async function fetchDeezerPreview(track) {
+            return new Promise((resolve) => {
+                const cleanTitle = cleanString(track.title);
+                const cleanArtist = cleanString(track.artist);
+                const query = `${cleanTitle} ${cleanArtist}`;
+                const callbackName = 'deezerCallback_' + Date.now();
+
+                window[callbackName] = (data) => {
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                    if (data.data && data.data.length > 0) {
+                        resolve(data.data[0].preview);
+                    } else {
+                        resolve(null);
+                    }
+                };
+
+                const script = document.createElement('script');
+                script.src = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&output=jsonp&callback=${callbackName}`;
+                script.onerror = () => {
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                    resolve(null);
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        async function loadTrack(index) {
             if (deck.length === 0) return;
             currentIndex = index % deck.length;
             currentTrack = deck[currentIndex];
             isRevealed = false;
 
             document.getElementById('yearDisplay').textContent = "Year?";
-            document.getElementById('songTitle').textContent = "Song?";
-            document.getElementById('artistName').textContent = "Artist/Band?";
+            document.getElementById('songTitle').textContent = "Loading...";
+            document.getElementById('artistName').textContent = "Please wait...";
 
-            audio.src = currentTrack.previewUrl;
-            audio.onerror = () => loadNextTrack();
-            audio.pause();
-            updateTimerDisplay(0, 30);
+            const previewUrl = await fetchPreviewUrl(currentTrack);
+            
+            if (previewUrl) {
+                audio.src = previewUrl;
+                document.getElementById('songTitle').textContent = "Song?";
+                document.getElementById('artistName').textContent = "Artist/Band?";
+                audio.pause();
+                updateTimerDisplay(0, 30);
+            } else {
+                audio.src = '';
+                document.getElementById('songTitle').textContent = "Preview unavailable";
+                document.getElementById('artistName').textContent = currentTrack.artist;
+                updateTimerDisplay(0, 30);
+            }
         }
 
         audio.addEventListener('timeupdate', () => {
@@ -326,7 +352,7 @@
             const randomCard = deck[Math.floor(Math.random() * deck.length)];
             currentTrack = randomCard;
             currentIndex = deck.indexOf(randomCard);
-            audio.src = currentTrack.previewUrl;
+            audio.src = currentTrack.previewUrl || '';
             revealCard();
             updateTimerDisplay(0, audio.duration || 30);
         }
