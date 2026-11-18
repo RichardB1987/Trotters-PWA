@@ -498,6 +498,8 @@
             }
         }
 
+        const wheelSound = new Audio('./wheel-spin-hitster.mp3');
+
         function spinCategoryWheel() {
             const wheel = document.getElementById('categoryWheel');
             const display = document.getElementById('categoryDisplay');
@@ -505,6 +507,12 @@
             
             display.textContent = "Spinning...";
             display.style.color = 'var(--text)';
+
+            // Audio Ducking
+            const originalVolume = audio.volume;
+            audio.volume = 0.2;
+            wheelSound.currentTime = 0;
+            wheelSound.play().catch(e => console.error("Wheel sound failed", e));
 
             const randomIndex = Math.floor(Math.random() * categories.length);
             const sliceDegree = 360 / categories.length;
@@ -517,6 +525,11 @@
             setTimeout(() => {
                 display.textContent = categories[randomIndex];
                 display.style.color = 'var(--gold)';
+                // Restore volume
+                audio.volume = originalVolume;
+                wheelSound.pause();
+                wheelSound.currentTime = 0;
+
             }, 4000);
         }
 
