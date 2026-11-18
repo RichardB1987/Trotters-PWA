@@ -221,6 +221,9 @@
     <div id="category-screen" class="screen active">
         <h1>Heads Up!</h1>
         <h2>Select Category</h2>
+        <div style="margin: 1rem 0;"><button class="btn" onclick="window.location.href='game-hub.html'" style="background: var(--text-muted);">Back to Games Hub</button></div>
+
+
         <div class="grid">
             <button class="btn cat-btn selected" onclick="selectCategory('celebs')">Celebrities</button>
             <button class="btn cat-btn" onclick="selectCategory('film')">Film & TV</button>
@@ -249,6 +252,10 @@
     <!-- SCREEN 3: Active Gameplay Screen -->
     <div id="game-screen" class="screen" onclick="handleGameClick(event)">
         <div class="game-header">
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn" onclick="window.location.href='index.html'" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: #334155;">Menu</button>
+                <button class="btn" onclick="window.location.href='game-hub.html'" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: var(--text-muted);">Hub</button>
+            </div>
             <div id="timer-display">Time: 60s</div>
             <div id="score-display">Score: 0</div>
         </div>
