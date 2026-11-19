@@ -68,6 +68,24 @@ app.get('/proxy-stream', (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running successfully at: http://localhost:${PORT}`);
+const server = http.createServer(app);
+const io = require('socket.io')(server);
+
+// ...
+// ...
+
+io.on('connection', (socket) => {
+  socket.on('join-game', (playerName) => {
+    socket.playerName = playerName;
+    socket.join('game');
+    io.to('game').emit('player-joined', { name: playerName, id: socket.id });
+  });
+  socket.on('buzz', () => {
+    console.log(`Buzz received from ${socket.playerName}`);
+    io.to('game').emit('buzzed', { name: socket.playerName, id: socket.id });
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Server running successfully at: http://localhost:${PORT}`);
 });

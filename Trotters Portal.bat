@@ -1,0 +1,1 @@
+start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --user-data-dir="C:\TrottersEdgeProfile" --app=http://192.168.0.242:3000 --start-fullscreen
