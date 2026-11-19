@@ -17,20 +17,22 @@ npm install
 npm start        # http://localhost:3000
 ```
 
-Node 18+. Only dependencies: express (used), socket.io and ws (installed, NOT yet wired up).
+Node 18+. Dependencies: express and socket.io (used), ws (installed, not used). `Trotters Portal.bat` is a Windows launcher (Edge full-screen, hard-coded LAN IP `192.168.0.242`); the project owner runs it on Windows.
 
 ## How the code is laid out
 
-- `server.js`: tiny Express server. Serves `public/` and has one proxy route, `/proxy-stream` (used by radio).
+- `server.js`: Express + Socket.IO server. Serves `public/`, has a proxy route `/proxy-stream` (used by radio), and Socket.IO events for the Countdown buzzers (`join-game`, `buzz` -> `player-joined`, `buzzed`).
 - `public/`: everything the browser loads. **Plain HTML/CSS/JS, no build step.**
 - Each page is a **single self-contained HTML file** with its own `<style>` and `<script>` inline.
   There is no shared stylesheet in use, and each page defines its own colour variables.
+  Exception: the Countdown pages use `public/style.css`, so changing that file affects them.
 - Pages and what they are:
   - `index.html`: main portal (links to Lights, Music, Sounds, Game Hub)
   - `game-hub.html`: menu of games
   - `buzzer.html` + `client.js`: buzzer system
   - `heads-up.html`: Heads Up! game
   - `games/hitster/hitster.html`, `hitster-bingo.html`, `js/tracks.js` (song list by decade)
+  - `games/countdown/`: Countdown game (`countdown.html` host, `countdown.js`, phone buzzer `countdown-buzzer.html` + `buzzer.js`; this one uses the shared `style.css`)
   - `games/gibberish-host.html`, `gibberish-judge.html`, `gibberish-cards.json`
   - `music.html`, `radio.html`: music hub and live radio
 - `sw.js`: service worker for offline support. `manifest.json`: PWA install info.
@@ -72,9 +74,9 @@ Past AI edits have broken unrelated things and forgotten earlier decisions. To a
 _Keep this section current. Newest first. One short line per item._
 
 ### Known broken / unfinished
-- **Buzzer Arena doesn't work.** `buzzer.html` expects a Socket.IO server (`set-role`, `player-buzz`, `state-update`, `lockout-triggered`) and `client.js` expects a WebSocket server. `server.js` has neither.
+- **Buzzer Arena doesn't work.** `buzzer.html` expects Socket.IO events `set-role`, `player-buzz`, `state-update`, `lockout-triggered` and `client.js` expects a plain WebSocket. `server.js` only handles the Countdown events (`join-game`, `buzz`).
+- **Countdown phone buzzer is work in progress.** QR code only shows on round 13 and uses the page's own address, so the host page must be opened via the LAN IP, not `localhost`.
 - **Missing pages that are linked:** `lights.html`, `sounds.html` (from `index.html`), `jukebox.html` (from `music.html`).
-- `hitster-bingo.html` plays `./wheel-spin-hitster.mp3`, but that file is not in `games/hitster/`.
 - Gibberish Party uses PeerJS (public cloud broker), so it needs internet.
 - Nav "Back" links are inconsistent between pages (different class names and styles).
 
@@ -83,4 +85,5 @@ _Keep this section current. Newest first. One short line per item._
 - Target use: family party games at Christmas, same Wi-Fi network.
 
 ### Changelog
-- 2026-11-19: Added README.md and AGENTS.md.
+- 2026-11-19: Added README.md and AGENTS.md; updated both for the new Countdown game, Socket.IO in `server.js`, and the Windows launcher.
+- 2026-11-19: (Richard) Added Countdown game, Socket.IO server, `wheel-spin-hitster.mp3`, `Trotters Portal.bat`.

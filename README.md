@@ -33,7 +33,8 @@ screen from the browser (it ships a web manifest and a service worker).
 ## Project structure
 
 ```
-server.js              Express server: static files + /proxy-stream
+server.js              Express + Socket.IO server: static files, /proxy-stream, Countdown buzzer events
+Trotters Portal.bat    Windows launcher: opens the portal in Edge full-screen (hard-coded LAN IP)
 public/
   index.html           Main portal (Trotters Portal)
   game-hub.html        Game Hub menu
@@ -43,6 +44,11 @@ public/
   client.js            Buzzer client logic
   heads-up.html        Heads Up! game
   games/
+    countdown/
+      countdown.html        Countdown host screen (TV / laptop)
+      countdown.js          Countdown game logic
+      countdown-buzzer.html Phone buzzer page (opened via QR code)
+      buzzer.js             Phone buzzer client (Socket.IO)
     gibberish-host.html    Gibberish Party host screen
     gibberish-judge.html   Gibberish Party judge controller
     gibberish-cards.json   Gibberish Party card data
@@ -64,6 +70,7 @@ public/
 | Buzzer Arena | `buzzer.html`                          | Game show buzzers for players and host           |
 | Hitster      | `games/hitster/hitster.html`           | Place songs on a timeline by release year        |
 | Hitster Bingo| `games/hitster/hitster-bingo.html`     | Bingo variant of Hitster with a spinning wheel   |
+| Countdown    | `games/countdown/countdown.html`       | Letters and word-guessing game show, 4 players, 13 rounds, final Conundrum. Phones buzz in via QR code |
 | Heads Up!    | `heads-up.html`                        | Category-based guessing game with round timer    |
 | Gibberish Party | `games/gibberish-host.html`         | Host screen plus judge controller on a phone     |
 | Music Hub    | `music.html`                           | Links to live radio and jukebox                  |
@@ -75,16 +82,23 @@ public/
 - Everything in `public/` is served statically.
 - `GET /proxy-stream?url=<encoded-stream-url>` proxies an audio stream (follows
   redirects and sets permissive CORS headers). Used by the radio player.
+- Socket.IO (same port) handles the Countdown phone buzzers: clients send
+  `join-game` (player name) and `buzz`; the server broadcasts `player-joined`
+  and `buzzed` to everyone in the `game` room.
 
 ## Known gaps
 
 These were found while writing this README and are not yet implemented in the
 repo:
 
-- **Buzzer Arena needs a realtime backend.** `buzzer.html` expects a Socket.IO
-  server (`set-role`, `player-buzz`, `state-update`, `lockout-triggered`) and
-  `client.js` expects a plain WebSocket on the same host. `server.js` currently
-  has neither, even though `socket.io` and `ws` are in `package.json`.
+- **Buzzer Arena still has no matching server code.** `buzzer.html` expects
+  Socket.IO events `set-role`, `player-buzz`, `state-update` and
+  `lockout-triggered`, and `client.js` expects a plain WebSocket. `server.js`
+  now has Socket.IO, but only for the Countdown events above (`join-game`,
+  `buzz`). The `ws` package is installed but unused.
+- **Countdown phone buzzer is work in progress.** The QR code only shows on
+  round 13 and is built from the address the host page was opened with, so open
+  the host page via the LAN IP (not `localhost`) or phones cannot reach it.
 - **Missing pages.** `index.html` links to `lights.html` and `sounds.html`, and
   `music.html` links to `jukebox.html`. None of these exist yet.
 - **Gibberish Party** uses PeerJS (loaded from a public broker) for host/judge
