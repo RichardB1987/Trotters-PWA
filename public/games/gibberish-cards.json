@@ -178,5 +178,449 @@
         "gibberish": "Piece Of Cake",
         "answer": "Piece of Cake",
         "hint": "Something extremely easy to do."
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Seek rit Sand ah",
+        "answer": "Secret Santa",
+        "hint": "Office gift swap where you buy for one random person"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Rude off thud wed knows wane dear",
+        "answer": "Rudolph the Red-Nosed Reindeer",
+        "hint": "Santa's sleigh puller with a glowing nose"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Sand uh claw ziz come in tune down",
+        "answer": "Santa Claus Is Coming to Town",
+        "hint": "Festive song: he knows if you've been bad or good"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Ell fon thuh shell if",
+        "answer": "Elf on the Shelf",
+        "hint": "Little scout who moves around your house each December night"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Strick lick hum dance sin",
+        "answer": "Strictly Come Dancing",
+        "hint": "Sequins, a glitterball trophy and a judge saying \"Seven!\""
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Thug rate brit ish bay cough",
+        "answer": "The Great British Bake Off",
+        "hint": "A tent, soggy bottoms and a Hollywood handshake"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Luff eye lund",
+        "answer": "Love Island",
+        "hint": "Villa, bikinis and getting dumped"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Mark sun spence ah",
+        "answer": "Marks and Spencer",
+        "hint": "High street shop famous for its food hall"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Buck inn gum pal lis",
+        "answer": "Buckingham Palace",
+        "hint": "King's London home with the famous balcony"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Pore pat role",
+        "answer": "Paw Patrol",
+        "hint": "Rescue pups with a lookout tower"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Kriss miss chum pa",
+        "answer": "Christmas jumper",
+        "hint": "Itchy knitted top with a reindeer on it"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Roe spa tay doze",
+        "answer": "Roast potatoes",
+        "hint": "Crispy Sunday dinner side, best with goose fat"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hoe mah loan",
+        "answer": "Home Alone",
+        "hint": "Kid defends the house with paint tins and booby traps"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Add went kal in dah",
+        "answer": "Advent calendar",
+        "hint": "Little doors to open each day in December"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Kris mus put inn",
+        "answer": "Christmas pudding",
+        "hint": "Flaming dessert with a sprig of holly"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Gav inn hen stay sea",
+        "answer": "Gavin and Stacey",
+        "hint": "What's occurring? Essex meets Barry Island"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Lie nuv dew tea",
+        "answer": "Line of Duty",
+        "hint": "Police corruption drama: \"Mother of God!\""
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Dad zar me",
+        "answer": "Dad's Army",
+        "hint": "\"Don't panic!\" Home Guard comedy"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Fall tea ours",
+        "answer": "Fawlty Towers",
+        "hint": "Basil, Sybil and a hotel disaster"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Thee uh pren tiss",
+        "answer": "The Apprentice",
+        "hint": "Business show where Lord Sugar points a finger"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Frow zun",
+        "answer": "Frozen",
+        "hint": "Snow queen with ice powers"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Chick inn tick er mass are lah",
+        "answer": "Chicken tikka masala",
+        "hint": "Britain's favourite curry, creamy and orange"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Yoke sure put inn",
+        "answer": "Yorkshire pudding",
+        "hint": "Crispy batter bowl for gravy"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Full ing lish brek fist",
+        "answer": "Full English breakfast",
+        "hint": "Bacon, eggs, beans and black pudding"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Jam ee dodge uh",
+        "answer": "Jammie Dodger",
+        "hint": "Biscuit with a jam heart"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Chock lit or inj",
+        "answer": "Chocolate orange",
+        "hint": "Tap it and it falls apart into segments"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Grey twaw love chai nah",
+        "answer": "Great Wall of China",
+        "hint": "Ancient barrier you can supposedly see from space"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Eye full our",
+        "answer": "Eiffel Tower",
+        "hint": "Famous Paris landmark"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Nev uh gun uh gif chew up",
+        "answer": "Never Gonna Give You Up",
+        "hint": "Rick Astley song everyone has been tricked into hearing"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Beau heem ee un rap sod ee",
+        "answer": "Bohemian Rhapsody",
+        "hint": "Queen epic: \"Is this the real life?\""
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Ap pea bur they",
+        "answer": "Happy Birthday",
+        "hint": "Candles, cake and a song everyone knows"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Hun der thuh weth uh",
+        "answer": "Under the weather",
+        "hint": "Feeling a bit poorly"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ow tuv aw dah",
+        "answer": "Out of order",
+        "hint": "Sign you might see on a broken lift"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Waw kov shaim",
+        "answer": "Walk of shame",
+        "hint": "Stumbling home in last night's clothes"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Hung ray hip oze",
+        "answer": "Hungry Hippos",
+        "hint": "Marble-gobbling board game"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "My neck raft",
+        "answer": "Minecraft",
+        "hint": "Blocky game where you dig and build with cubes"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Mah ree oh kart",
+        "answer": "Mario Kart",
+        "hint": "Racing game with banana peels and blue shells"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Gruff ah low",
+        "answer": "Gruffalo",
+        "hint": "Big terrible monster with terrible tusks"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Shoe car hush",
+        "answer": "Sugar rush",
+        "hint": "Ate too much candy"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "When stay yeah dumbs",
+        "answer": "Wednesday Addams",
+        "hint": "Black pigtails"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Mai y'all harm tid hint coe woff",
+        "answer": "My alarm didn't go off",
+        "hint": "Reason you're late"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Sis soul ink va he does",
+        "answer": "Sizzling fajitas",
+        "hint": "Hot Mexican dish"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Pine org in his",
+        "answer": "Pint of Guinness",
+        "hint": "Black stout with a creamy white head"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Are far tinella vaytaws",
+        "answer": "I fart in elevators",
+        "hint": "Something you'd rather not admit in a lift"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Whem police day diem",
+        "answer": "Wembley Stadium",
+        "hint": "Home of English football"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Vrenz vid penne fieds",
+        "answer": "Friends with benefits",
+        "hint": "Like Mila Kunis"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Nair flicks inch hill",
+        "answer": "Netflix and chill",
+        "hint": "Are you still watching?"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Armour nid he yot",
+        "answer": "I'm an idiot",
+        "hint": "Yes, you are"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Dear pee yeah gans hold yars",
+        "answer": "Dippy Egg and Soldiers",
+        "hint": "Runny yolk and toast for dipping"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Nolee orbz un osses",
+        "answer": "Only Fools and Horses",
+        "hint": "Trotters Independent Traders"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Streer perp holes",
+        "answer": "Stripper poles",
+        "hint": "Slide and grind"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Armour beeg hur",
+        "answer": "I'm a Barbie girl",
+        "hint": "Hey Barbie"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Canter keith ride jick can",
+        "answer": "Kentucky Fried Chicken",
+        "hint": "Finger lickin' good"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Abe odd hull luck oak",
+        "answer": "A bottle of Coke",
+        "hint": "Fizzy drink in a glass bottle"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ace lip puff that hung",
+        "answer": "A slip of the tongue",
+        "hint": "Saying the wrong word by accident"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Canoe key pass egret",
+        "answer": "Can you keep a secret?",
+        "hint": "What you ask before sharing gossip"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Meek came how's",
+        "answer": "Mickey Mouse",
+        "hint": "Disney mascot with big round ears"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Sand tackle laws",
+        "answer": "Santa Claus",
+        "hint": "Comes down the chimney with presents"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Toe stand gel he",
+        "answer": "Toast and jelly",
+        "hint": "Breakfast slice with a wobbly fruity spread"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Bat tree snot ink looted",
+        "answer": "Batteries not included",
+        "hint": "Disappointing line on a toy box on Christmas morning"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "These if hill wore",
+        "answer": "The Civil War",
+        "hint": "American conflict between the North and the South"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Whole imp pig aims",
+        "answer": "Olympic Games",
+        "hint": "Five rings and a torch every four years"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Abe lesson indy skies",
+        "answer": "A blessing in disguise",
+        "hint": "Bad luck that turns out well"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Ewe night ted king dumb",
+        "answer": "United Kingdom",
+        "hint": "England, Scotland, Wales and Northern Ireland"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Wheel yum air ream he",
+        "answer": "Will you marry me?",
+        "hint": "Question asked on one knee"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Arrow loved oil it issue",
+        "answer": "A roll of toilet tissue",
+        "hint": "Bathroom essential"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Wander her womb hen",
+        "answer": "Wonder Woman",
+        "hint": "Superhero with a lasso of truth"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Cohen peas",
+        "answer": "Go in peace",
+        "hint": "Farewell blessing at the end of a church service"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Dawn dude rugs",
+        "answer": "Don't do drugs",
+        "hint": "Classic school assembly warning"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ease owner whole",
+        "answer": "He's on a roll",
+        "hint": "Winning again and again"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Freeze age ha! leak hood fell owe",
+        "answer": "For he's a jolly good fellow",
+        "hint": "Cheerful chant at a celebration"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Fur chin ollie foil",
+        "answer": "Virgin olive oil",
+        "hint": "Green oil for drizzling on salads"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Hide hen tickled wins",
+        "answer": "Identical twins",
+        "hint": "Two siblings who look exactly the same"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Hint a few width diva umpire",
+        "answer": "Interview with a Vampire",
+        "hint": "Gothic film with Tom Cruise and Brad Pitt"
     }
 ]
