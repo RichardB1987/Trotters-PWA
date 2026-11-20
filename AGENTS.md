@@ -85,9 +85,10 @@ _Keep this section current. Newest first. One short line per item._
 - Target use: family party games at Christmas, same Wi-Fi network.
 
 ### Changelog
-- 2026-11-19: Added 53 Gibberish cards to `public/games/gibberish-cards.json` (British-accent phonetic style; 38 original, 15 transcribed from the commercial Encrypted/Mad Gab example cards). New categories: Christmas, TV & Film, Food & Drink, Places, Songs, Kids, Grown-Ups, Everyday Phrases. Richard's original 30 cards (Movies, Music Lyrics, Everyday Phrases) left as they were.
+- 2026-11-19: Added 53 Gibberish cards to `public/games/gibberish-cards.json` (British-accent phonetic style; 38 original, 15 transcribed from the commercial Encrypted/Mad Gab example cards). New categories: Christmas, TV & Film, Food & Drink, Places, Songs, Kids, Grown-Ups, Everyday Phrases. Richard's original 30 cards (Movies, Music Lyrics, Everyday Phrases) were later removed (see below).
 - 2026-11-19: Added 14 more Gibberish cards from a public Mad Gab list (new category: General Knowledge). Total now 97.
 - 2026-11-19: Added 7 more Gibberish cards (Go in peace, Don't do drugs, etc.). Total now 104.
+- 2026-11-20: Removed Richard's original 30 Gibberish cards (the weak "Movies", "Music Lyrics" and "Everyday Phrases" set, e.g. "The God Father") at Kate's request. 74 cards remain.
 - Gibberish card method: write the answer as British (non-rhotic) syllables, regroup into different words so no original word survives, give a specific short hint, then test blind (someone who only sees the gibberish tries to decode it).
 - 2026-11-19: Added README.md and AGENTS.md; updated both for the new Countdown game, Socket.IO in `server.js`, and the Windows launcher.
 - 2026-11-19: (Richard) Added Countdown game, Socket.IO server, `wheel-spin-hitster.mp3`, `Trotters Portal.bat`.
