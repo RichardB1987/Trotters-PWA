@@ -54,6 +54,12 @@ Past AI edits have broken unrelated things and forgotten earlier decisions. To a
 8. **Do not change `sw.js` caching or `manifest.json`** unless asked. If a change doesn't show up on a phone, the service worker cache is a likely cause: bump `CACHE` in `sw.js` (e.g. `trotters-shell-v2`).
 9. **Update the "Status and decisions" section at the bottom of this file** whenever you finish a change, finish a feature, or the user makes a decision. This is how the project remembers things between sessions.
 
+## Editing files and running commands
+
+- Prefer the agent's built-in file-editing tools for source edits. In Cline, use the native edit tool for targeted changes and the native write tool for new files. Review the diff after editing.
+- Use PowerShell for tasks that need a terminal, such as running `npm install`, starting the app with `npm start`, checking JavaScript with `node --check server.js`, or inspecting changes with `git diff`. Run test or build commands when the project provides them.
+- If the built-in tools cannot make a needed edit, explain why a shell command is needed and what files it will change. Follow the normal command approval flow.
+
 ## Conventions to keep
 
 - Every game page has a way back: games link to `/game-hub.html` ("Back to Games Hub"), the hub links to `index.html`, radio links to `music.html`, music links to `index.html`. Keep this chain intact.
@@ -85,6 +91,7 @@ _Keep this section current. Newest first. One short line per item._
 - Target use: family party games at Christmas, same Wi-Fi network.
 
 ### Changelog
+- 2026-11-21: Documented when to use native file-editing tools and PowerShell.
 - 2026-11-19: Added 53 Gibberish cards to `public/games/gibberish-cards.json` (British-accent phonetic style; 38 original, 15 transcribed from the commercial Encrypted/Mad Gab example cards). New categories: Christmas, TV & Film, Food & Drink, Places, Songs, Kids, Grown-Ups, Everyday Phrases. Richard's original 30 cards (Movies, Music Lyrics, Everyday Phrases) were later removed (see below).
 - 2026-11-19: Added 14 more Gibberish cards from a public Mad Gab list (new category: General Knowledge). Total now 97.
 - 2026-11-19: Added 7 more Gibberish cards (Go in peace, Don't do drugs, etc.). Total now 104.
