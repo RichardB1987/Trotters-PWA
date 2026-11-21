@@ -1,4 +1,4 @@
-const CACHE = 'trotters-shell-v1';
+const CACHE = 'trotters-shell-v2';
 const ASSETS = ['/', '/index.html', '/style.css', '/client.js', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', (event) => {

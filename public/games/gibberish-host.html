@@ -182,10 +182,12 @@
 
             <div class="subtitle" id="category-val">Category</div>
             <div class="phrase-display" id="phrase-val">Ready?</div>
-            <div style="display: flex; gap: 1rem; width: 100%;">
+            <div id="game-controls" style="display: flex; gap: 1rem; width: 100%;">
                 <button class="btn" style="background-color: var(--pass-color);" onclick="nextCard('skip')">Skip</button>
                 <button class="btn" style="background-color: var(--correct-color);" onclick="nextCard('correct')">Correct!</button>
             </div>
+                <button id="play-again-btn" class="btn" style="display: none; background-color: var(--primary);" onclick="resetGame()">Play Again</button>
+
             <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box; width: 100%;">← Exit to Game Hub</a>
         </div>
     </div>
@@ -195,6 +197,7 @@
         let timerInterval = null;
         let timeLeft = 60;
         let score = 0;
+        let gameRunning = false;
         let currentIndex = 0;
         let allCards = [];
         let peer = null;
@@ -280,7 +283,9 @@
                     nextCardData();
                 } else if (data.action === 'skip') {
                     nextCardData();
-                }
+                    } else if (data.action === 'RESET_GAME') {
+                        doReset();
+                    }
             });
         }
         // Removed duplicate state block
@@ -292,12 +297,15 @@
                 .then(data => {
                     allCards = data.sort(() => Math.random() - 0.5);
                     currentIndex = 0;
+                    startTimer();
                     showCurrentCard();
                 })
                 .catch(err => console.error('Failed to load cards:', err));
         }
 
             showCurrentCard();
+
+
             startTimer();
 
         function showCurrentCard() {
@@ -307,7 +315,6 @@
                 allCards.sort(() => Math.random() - 0.5);
             }
             const card = allCards[currentIndex];
-            startTimer();
 
             
             // Fallback safety to grab text regardless of JSON property names
@@ -330,15 +337,19 @@
                     score: score !== undefined ? score : 0,
                     timeLeft: timeLeft,
                     isTickUpdate: false,
-                    revealed: true
+                    revealed: false,
+                    isGameOver: false
                 });
             }
         }
 
         // Removed local duplicate declarations below.
 
+
+
         function startTimer() {
-            clearInterval(timerInterval);
+            if (gameRunning) return; // Don't reset if already running
+            gameRunning = true;
             timeLeft = 60;
             updateTimerDisplay();
             timerInterval = setInterval(() => {
@@ -346,6 +357,7 @@
                 updateTimerDisplay();
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    gameRunning = false;
                     handleTimeout();
                 } else {
                     syncState();
@@ -361,6 +373,16 @@
         function handleTimeout() {
             const el = document.getElementById('phrase-val');
             if (el) el.innerText = 'TIME IS UP!';
+            
+            // UI cleanup for host
+            const gameControls = document.getElementById('game-controls');
+            if (gameControls) gameControls.style.display = 'none';
+            const phraseVal = document.getElementById('phrase-val');
+            if (phraseVal) phraseVal.style.display = 'block';
+
+            const playAgainBtn = document.getElementById('play-again-btn');
+            if (playAgainBtn) playAgainBtn.style.display = 'block';
+
             if (conn && conn.open) {
                 conn.send({ type: 'TIMEOUT' });
             }
@@ -376,9 +398,30 @@
             }
         }
 
-        function saveAndRefreshIP() {
-            console.log("IP updated");
+        function resetGame() {
+            if (conn && conn.open) {
+                conn.send({ type: 'RESET_GAME' });
+            }
+            doReset();
         }
+
+        function doReset() {
+            score = 0;
+            updateScore();
+            document.getElementById('phrase-val').innerText = 'Ready?';
+            const playAgainBtn = document.getElementById('play-again-btn');
+            if (playAgainBtn) playAgainBtn.style.display = 'none';
+            const gameControls = document.getElementById('game-controls');
+            if (gameControls) gameControls.style.display = 'flex';
+
+            // Re-load cards and start
+            // Clear interval to prevent multiple timers if multiple resets happen
+            if (timerInterval) clearInterval(timerInterval);
+            gameRunning = false;
+            loadCardsAndStart();
+        }
+
+
 
         function nextCard(action) {
             if (action === 'correct') {
@@ -386,7 +429,6 @@
             }
             updateScore();
             currentIndex++;
-            startTimer();
             showCurrentCard();
         }
 

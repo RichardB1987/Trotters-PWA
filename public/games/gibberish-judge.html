@@ -78,7 +78,7 @@
                         } else {
                             document.getElementById('hud-category').innerText = d.category || 'Unknown Category';
                             document.getElementById('judge-gibberish').innerText = d.gibberish || 'Waiting for phrase...';
-                            document.getElementById('judge-answer').innerText = d.revealed ? `Answer: ${d.answer || 'N/A'}` : '(Hidden)';
+                            document.getElementById('judge-answer').innerText = `Answer: ${d.answer || 'N/A'}`;
                             document.getElementById('judge-hint').innerText = `Hint: ${d.hint || 'No hint available'}`;
                             document.getElementById('hud-score').innerText = `Score: ${d.score !== undefined ? d.score : 0}`;
                             document.getElementById('hud-timer').innerText = `Time: ${d.timeLeft !== undefined ? d.timeLeft + 's' : '--'}`;
@@ -86,6 +86,37 @@
                     } else if (d.type === 'TIMEOUT') {
                         document.getElementById('hud-timer').innerText = 'Time: 0s';
                         document.getElementById('judge-gibberish').innerText = 'TIME IS UP!';
+                        // Hide active buttons
+                        const actionContainer = document.querySelector('.action-buttons');
+                        if (actionContainer) actionContainer.style.display = 'none';
+
+                        // Add/show play again button
+                        let playAgainBtn = document.getElementById('play-again-btn');
+                        if (!playAgainBtn) {
+                            playAgainBtn = document.createElement('button');
+                            playAgainBtn.id = 'play-again-btn';
+                            playAgainBtn.className = 'btn';
+                            playAgainBtn.style.marginTop = '1rem';
+                            playAgainBtn.style.width = '100%';
+                            playAgainBtn.innerText = 'PLAY AGAIN';
+                            playAgainBtn.style.backgroundColor = 'var(--primary)';
+                            playAgainBtn.onclick = () => {
+                                if (conn && conn.open) conn.send({ action: 'RESET_GAME' });
+                                document.getElementById('play-again-btn').style.display = 'none';
+                                document.querySelector('.action-buttons').style.display = 'grid';
+                            };
+                            document.getElementById('active-panel').appendChild(playAgainBtn);
+                        }
+                        playAgainBtn.style.display = 'block';
+                    } else if (d.type === 'RESET_GAME') {
+                        // Reset judge panel
+                        document.getElementById('judge-gibberish').innerText = 'Starting...';
+                        document.querySelector('.action-buttons').style.display = 'grid';
+                        const playAgainBtn = document.getElementById('play-again-btn');
+                        if (playAgainBtn) playAgainBtn.style.display = 'none';
+                        document.getElementById('judge-answer').innerText = '(Hidden)';
+                        document.getElementById('hud-score').innerText = 'Score: 0';
+                        document.getElementById('hud-timer').innerText = 'Time: 60s';
                     }
                 });
             });
