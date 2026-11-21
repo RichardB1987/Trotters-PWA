@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --bg: #0c0d12;
@@ -22,6 +23,7 @@
             --neon-purple: #8b5cf6;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Rajdhani', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
@@ -539,10 +541,117 @@
             color: var(--gold);
             box-shadow: inset 0 0 10px rgba(245, 196, 81, 0.15), 0 0 10px rgba(245, 196, 81, 0.1);
         }
+        .phone-cards-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(22, 24, 32, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(22, 24, 32, 0.85), rgba(22, 24, 32, 0.85)), linear-gradient(135deg, var(--neon-cyan), var(--neon-pink), var(--gold), var(--neon-purple));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            color: #f4f1ea;
+            border-radius: 14px;
+            padding: 12px 20px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.7), 0 0 20px rgba(6, 182, 212, 0.4);
+            transition: all 0.25s ease;
+        }
+        .phone-cards-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 25px var(--neon-cyan), 0 0 35px var(--neon-pink);
+            color: #ffffff;
+        }
+        .qr-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 13, 18, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .qr-modal-content {
+            background: rgba(22, 24, 32, 0.95);
+            backdrop-filter: blur(16px);
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(22, 24, 32, 0.95), rgba(22, 24, 32, 0.95)), linear-gradient(135deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple), var(--gold));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border-radius: 20px;
+            padding: 30px 24px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 30px rgba(236, 72, 153, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .qr-modal h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+        .qr-container-box {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-url-text {
+            font-size: 0.85rem;
+            color: var(--neon-cyan);
+            word-break: break-all;
+            background: rgba(12, 13, 18, 0.6);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            width: 100%;
+        }
+        .qr-close-btn {
+            background-image: linear-gradient(rgba(22, 24, 32, 0.75), rgba(22, 24, 32, 0.75)), linear-gradient(135deg, var(--neon-pink), var(--gold));
+            width: 100%;
+            min-height: 44px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #f4f1ea;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
 
+    <button class="phone-cards-btn" onclick="openPhoneCardsModal()">📱 Phone Cards</button>
+
+    <div class="qr-modal" id="phoneCardsModal">
+        <div class="qr-modal-content">
+            <h3>Player Phone Cards</h3>
+            <div class="qr-container-box" id="bingoQrContainer"></div>
+            <div class="qr-url-text" id="bingoCardUrlText"></div>
+            <button class="qr-close-btn" onclick="closePhoneCardsModal()">Close</button>
+        </div>
+    </div>
     <div class="container">
         <!-- Visual Spinning Wheel Banner with Mode Toggle -->
         <div class="category-banner">
@@ -889,7 +998,37 @@
             revealCard();
         }
 
+
+        function openPhoneCardsModal() {
+            const container = document.getElementById('bingoQrContainer');
+            container.innerHTML = '';
+            
+            const host = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') ? window.location.hostname : '192.168.0.242';
+            const cardUrl = `http://${host}:3000/games/hitster/bingo-card.html`;
+            
+            document.getElementById('bingoCardUrlText').textContent = cardUrl;
+            new QRCode(container, {
+                text: cardUrl,
+                width: 256,
+                height: 256
+            });
+            
+            document.getElementById('phoneCardsModal').style.display = 'flex';
+        }
+
+        function closePhoneCardsModal() {
+            document.getElementById('phoneCardsModal').style.display = 'none';
+        }
+
+        // Add event listener to close modal when clicking outside content
+        document.getElementById('phoneCardsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePhoneCardsModal();
+            }
+        });
+
         initGame();
     </script>
+    </div>
 </body>
 </html>

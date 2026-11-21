@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitster Bingo - Player Card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0d12;
+            --panel: #161820;
+            --text: #f4f1ea;
+            --gold: #f5c451;
+            --primary: #3b82f6;
+            --green: #3ddc97;
+            --neon-pink: #ec4899;
+            --neon-cyan: #06b6d4;
+            --neon-purple: #8b5cf6;
+            --cb: #3b82f6;
+            --cp: #8b5cf6;
+            --cn: #ec4899;
+            --ca: #f59e0b;
+            --cg: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Rajdhani', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            background-image: linear-gradient(rgba(12, 13, 18, 0.85), rgba(12, 13, 18, 0.92)), url('./neon-vinyl-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 70%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 80%, rgba(245, 196, 81, 0.05) 0%, transparent 50%);
+            animation: ambientDrift 20s ease infinite alternate;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes ambientDrift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-3%, 4%) scale(1.05); }
+            100% { transform: translate(3%, -3%) scale(1.02); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-panel {
+            background: rgba(22, 24, 32, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(22, 24, 32, 0.75), rgba(22, 24, 32, 0.75)), linear-gradient(135deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple), var(--gold));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border-radius: 20px;
+            padding: 22px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(236, 72, 153, 0.25), 0 0 35px rgba(6, 182, 212, 0.2);
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.4rem, 4vw, 1.8rem);
+            font-weight: 900;
+            color: var(--gold);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(245, 196, 81, 0.6), 0 0 22px rgba(236, 72, 153, 0.35);
+        }
+
+        #bingoBanner {
+            display: none;
+            background: linear-gradient(135deg, var(--gold), var(--neon-pink));
+            color: #0c0d12;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 900;
+            padding: 10px 14px;
+            border-radius: 12px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(245, 196, 81, 0.55), 0 0 30px rgba(236, 72, 153, 0.45);
+        }
+
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+        }
+
+        .vinyl-tile {
+            position: relative;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            user-select: none;
+        }
+
+        .vinyl-tile:hover {
+            transform: scale(1.04);
+        }
+
+        .vinyl-tile:active {
+            transform: scale(0.96);
+        }
+
+        .t-blue { background-color: var(--cb); }
+        .t-purple { background-color: var(--cp); }
+        .t-pink { background-color: var(--cn); }
+        .t-amber { background-color: var(--ca); }
+        .t-green { background-color: var(--cg); }
+
+        .vinyl-tile::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-radial-gradient(
+                circle at center,
+                transparent 0px,
+                transparent 2px,
+                rgba(0, 0, 0, 0.16) 3px,
+                rgba(0, 0, 0, 0.28) 4px,
+                transparent 5px
+            );
+            pointer-events: none;
+        }
+
+        .vinyl-center {
+            position: relative;
+            z-index: 1;
+            width: 34%;
+            height: 34%;
+            background: #111;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.85);
+        }
+
+        .mark-x {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.3rem, 4.5vw, 1.85rem);
+            font-weight: 900;
+            color: #ffffff;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            text-shadow: 0 0 6px #000000, 0 0 12px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
+        }
+
+        .vinyl-tile.marked .mark-x {
+            opacity: 1;
+        }
+
+        .vinyl-tile.winning-line {
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 16px var(--gold), 0 0 24px rgba(245, 196, 81, 0.55);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .answer-input {
+            width: 100%;
+            min-height: 48px;
+            background: rgba(12, 13, 18, 0.8);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6), 0 0 12px rgba(6, 182, 212, 0.2);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .answer-input::placeholder {
+            color: rgba(244, 241, 234, 0.45);
+        }
+
+        .answer-input:focus {
+            border-color: var(--gold);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6), 0 0 16px rgba(245, 196, 81, 0.35);
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        button {
+            min-height: 48px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 10px 14px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-clear {
+            background: rgba(22, 24, 32, 0.75);
+            border: 2px solid rgba(244, 241, 234, 0.22);
+            color: var(--text);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-clear:hover {
+            border-color: var(--neon-cyan);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 15px rgba(6, 182, 212, 0.35);
+        }
+
+        .btn-new-card {
+            background: rgba(22, 24, 32, 0.75);
+            background-image: linear-gradient(rgba(22, 24, 32, 0.75), rgba(22, 24, 32, 0.75)), linear-gradient(135deg, var(--gold), var(--neon-pink));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border: 2px solid transparent;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(245, 196, 81, 0.55);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 196, 81, 0.25);
+        }
+
+        .btn-new-card:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 22px rgba(245, 196, 81, 0.55), 0 0 30px rgba(236, 72, 153, 0.35);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card-panel">
+            <h1 class="game-title">Hitster Bingo</h1>
+            <div id="bingoBanner">BINGO!</div>
+            <div id="bingoGrid" class="bingo-grid"></div>
+            <div class="controls">
+                <input type="text" id="answerInput" class="answer-input" placeholder="Your guess..." autocomplete="off">
+                <div class="btn-row">
+                    <button type="button" class="btn-clear" onclick="clearText()">CLEAR TEXT</button>
+                    <button type="button" class="btn-new-card" onclick="newCard()">NEW CARD</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COLORS = ['t-blue', 't-purple', 't-pink', 't-amber', 't-green'];
+        const STORAGE_KEY = 'hitster_bingo_card_state';
+
+        let cardState = {
+            tiles: [],
+            marked: Array(25).fill(false),
+            text: ''
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed.tiles) && parsed.tiles.length === 25) {
+                        cardState = {
+                            tiles: parsed.tiles,
+                            marked: Array.isArray(parsed.marked) && parsed.marked.length === 25
+                                ? parsed.marked.map(Boolean)
+                                : Array(25).fill(false),
+                            text: typeof parsed.text === 'string' ? parsed.text : ''
+                        };
+                        document.getElementById('answerInput').value = cardState.text;
+                        renderGrid();
+                        checkBingo();
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            generateNewCard();
+        }
+
+        function saveState() {
+            cardState.text = document.getElementById('answerInput').value;
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(cardState));
+            } catch (e) {}
+        }
+
+        function generateNewCard() {
+            const pool = [];
+            COLORS.forEach((colorClass) => {
+                for (let i = 0; i < 5; i++) {
+                    pool.push(colorClass);
+                }
+            });
+
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
+            cardState = {
+                tiles: pool,
+                marked: Array(25).fill(false),
+                text: ''
+            };
+
+            document.getElementById('answerInput').value = '';
+            saveState();
+            renderGrid();
+            checkBingo();
+        }
+
+        function newCard() {
+            generateNewCard();
+        }
+
+        function clearText() {
+            document.getElementById('answerInput').value = '';
+            saveState();
+        }
+
+        function toggleTile(index) {
+            cardState.marked[index] = !cardState.marked[index];
+            saveState();
+            renderGrid();
+            checkBingo();
+        }
+
+        function getWinningIndices() {
+            const marked = cardState.marked;
+            const winning = new Set();
+            const lines = [];
+
+            for (let r = 0; r < 5; r++) {
+                lines.push([r * 5, r * 5 + 1, r * 5 + 2, r * 5 + 3, r * 5 + 4]);
+            }
+            for (let c = 0; c < 5; c++) {
+                lines.push([c, c + 5, c + 10, c + 15, c + 20]);
+            }
+            lines.push([0, 6, 12, 18, 24]);
+            lines.push([4, 8, 12, 16, 20]);
+
+            lines.forEach((line) => {
+                if (line.every((idx) => marked[idx])) {
+                    line.forEach((idx) => winning.add(idx));
+                }
+            });
+
+            return winning;
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('bingoGrid');
+            grid.innerHTML = '';
+            const winningIndices = getWinningIndices();
+
+            cardState.tiles.forEach((colorClass, index) => {
+                const tile = document.createElement('div');
+                tile.className = `vinyl-tile ${colorClass}`;
+                if (cardState.marked[index]) {
+                    tile.classList.add('marked');
+                }
+                if (winningIndices.has(index)) {
+                    tile.classList.add('winning-line');
+                }
+
+                const center = document.createElement('div');
+                center.className = 'vinyl-center';
+                tile.appendChild(center);
+
+                const mark = document.createElement('div');
+                mark.className = 'mark-x';
+                mark.textContent = 'X';
+                tile.appendChild(mark);
+
+                tile.addEventListener('click', () => toggleTile(index));
+                grid.appendChild(tile);
+            });
+        }
+
+        function checkBingo() {
+            const winningIndices = getWinningIndices();
+            const banner = document.getElementById('bingoBanner');
+            banner.style.display = winningIndices.size > 0 ? 'block' : 'none';
+        }
+
+        document.getElementById('answerInput').addEventListener('input', () => {
+            saveState();
+        });
+
+        loadState();
+    </script>
+</body>
+</html>
