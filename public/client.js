@@ -1,6 +1,27 @@
 (() => {
   const $ = (id) => document.getElementById(id);
 
+  // Safe localStorage access helpers
+  function safeGetItem(key, defaultValue = null) {
+    try {
+      const value = localStorage.getItem(key);
+      return value !== null ? value : defaultValue;
+    } catch (e) {
+      console.warn('localStorage access blocked for key:', key, e);
+      return defaultValue;
+    }
+  }
+
+  function safeSetItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      console.warn('localStorage access blocked for key:', key, e);
+      return false;
+    }
+  }
+
   const connEl = $('conn');
   const phasePill = $('phase-pill');
   const nameInput = $('name');
@@ -34,9 +55,9 @@
     already: 'Already locked in',
   };
 
-  nameInput.value = localStorage.getItem('trotters-name') || '';
+  nameInput.value = safeGetItem('trotters-name') || '';
   $('origin').textContent = location.origin;
-  speakToggle.checked = localStorage.getItem('trotters-speak') !== 'off';
+  speakToggle.checked = safeGetItem('trotters-speak') !== 'off';
 
   function show(view) {
     for (const id of ['lobby', 'player', 'host']) {
@@ -55,7 +76,7 @@
   }
 
   function preferredVoice(voices) {
-    const saved = localStorage.getItem('trotters-voice');
+    const saved = safeGetItem('trotters-voice');
     if (saved) {
       const chosen = voices.find((voice) => voice.name === saved);
       if (chosen) return chosen;
@@ -227,7 +248,7 @@
     lobbyError.hidden = true;
     name = trimmed || 'Host';
     role = nextRole;
-    localStorage.setItem('trotters-name', name);
+    safeSetItem('trotters-name', name);
     show(nextRole);
     send({ type: 'join', role, name });
     render();
@@ -264,11 +285,11 @@
   });
 
   speakToggle.addEventListener('change', () => {
-    localStorage.setItem('trotters-speak', speakToggle.checked ? 'on' : 'off');
+    safeSetItem('trotters-speak', speakToggle.checked ? 'on' : 'off');
   });
 
   voiceSelect.addEventListener('change', () => {
-    if (voiceSelect.value) localStorage.setItem('trotters-voice', voiceSelect.value);
+    if (voiceSelect.value) safeSetItem('trotters-voice', voiceSelect.value);
   });
 
   document.addEventListener('keydown', (event) => {

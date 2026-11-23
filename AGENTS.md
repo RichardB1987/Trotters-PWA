@@ -91,6 +91,12 @@ _Keep this section current. Newest first. One short line per item._
 - Target use: family party games at Christmas, same Wi-Fi network.
 
 ### Changelog
+- 2026-11-22: Configured Gibberish Host pre-game setup to start with no players pre-selected on initial launch and cleanly label tapped icons in turn order (1st tap = Player 1, 2nd tap = Player 2, etc.) with matching order badges; aligned active screen split proportions with Hitster Bingo (max-width 1200px, 1fr 1fr balanced layout, circular tokens with score values beside them); synced countdown timer and active player scoreboard in real time with judge controller events.
+- 2026-11-22: Updated Gibberish Host active game screen to a balanced 1:1 two-column split with max-width 1100px for generous scoreboard readability across 15.6" screens; styled scoreboard entries to match circular token aesthetics (highlighted circle icon with order badge, player name, and large score display) while removing + Player, Reset, and manual +/- buttons; added score state clearing to 0 when exiting to Game Hub.
+- 2026-11-22: Redesigned Gibberish Host setup tokens into round circular buttons with clear order badges and labels; introduced two-column split layout for active game screen (phrase & controls left, scoreboard & Up Next banner right) without vertical scrolling on 15.6" screens; automated turn rotation to advance active player across rounds and update gibberish_active_player cleanly.
+- 2026-11-22: Added compact 8-icon tap-order selector on Gibberish Host pre-game screen (1st tap = active, badges 1-8, toggle/clear, no scrolling on 15.6" screen).
+- 2026-11-22: Connected Gibberish Host player scoreboard selection and scoring logic cleanly with active player toggle and event propagation guards.
+- 2026-11-22: Fixed Gibberish Host game card width consistency and layout thrashing between setup and active game screens.
 - 2026-11-21: Documented when to use native file-editing tools and PowerShell.
 - 2026-11-19: Added 53 Gibberish cards to `public/games/gibberish-cards.json` (British-accent phonetic style; 38 original, 15 transcribed from the commercial Encrypted/Mad Gab example cards). New categories: Christmas, TV & Film, Food & Drink, Places, Songs, Kids, Grown-Ups, Everyday Phrases. Richard's original 30 cards (Movies, Music Lyrics, Everyday Phrases) were later removed (see below).
 - 2026-11-19: Added 14 more Gibberish cards from a public Mad Gab list (new category: General Knowledge). Total now 97.
