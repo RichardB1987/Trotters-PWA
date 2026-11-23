@@ -5,12 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Screen - Gibberish Party</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script>
-        // Ensure QRCode is available globally if needed, though it's usually defined by the CDN.
-        // We'll rely on the CDN, but checking if something failed.
-    </script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        let isInGameSession = false;
+        let peer = null;
+        let conn = null;
+        let sessionId = null;
+        let roundNumber = 1;
+        let score = 0;
+        let countdownInterval = null;
+        let timerSeconds = 60;
+        let SCOREBOARD_KEY = 'gibberish_scoreboard';
+        let PLAYERS_KEY = 'gibberish_players';
+        let ACTIVE_PLAYER_KEY = 'gibberish_active_player';
+        
+        const COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+        const ICONS = ['👤', '🎭', '#️⃣', '⭐', '🚀', '⚽', '🎯', '🔥'];
+        
+        // --- In-memory fallback for localStorage blocking ---
+        let fallbackPlayerSlots = [];
+        
+        // --- Tap-Order Selector Logic (Pre-game 8-icon setup) ---
+        const ALL_SLOT_PLAYERS = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8'];
+        
+        // --- Safe localStorage helpers ---
+        function safeGetItem(key, defaultValue = null) {
+            try {
+                const value = localStorage.getItem(key);
+                return value !== null ? value : defaultValue;
+            } catch (e) {
+                console.warn('localStorage access blocked for key:', key, e);
+                return defaultValue;
+            }
+        }
+        
+        function safeSetItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                console.warn('localStorage access blocked for key:', key, e);
+                return false;
+            }
+        }
+        
+        function safeRemoveItem(key) {
+            try {
+                localStorage.removeItem(key);
+                return true;
+            } catch (e) {
+                console.warn('localStorage access blocked for key:', key, e);
+                return false;
+            }
+        }
+        
+        function safeParseJSON(jsonString, defaultValue = null) {
+            try {
+                return jsonString ? JSON.parse(jsonString) : defaultValue;
+            } catch (e) {
+                console.warn('JSON parse error:', e);
+                return defaultValue;
+            }
+        }
+        
+        function safeStringifyJSON(obj) {
+            try {
+                return JSON.stringify(obj);
+            } catch (e) {
+                console.warn('JSON stringify error:', e);
+                return null;
+            }
+        }
+    </script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -30,46 +96,120 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 2rem 1rem;
+            padding: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
+            overflow: hidden; /* Prevent scrollbar */
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            .container {
+                min-height: calc(100vh - 1rem); /* Adjust for smaller padding */
+                max-height: 100vh;
+            }
+            .game-container {
+                max-height: calc(100vh - 6rem);
+            }
+            .setup-content {
+                max-height: calc(100vh - 4rem);
+            }
+            .card {
+                max-height: calc(100vh - 3rem);
+            }
         }
         .container {
             width: 100%;
-            max-width: 650px;
+            max-width: 1200px;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 0.75rem;
+            transition: max-width 0.2s ease;
+            margin: 0 auto;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 2rem); /* Account for body padding */
+            height: fit-content; /* Allow container to size to content */
+            max-height: 100vh;
         }
         header {
             text-align: center;
+            display: block;
         }
         h1 {
-            margin: 0 0 0.25rem 0;
-            font-size: 2.2rem;
+            margin: 0 0 0.15rem 0;
+            font-size: 1.8rem;
         }
         .subtitle {
             color: var(--text-muted);
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         .card {
             background-color: var(--card-bg);
             border-radius: 1rem;
-            padding: 2rem;
+            padding: 1.1rem 1.35rem;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.25rem;
+            gap: 0.75rem;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            max-height: calc(100vh - 6rem); /* Prevent overflow */
+            overflow: hidden;
+        }
+        #setup-screen {
+            display: block;
+            width: 100%;
+            max-height: calc(100vh - 2rem);
+            overflow: hidden;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            min-height: 500px;
+            align-items: stretch; /* Stretch items to fill container height */
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+            max-height: calc(100vh - 10rem);
+        }
+        #game-screen {
+            display: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .round-badge {
+            position: sticky;
+            top: 1rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 1.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+            align-self: flex-end;
         }
         #qrcode {
             background: white;
-            padding: 1rem;
+            padding: 0.5rem;
             border-radius: 0.75rem;
             display: flex;
             justify-content: center;
@@ -79,8 +219,8 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 0.85rem 1.5rem;
-            font-size: 1rem;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.95rem;
             font-weight: 600;
             border-radius: 0.75rem;
             cursor: pointer;
@@ -128,26 +268,309 @@
             background-color: var(--warning-bg);
             border: 1px solid var(--warning-border);
             color: var(--warning-text);
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
             border-radius: 0.5rem;
-            font-size: 0.85rem;
-            line-height: 1.4;
+            font-size: 0.8rem;
+            line-height: 1.3;
             text-align: left;
             width: 100%;
             box-sizing: border-box;
         }
-        #game-screen {
-            display: none;
+        .order-selector-panel {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-hover);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+        .order-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem 0.4rem;
+            width: 100%;
+            box-sizing: border-box;
+            justify-items: center;
+        }
+        .order-token-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            user-select: none;
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--text-main);
+            width: 100%;
+            max-width: 80px;
+        }
+        .order-token-btn {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-hover);
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        .order-token-wrap:hover .order-token-btn {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        .order-token-wrap.active .order-token-btn {
+            background: rgba(59, 130, 246, 0.22);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+        }
+        .order-token-wrap.first-active .order-token-btn {
+            box-shadow: 0 0 14px rgba(34, 197, 94, 0.45);
+        }
+        .order-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 800;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+            border: 2px solid var(--card-bg);
+            line-height: 1;
+        }
+        .order-token-wrap.first-active .order-badge {
+            background: var(--correct-color);
+        }
+        .order-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            text-align: center;
+        }
+        .order-token-wrap.active .order-label {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+        /* Setup Screen Layout - Compact 2-column on landscape / 15.6" screens */
+        .setup-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            box-sizing: border-box;
+            max-height: calc(100vh - 8rem);
+            overflow: hidden;
+        }
+        @media (min-width: 580px) {
+            .setup-content {
+                display: grid;
+                grid-template-columns: 180px 1fr;
+                gap: 1rem;
+                align-items: center;
+                text-align: left;
+                max-height: calc(100vh - 10rem);
+            }
+            .setup-qr-col {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.4rem;
+            }
+            .setup-info-col {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+            }
+        }
+        /* Active Game Split Layout - Generous Side-by-Side Sizing */
+        .game-split-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+        }
+        @media (min-width: 680px) {
+            .game-split-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+                align-items: stretch;
+                justify-content: center;
+                height: 100%;
+            }
+        }
+        .game-main-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            min-height: 280px;
+            width: 100%;
+            align-items: stretch; /* Ensure full width alignment */
+        }
+        .game-side-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            height: 100%;
+            justify-content: center;
+            align-items: stretch; /* Ensure full width alignment */
         }
         .phrase-display {
             font-size: 2rem;
             font-weight: bold;
             color: var(--primary);
-            margin: 1rem 0;
+            margin: 0.4rem 0;
+            width: 100%;
+            min-height: 4.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            line-height: 1.2;
         }
         .score-display {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             color: var(--text-muted);
+            font-weight: 600;
+        }
+        .up-next-banner {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            border-radius: 0.6rem;
+            padding: 0.5rem 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        /* Scoreboard Token List Styling */
+        .score-token-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: 0.75rem;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-hover);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .score-token-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .score-token-row.active {
+            background: rgba(59, 130, 246, 0.18);
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+        }
+        .score-token-btn {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--card-hover);
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            line-height: 1;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: all 0.15s ease;
+        }
+        .score-token-row.active .score-token-btn {
+            background: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
+        }
+        .score-token-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            border: 2px solid var(--card-bg);
+            line-height: 1;
+        }
+        .score-token-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            text-align: left;
+        }
+        .score-token-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .score-token-row.active .score-token-name {
+            font-weight: 700;
+            color: #60a5fa;
+        }
+        .score-token-val {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-main);
+            min-width: 2.2rem;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        .score-token-row.active .score-token-val {
+            color: var(--correct-color);
         }
     </style>
 </head>
@@ -160,94 +583,201 @@
 
         <!-- Setup / Pairing Screen -->
         <div id="setup-screen" class="card">
-            <div class="input-group">
-                <label for="network-ip">PC Network IP (Saved automatically):</label>
-                <input type="text" id="network-ip" placeholder="e.g. 192.168.0.242" oninput="saveAndRefreshIP()">
+            <div class="setup-content">
+                <div class="setup-qr-col">
+                    <div id="qrcode"></div>
+                    <div id="session-info" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Generating Session ID...</div>
+                </div>
+                <div class="setup-info-col">
+                    <div class="input-group">
+                        <label for="network-ip">PC Network IP (Saved automatically):</label>
+                        <input type="text" id="network-ip" placeholder="e.g. 192.168.0.242" oninput="saveAndRefreshIP()">
+                    </div>
+                    <div class="warning-box">
+                        <strong>Scan with phone to judge:</strong> Connected phone controls scoring and reveals answers.
+                    </div>
+                </div>
             </div>
 
-            <div id="qrcode"></div>
-            <div id="session-info" style="font-size: 0.9rem; color: var(--text-muted);">Generating Session ID...</div>
-            
-            <div class="warning-box">
-                <strong>Saved!</strong> Your browser will remember this IP address for next time so you won't need to type it again.
+            <!-- 8-Icon Player Tap-Order Selector -->
+            <div class="order-selector-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Play Order</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">(Tap to set order; 1st = Active)</span>
+                    </div>
+                    <button type="button" class="btn btn-back" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; width: auto; border-radius: 0.4rem;" onclick="clearTapOrder()">Clear</button>
+                </div>
+                <div id="order-selector-grid" class="order-grid"></div>
             </div>
 
             <button class="btn btn-pass" onclick="startPassAndPlay()">Pass & Play Fallback (Single Screen)</button>
-            <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box;">← Back to Game Hub</a>
+            <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box;" onclick="exitToGameHub(event)">← Back to Game Hub</a>
         </div>
 
         <!-- Active Game Screen -->
-        <div id="game-screen" class="card">
-            <div class="score-display">Score: <span id="score-val">0</span> | Time: <span id="timer-val">60s</span></div>
+        <div id="game-screen" style="display: none; width: 100%; flex-direction: column; height: 100%;">
+            <div class="round-badge" id="round-badge" style="display: none;">Round 1</div>
+            <div class="game-container">
+                <!-- Left Column: Phrase, Category, Timer/Score, Action Buttons -->
+                <div class="game-main-col">
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                        <span class="subtitle" id="category-val" style="font-weight: 600;">Category</span>
+                        <div class="score-display">Score: <span id="score-val" style="color: var(--primary);">0</span> | Time: <span id="timer-val" style="color: var(--correct-color);">60s</span></div>
+                    </div>
 
-            <div class="subtitle" id="category-val">Category</div>
-            <div class="phrase-display" id="phrase-val">Ready?</div>
-            <div id="game-controls" style="display: flex; gap: 1rem; width: 100%;">
-                <button class="btn" style="background-color: var(--pass-color);" onclick="nextCard('skip')">Skip</button>
-                <button class="btn" style="background-color: var(--correct-color);" onclick="nextCard('correct')">Correct!</button>
+                    <div class="phrase-display" id="phrase-val">Ready?</div>
+
+                    <div style="width: 100%; display: flex; flex-direction: column; gap: 0.6rem;">
+                        <div id="game-controls" style="display: flex; gap: 0.75rem; width: 100%;">
+                            <button class="btn" style="background-color: var(--pass-color); padding: 0.75rem;" onclick="nextCard('skip')">Skip</button>
+                            <button class="btn" style="background-color: var(--correct-color); padding: 0.75rem;" onclick="nextCard('correct')">Correct!</button>
+                        </div>
+                        <button id="play-again-btn" class="btn" style="display: none; background-color: var(--primary); padding: 0.75rem;" onclick="resetGame()">Play Again (Next Turn)</button>
+                        <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box; width: 100%; padding: 0.5rem;" onclick="exitToGameHub(event)">← Exit to Game Hub</a>
+                    </div>
+                </div>
+
+                <!-- Right Column: Up Next indicator + Scoreboard (no tall cramped scrollbox) -->
+                <div class="game-side-col">
+                    <!-- Up Next Banner -->
+                    <div class="up-next-banner" id="up-next-banner">
+                        <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Up Next:</span>
+                        <span id="up-next-player" style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">-</span>
+                    </div>
+
+                    <!-- Scoreboard & Player Selection -->
+                    <div id="scoreboard-container" style="width: 100%; background: rgba(0,0,0,0.2); padding: 0.75rem 0.85rem; border-radius: 0.75rem; box-sizing: border-box; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.2rem;">
+                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Scoreboard</span>
+                        </div>
+                        <div id="players-list" style="display: flex; flex-direction: column; gap: 0.45rem;"></div>
+                    </div>
+                </div>
             </div>
-                <button id="play-again-btn" class="btn" style="display: none; background-color: var(--primary);" onclick="resetGame()">Play Again</button>
-
-            <a href="../game-hub.html" class="btn btn-back" style="text-decoration: none; text-align: center; display: block; box-sizing: border-box; width: 100%;">← Exit to Game Hub</a>
         </div>
     </div>
 
     <script>
-        // Global State
+        // Global State (using existing declarations from first script block)
         let timerInterval = null;
         let timeLeft = 60;
-        let score = 0;
         let gameRunning = false;
         let currentIndex = 0;
         let allCards = [];
-        let peer = null;
-        let conn = null;
+        // peer is already declared in first script block
         let currentPeerId = '';
 
         // Initialize PeerJS and QR Code
         function initPeer() {
-            const randomId = 'gibberish-' + Math.random().toString(36).substring(2, 8);
-            peer = new Peer(randomId);
-
-            peer.on('open', (id) => {
-                currentPeerId = id;
-                document.getElementById('session-info').innerText = 'Session ID: ' + id;
-                
-                // Load saved IP from localStorage or auto-detect from hostname
-                const savedIp = localStorage.getItem('trotters_host_ip');
-                const hostname = window.location.hostname;
-
-                if (savedIp) {
-                    document.getElementById('network-ip').value = savedIp;
-                } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-                    document.getElementById('network-ip').value = hostname;
-                    localStorage.setItem('trotters_host_ip', hostname);
+            console.log("Initializing PeerJS...");
+            
+            // Clean up any existing peer connection first with forced async wait
+            if (peer) {
+                try {
+                    peer.destroy();
+                } catch (err) {
+                    console.warn("Failed to destroy existing peer during init", err);
                 }
+                peer = null;
+            }
+            
+            // Ensure complete cleanup with small delay
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const randomId = 'gibberish-' + Math.random().toString(36).substring(2, 8);
+                    console.log("Generated Peer ID:", randomId);
+                    
+                    try {
+                        peer = new Peer(randomId);
+                    } catch (err) {
+                        console.error('Failed to create Peer instance:', err);
+                        document.getElementById('session-info').innerText = 'PeerJS Init Failed. Use Pass & Play.';
+                        resolve(false);
+                        return;
+                    }
 
-                updateQRCode();
-            });
+                    peer.on('open', (id) => {
+                        console.log("Peer connection opened with ID:", id);
+                        currentPeerId = id;
+                        document.getElementById('session-info').innerText = 'Session ID: ' + id.substring(0, 8) + '...';
+                        
+                        // Load saved IP from localStorage or auto-detect from hostname
+                        let savedIp = safeGetItem('trotters_host_ip', '');
+                        const hostname = window.location.hostname;
 
-            peer.on('connection', (connection) => {
-                conn = connection;
-                setupConnection();
-            });
+                        if (savedIp) {
+                            document.getElementById('network-ip').value = savedIp;
+                        } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                            document.getElementById('network-ip').value = hostname;
+                            safeSetItem('trotters_host_ip', hostname);
+                        }
 
-            peer.on('error', (err) => {
-                console.error('PeerJS error:', err);
-                document.getElementById('session-info').innerText = 'Offline / PeerJS Error. Use Pass & Play below.';
+                        // Generate QR code with a small delay to ensure library is ready
+                        setTimeout(updateQRCode, 100);
+                        
+                        // Also update the session info with a more user-friendly message
+                        setTimeout(() => {
+                            const sessionInfo = document.getElementById('session-info');
+                            if (sessionInfo && sessionInfo.innerText.includes('Session ID:')) {
+                                sessionInfo.innerText = 'Ready! Scan QR code to connect judge phone.';
+                            }
+                        }, 500);
+                        
+                        resolve(true);
+                    });
+
+                    peer.on('connection', (connection) => {
+                        console.log("New connection received");
+                        conn = connection;
+                        setupConnection();
+                    });
+
+                    peer.on('error', (err) => {
+                        console.error('PeerJS error:', err);
+                        const sessionInfo = document.getElementById('session-info');
+                        if (sessionInfo) {
+                            sessionInfo.innerText = 'Offline / PeerJS Error. Use Pass & Play below.';
+                            sessionInfo.style.color = '#ef4444';
+                        }
+                        
+                        // Also show error in QR code container
+                        const qrContainer = document.getElementById('qrcode');
+                        if (qrContainer) {
+                            qrContainer.innerHTML = '<div style="color: #ef4444; font-size: 0.9rem; text-align: center; padding: 1rem;">⚠️ Connection Error<br>Please use Pass & Play</div>';
+                        }
+                        resolve(false);
+                    });
+                }, 50);
             });
         }
 
         function saveAndRefreshIP() {
             const ipInput = document.getElementById('network-ip').value.trim();
             if (ipInput) {
-                localStorage.setItem('trotters_host_ip', ipInput);
+                safeSetItem('trotters_host_ip', ipInput);
             }
             updateQRCode();
         }
 
         function updateQRCode() {
-            if (!currentPeerId) return;
+            if (!currentPeerId) {
+                console.warn("No PeerID available for QR code generation");
+                // Retry after a short delay to allow PeerJS to initialize
+                setTimeout(() => {
+                    if (currentPeerId) {
+                        updateQRCode();
+                    }
+                }, 300);
+                return;
+            }
+
+            // Check if QRCode library is available
+            if (typeof QRCode === 'undefined') {
+                console.warn("QRCode library not yet available, retrying...");
+                setTimeout(updateQRCode, 200);
+                return;
+            }
 
             let ipInput = document.getElementById('network-ip').value.trim();
             const host = ipInput || window.location.hostname || 'localhost';
@@ -257,37 +787,167 @@
             const judgeUrl = baseUrl + window.location.pathname.replace('gibberish-host.html', 'gibberish-judge.html') + '?id=' + currentPeerId;
             
             const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = '';
-            new QRCode(qrContainer, {
-                text: judgeUrl,
-                width: 180,
-                height: 180,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.M
-            });
+            if (!qrContainer) {
+                console.warn("QR code container not found");
+                return;
+            }
+            
+            // Always clear and regenerate to prevent stale/frozen displays
+            try {
+                // Clear container completely
+                qrContainer.innerHTML = '';
+                
+                console.log("Generating QR code for:", judgeUrl);
+                
+                new QRCode(qrContainer, {
+                    text: judgeUrl,
+                    width: 140,
+                    height: 140,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                // Update session info text
+                const sessionInfo = document.getElementById('session-info');
+                if (sessionInfo) {
+                    sessionInfo.textContent = `Session ID: ${currentPeerId.substring(0, 8)}...`;
+                }
+                
+                console.log("QR code generated successfully");
+            } catch (error) {
+                console.error("Failed to generate QR code:", error);
+                qrContainer.innerHTML = '<div style="color: #ef4444; font-size: 0.9rem; padding: 1rem; text-align: center;">⚠️ QR Code generation failed<br>Please refresh the page</div>';
+            }
         }
 
         function setupConnection() {
+            console.log('Judge connected!');
+            // Mark that we're now in a game session
+            isInGameSession = true;
+            
+            // Reset local game score counter to 0 for fresh start
+            score = 0;
+            
+            // Force immediate screen transition - hide setup screen and show game screen
+            const setupScreen = document.getElementById('setup-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const roundBadge = document.getElementById('round-badge');
+            
+            if (setupScreen) setupScreen.style.display = 'none';
+            if (gameScreen) gameScreen.style.display = 'flex';
+            if (roundBadge) {
+                roundBadge.style.display = 'block';
+                roundBadge.innerText = `Round ${roundNumber}`;
+            }
+
+            // FORCE SYNCHRONOUS LAYOUT UPDATE - Critical fix for QR code scanning lag
+            if (gameScreen) {
+                // Force immediate style recalculation and layout flush
+                gameScreen.getBoundingClientRect();
+                // Force browser to paint immediately
+                gameScreen.style.transform = 'translateZ(0)'; // GPU acceleration hint
+                // Force reflow to ensure immediate visual update
+                gameScreen.offsetHeight;
+            }
+            
+            // Initialize all player scores to 0 for a fresh game session
+            initializeZeroScores(true); // Force reset all scores to 0
+
+            // Send current game state immediately upon connection
+            sendGameState();
+
+            // Load cards and start game 
+            loadCardsAndStart();
+            
+            // Force immediate comprehensive render with guaranteed synchronous update
+            renderAllUIElements();
+            
+            // Force immediate layout calculation and paint
+            if (gameScreen) {
+                gameScreen.offsetHeight; // Force reflow
+                // Schedule guaranteed repaint
+                requestAnimationFrame(() => {
+                    renderAllUIElements();
+                    gameScreen.offsetHeight; // Force another reflow in next frame
+                });
+            }
+
             conn.on('open', () => {
-                console.log('Judge connected!');
-                document.getElementById('setup-screen').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'flex';
-                loadCardsAndStart();
+                console.log('Connection opened - sending game state');
+                // Send current game state
+                sendGameState();
             });
 
             conn.on('data', (data) => {
                 if (data.action === 'correct') {
                     score++;
                     updateScore();
+                    const active = getActivePlayer();
+                    if (active) adjustScore(active, 1);
                     nextCardData();
                 } else if (data.action === 'skip') {
                     nextCardData();
-                    } else if (data.action === 'RESET_GAME') {
-                        doReset();
+                } else if (data.action === 'RESET_GAME') {
+                    advanceTurnToNextPlayer();
+                    doReset();
+                } else if (data.action === 'TIMER_TICK' || data.type === 'TIMER_TICK') {
+                    if (data.timeLeft !== undefined) {
+                        timeLeft = data.timeLeft;
+                        updateTimerDisplay();
                     }
+                }
+                
+                // Force immediate comprehensive render with synchronous updates
+                renderAllUIElements();
+                
+                // FORCE SYNCHRONOUS RENDERING FOR IMMEDIATE VISUAL FEEDBACK
+                const gameScreen = document.getElementById('game-screen');
+                if (gameScreen) {
+                    // Force immediate style recalculation
+                    gameScreen.getBoundingClientRect();
+                    // Force browser paint
+                    gameScreen.offsetHeight;
+                }
+                
+                // Schedule next frame update
+                requestAnimationFrame(() => {
+                    renderAllUIElements();
+                    // Force layout flush in next frame
+                    if (gameScreen) gameScreen.offsetHeight;
+                });
+            });
+
+            // Handle connection close/disconnect
+            conn.on('close', () => {
+                console.log('Judge disconnected');
+                isInGameSession = false;
+                // Optionally show a message or revert to setup screen
+            });
+
+            // Handle connection errors
+            conn.on('error', (err) => {
+                console.error('Connection error:', err);
+                isInGameSession = false;
             });
         }
+
+        function renderAllUIElements() {
+            // Update all UI elements in a single consistent pass
+            updateScore();
+            updateTimerDisplay();
+            showCurrentCard();
+            renderScoreboard();
+            renderTapOrderSelector();
+            updateRoundBadge();
+            
+            // Update Up Next indicator
+            const upNextEl = document.getElementById('up-next-player');
+            if (upNextEl) {
+                upNextEl.innerText = getNextPlayerName();
+            }
+        }
+
         // Removed duplicate state block
 
 
@@ -309,7 +969,10 @@
                 // Use the global allCards variable directly
                 if (allCards.length === 0) {
                     allCards = shuffle(data);
-                    localStorage.setItem('gibberish_cards', JSON.stringify(allCards));
+                    const cardsJson = safeStringifyJSON(allCards);
+                    if (cardsJson) {
+                        safeSetItem('gibberish_cards', cardsJson);
+                    }
                 }
                 console.log('Cards loaded');
             })
@@ -326,20 +989,18 @@
             startNewRound();
         }
 
-            showCurrentCard();
-
-
-            startTimer();
-
         function showCurrentCard() {
             if (allCards.length === 0) return;
             
             if (currentIndex >= allCards.length) {
                 allCards = shuffle(allCards);
                 currentIndex = 0;
-                localStorage.setItem('gibberish_cards', JSON.stringify(allCards));
+                const cardsJson = safeStringifyJSON(allCards);
+                if (cardsJson) {
+                    safeSetItem('gibberish_cards', cardsJson);
+                }
             }
-            localStorage.setItem('gibberish_index', currentIndex.toString());
+            safeSetItem('gibberish_index', currentIndex.toString());
             
             const card = allCards[currentIndex];
 
@@ -349,9 +1010,14 @@
             const categoryText = card.category || card.genre || 'Gibberish Party';
             const hintText = card.hint || card.clue || card.translation || 'No hint available';
 
-            document.getElementById('phrase-val').innerText = phraseText;
-            document.getElementById('category-val').innerText = categoryText;
-            document.getElementById('score-val').innerText = score !== undefined ? score : '0';
+            // Update host display elements immediately
+            const phraseEl = document.getElementById('phrase-val');
+            const categoryEl = document.getElementById('category-val');
+            const scoreEl = document.getElementById('score-val');
+            
+            if (phraseEl) phraseEl.innerText = phraseText;
+            if (categoryEl) categoryEl.innerText = categoryText;
+            if (scoreEl) scoreEl.innerText = score !== undefined ? score : '0';
 
             // Sync to judge with valid non-undefined fields
             if (conn && conn.open) {
@@ -368,6 +1034,9 @@
                     isGameOver: false
                 });
             }
+            
+            // Also update timer display
+            updateTimerDisplay();
         }
 
         // Removed local duplicate declarations below.
@@ -379,11 +1048,16 @@
             gameRunning = true;
             timeLeft = 60;
             updateTimerDisplay();
+            // Clear any existing interval first
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
             timerInterval = setInterval(() => {
                 timeLeft--;
                 updateTimerDisplay();
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
                     gameRunning = false;
                     handleTimeout();
                 } else {
@@ -394,12 +1068,16 @@
 
         function updateTimerDisplay() {
             const el = document.getElementById('timer-val');
-            if (el) el.innerText = timeLeft + 's';
+            if (el) {
+                el.innerText = timeLeft + 's';
+            }
         }
 
         function handleTimeout() {
             const el = document.getElementById('phrase-val');
-            if (el) el.innerText = 'TIME IS UP!';
+            if (el) {
+                el.innerText = 'TIME IS UP!';
+            }
             
             // UI cleanup for host
             const gameControls = document.getElementById('game-controls');
@@ -413,58 +1091,632 @@
             if (conn && conn.open) {
                 conn.send({ type: 'TIMEOUT' });
             }
+            
+            // Stop the timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            gameRunning = false;
+        }
+
+        function sendGameState() {
+            if (conn && conn.open && allCards.length > 0) {
+                const card = allCards[currentIndex] || allCards[0];
+                if (card) {
+                    const phraseText = card.gibberish || card.phrase || card.text || card.question || 'Loading...';
+                    const categoryText = card.category || card.genre || 'Gibberish Party';
+                    const hintText = card.hint || card.clue || card.translation || 'No hint available';
+                    
+                    try {
+                        conn.send({
+                            type: 'STATE_UPDATE',
+                            gibberish: phraseText,
+                            category: categoryText,
+                            answer: card.answer || 'N/A',
+                            hint: hintText,
+                            score: score !== undefined ? score : 0,
+                            timeLeft: timeLeft,
+                            isTickUpdate: false,
+                            revealed: false,
+                            isGameOver: false
+                        });
+                        console.log('Game state sent successfully');
+                    } catch (err) {
+                        console.error('Failed to send game state:', err);
+                    }
+                }
+            }
         }
 
         function syncState() {
             if (conn && conn.open) {
-                conn.send({
-                    type: 'STATE_UPDATE',
-                    isTickUpdate: true,
-                    timeLeft: timeLeft
-                });
+                try {
+                    conn.send({
+                        type: 'STATE_UPDATE',
+                        isTickUpdate: true,
+                        timeLeft: timeLeft
+                    });
+                } catch (err) {
+                    console.error('Failed to sync state:', err);
+                }
             }
+            // Also update the host display immediately
+            updateTimerDisplay();
+            updateScore();
         }
 
         function resetGame() {
+            advanceTurnToNextPlayer();
             if (conn && conn.open) {
                 conn.send({ type: 'RESET_GAME' });
             }
             doReset();
         }
 
+        function advanceTurnToNextPlayer() {
+            try {
+                const players = getPlayers();
+                if (!players || players.length === 0) return;
+                
+                const current = getActivePlayer();
+                let nextPlayer = players[0]; // default wrap to first
+                
+                if (current) {
+                    const currentIdx = players.indexOf(current);
+                    if (currentIdx !== -1) {
+                        const nextIdx = (currentIdx + 1) % players.length;
+                        nextPlayer = players[nextIdx];
+                        
+                        // Check if we're wrapping back to the first player (completed a full cycle)
+                        if (nextIdx === 0 && players.length > 1) {
+                            roundNumber++;
+                            updateRoundBadge(); // Update round badge immediately when round changes
+                        }
+                    }
+                } else if (players.length > 0) {
+                    // If no current player was set, start with first player
+                    nextPlayer = players[0];
+                }
+                
+                safeSetItem(ACTIVE_PLAYER_KEY, nextPlayer);
+                renderTapOrderSelector();
+                renderScoreboard();
+            } catch (e) {
+                console.error("Failed to advance turn order", e);
+            }
+        }
+
+        function updateRoundBadge() {
+            // Update round badge immediately when round changes
+            const roundBadge = document.getElementById('round-badge');
+            if (roundBadge) {
+                roundBadge.innerText = `Round ${roundNumber}`;
+            }
+            // Save round number to localStorage
+            safeSetItem('gibberish_round_number', roundNumber.toString());
+        }
+
+        function getNextPlayerName() {
+            try {
+                const players = getPlayers();
+                if (!players || players.length === 0) return 'None';
+                if (players.length === 1) return players[0];
+
+                const current = getActivePlayer();
+                if (!current) return players[0];
+
+                const currentIdx = players.indexOf(current);
+                if (currentIdx === -1) return players[0];
+
+                const nextIdx = (currentIdx + 1) % players.length;
+                return players[nextIdx];
+            } catch (e) {
+                return 'None';
+            }
+        }
+
         function doReset() {
             score = 0;
             updateScore();
-            document.getElementById('phrase-val').innerText = 'Ready?';
+            const phraseEl = document.getElementById('phrase-val');
+            if (phraseEl) phraseEl.innerText = 'Ready?';
             const playAgainBtn = document.getElementById('play-again-btn');
             if (playAgainBtn) playAgainBtn.style.display = 'none';
             const gameControls = document.getElementById('game-controls');
             if (gameControls) gameControls.style.display = 'flex';
 
             // Clear interval to prevent multiple timers if multiple resets happen
-            if (timerInterval) clearInterval(timerInterval);
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
             gameRunning = false;
             
-            // Advance index for new round
-            currentIndex++;
+            // Reset for new game - start at beginning 
+            currentIndex = 0;
+            // Note: roundNumber is managed by advanceTurnToNextPlayer()
+            updateRoundBadge(); // Update round badge to show current round
+            
             if (currentIndex >= allCards.length) {
                 allCards = shuffle(allCards);
                 currentIndex = 0;
-                localStorage.setItem('gibberish_cards', JSON.stringify(allCards));
+                const cardsJson = safeStringifyJSON(allCards);
+                if (cardsJson) {
+                    safeSetItem('gibberish_cards', cardsJson);
+                }
             }
-            localStorage.setItem('gibberish_index', currentIndex.toString());
+            safeSetItem('gibberish_index', currentIndex.toString());
+            
+            // Preserve existing scores - don't reset to zero
+            renderScoreboard();
+            
+            // Force immediate comprehensive render using requestAnimationFrame
+            requestAnimationFrame(() => {
+                // Trigger comprehensive UI update in a single pass
+                renderAllUIElements();
+                
+                // Force layout read to ensure immediate repaint
+                const gameContainer = document.querySelector('.game-container');
+                if (gameContainer) gameContainer.offsetHeight;
+            });
             
             loadCardsAndStart();
         }
 
+        // --- Scoreboard Helpers ---
+        // (Using constants declared in first script block)
+
+        // --- Tap-Order Selector Logic (Pre-game 8-icon setup) ---
+        // (Using ALL_SLOT_PLAYERS declared in first script block)
+
+        function renderTapOrderSelector() {
+            const grid = document.getElementById('order-selector-grid');
+            if (!grid) {
+                console.warn("Tap order grid container not found");
+                return;
+            }
+            
+            console.log("Rendering tap order selector");
+
+            const slots = getPlayerSlots();
+            const activePlayer = getActivePlayer();
+
+            // Always clear the grid to ensure fresh render
+            grid.innerHTML = '';
+            
+            ALL_SLOT_PLAYERS.forEach((defaultSlotName, idx) => {
+                const color = COLORS[idx % COLORS.length];
+                const icon = ICONS[idx % ICONS.length];
+                
+                const orderIdx = slots.findIndex(s => s.slotIndex === idx);
+                const isSelected = orderIdx !== -1;
+                const isFirst = orderIdx === 0;
+                const assignedNum = orderIdx !== -1 ? (orderIdx + 1) : null;
+                const labelText = isSelected ? `Player ${assignedNum}` : `Player ${idx + 1}`;
+
+                const wrap = document.createElement('div');
+                wrap.className = `order-token-wrap ${isSelected ? 'active' : ''} ${isFirst ? 'first-active' : ''}`;
+                wrap.title = isSelected ? `${labelText}: Turn #${assignedNum} (Tap to remove)` : `Tap to select as Player ${slots.length + 1}`;
+                wrap.onclick = () => togglePlayerSlot(idx);
+
+                let badgeHtml = '';
+                if (isSelected) {
+                    badgeHtml = `<span class="order-badge" style="${isFirst ? 'background: var(--correct-color);' : 'background:' + color + ';'}">${assignedNum}</span>`;
+                }
+
+                wrap.innerHTML = `
+                    <div class="order-token-btn" style="border-color: ${isSelected ? color : 'transparent'};">
+                        ${badgeHtml}
+                        <span>${icon}</span>
+                    </div>
+                    <span class="order-label">${labelText}</span>
+                `;
+
+                grid.appendChild(wrap);
+            });
+            
+            console.log("Player icons rendered, slots:", slots ? slots.length : 0);
+        }
+
+        // Ensure tap order selector is rendered on DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded - initializing tap order selector");
+            setTimeout(renderTapOrderSelector, 50);
+        });
+
+        function togglePlayerSlot(slotIdx) {
+            try {
+                let slots = getPlayerSlots();
+                const existingIdx = slots.findIndex(s => s.slotIndex === slotIdx);
+
+                if (existingIdx !== -1) {
+                    slots.splice(existingIdx, 1);
+                } else {
+                    slots.push({ slotIndex: slotIdx });
+                }
+
+                slots.forEach((s, i) => {
+                    s.name = `Player ${i + 1}`;
+                });
+
+                savePlayerSlots(slots);
+
+                if (slots.length > 0) {
+                    safeSetItem(ACTIVE_PLAYER_KEY, slots[0].name);
+                } else {
+                    safeRemoveItem(ACTIVE_PLAYER_KEY);
+                }
+
+                const scores = getScores();
+                slots.forEach(s => {
+                    if (scores[s.name] === undefined) scores[s.name] = 0;
+                });
+                const scoresJson = safeStringifyJSON(scores);
+                if (scoresJson) {
+                    safeSetItem(SCOREBOARD_KEY, scoresJson);
+                }
+
+                renderTapOrderSelector();
+                renderScoreboard();
+            } catch (e) {
+                console.error("Failed to toggle player tap order", e);
+            }
+        }
+
+        function clearTapOrder() {
+            try {
+                // Clear in-memory fallback
+                fallbackPlayerSlots = [];
+                
+                const emptyArrayJson = safeStringifyJSON([]);
+                if (emptyArrayJson) {
+                    safeSetItem('gibberish_player_slots', emptyArrayJson);
+                    safeSetItem(PLAYERS_KEY, emptyArrayJson);
+                }
+                safeRemoveItem(ACTIVE_PLAYER_KEY);
+                renderTapOrderSelector();
+                renderScoreboard();
+            } catch (e) {
+                console.error("Failed to clear tap order", e);
+            }
+        }
+
+        function getPlayerSlots() {
+            const raw = safeGetItem('gibberish_player_slots');
+            const parsed = safeParseJSON(raw, []);
+            // If we got valid data from localStorage, use it and update fallback
+            if (parsed !== null && Array.isArray(parsed) && parsed.length > 0) {
+                fallbackPlayerSlots = parsed;
+                return parsed;
+            }
+            // If localStorage failed but we have fallback data, use that
+            if (fallbackPlayerSlots.length > 0) {
+                return fallbackPlayerSlots;
+            }
+            // Otherwise return empty array
+            return [];
+        }
+
+        function savePlayerSlots(slots) {
+            // Always update in-memory fallback
+            fallbackPlayerSlots = slots;
+            
+            // Try to save to localStorage
+            const slotsJson = safeStringifyJSON(slots);
+            if (slotsJson) {
+                const localStorageSuccess = safeSetItem('gibberish_player_slots', slotsJson);
+                // If localStorage fails, the in-memory fallback will be used
+                if (!localStorageSuccess) {
+                    console.warn('localStorage save failed, using in-memory fallback');
+                }
+            }
+            
+            // Also save player names array
+            const names = slots.map(s => s.name);
+            const namesJson = safeStringifyJSON(names);
+            if (namesJson) {
+                safeSetItem(PLAYERS_KEY, namesJson);
+            }
+        }
+
+        function getPlayers() {
+            try {
+                const slots = getPlayerSlots();
+                return slots.map(s => s.name);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getScores() {
+            const raw = safeGetItem(SCOREBOARD_KEY);
+            return safeParseJSON(raw, {});
+        }
+
+        function initializeZeroScores(forceReset = false) {
+            try {
+                const players = getPlayers();
+                let scores = getScores();
+                let changed = false;
+                
+                if (forceReset) {
+                    // Reset all selected players' scores to 0
+                    players.forEach(player => {
+                        scores[player] = 0;
+                        changed = true;
+                    });
+                } else {
+                    // Only initialize scores for players that don't already have scores
+                    players.forEach(player => {
+                        if (scores[player] === undefined) {
+                            scores[player] = 0;
+                            changed = true;
+                        }
+                    });
+                }
+                
+                if (changed) {
+                    const scoresJson = safeStringifyJSON(scores);
+                    if (scoresJson) {
+                        safeSetItem(SCOREBOARD_KEY, scoresJson);
+                    }
+                }
+                
+                // Don't reset the local score counter here unless forceReset
+                return scores;
+            } catch (e) {
+                console.error("Failed to initialize zero scores", e);
+                return {};
+            }
+        }
+
+        function getActivePlayer() {
+            return safeGetItem(ACTIVE_PLAYER_KEY, null);
+        }
+
+        function setActivePlayer(playerName) {
+            try {
+                const current = getActivePlayer();
+                if (current === playerName) {
+                    safeRemoveItem(ACTIVE_PLAYER_KEY);
+                } else {
+                    safeSetItem(ACTIVE_PLAYER_KEY, playerName);
+                }
+                renderTapOrderSelector();
+                renderScoreboard();
+            } catch (e) {
+                console.error("Failed to set active player", e);
+            }
+        }
+
+        function adjustScore(playerName, delta) {
+            try {
+                const scores = getScores();
+                scores[playerName] = (scores[playerName] || 0) + delta;
+                const scoresJson = safeStringifyJSON(scores);
+                if (scoresJson) {
+                    safeSetItem(SCOREBOARD_KEY, scoresJson);
+                }
+                renderScoreboard();
+            } catch (e) {
+                console.error("Failed to save score", e);
+            }
+        }
+
+        function resetScores() {
+            try {
+                safeRemoveItem(SCOREBOARD_KEY);
+                safeRemoveItem(PLAYERS_KEY);
+                safeRemoveItem('gibberish_player_slots');
+                safeRemoveItem(ACTIVE_PLAYER_KEY);
+                // Clear in-memory fallback
+                fallbackPlayerSlots = [];
+                renderTapOrderSelector();
+                renderScoreboard();
+            } catch (e) {
+                console.error("Failed to reset scores", e);
+            }
+        }
+
+        function renderScoreboard() {
+            const list = document.getElementById('players-list');
+            if (!list) return;
+            const players = getPlayers();
+            const scores = getScores();
+            const activePlayer = getActivePlayer();
+            const slots = getPlayerSlots(); // Get actual slots to preserve selected icons
+
+            if (players.length === 0) {
+                list.innerHTML = '<div style="font-size: 0.9rem; color: var(--text-muted); padding: 0.5rem 0; text-align: center;">No players selected in Play Order.</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            players.forEach((p, idx) => {
+                const isSelected = (p === activePlayer);
+                const color = COLORS[idx % COLORS.length];
+                
+                // Get the actual icon from the selected slot, not the default ICONS array
+                let icon = '👤'; // Default fallback
+                const slot = slots.find(s => s.name === p);
+                if (slot && slot.slotIndex !== undefined) {
+                    icon = ICONS[slot.slotIndex % ICONS.length];
+                } else {
+                    // Fallback to index-based icon if slot not found
+                    icon = ICONS[idx % ICONS.length];
+                }
+
+                const div = document.createElement('div');
+                div.className = `score-token-row ${isSelected ? 'active' : ''}`;
+                div.title = isSelected ? `${p}: Currently active (click to deselect)` : `${p}: Click to make active`;
+                div.onclick = () => setActivePlayer(p);
+
+                div.innerHTML = `
+                    <div class="score-token-btn" style="border-color: ${isSelected ? color : 'transparent'};">
+                        <span class="score-token-badge" style="background: ${isSelected ? 'var(--correct-color)' : color};">${idx + 1}</span>
+                        <span>${icon}</span>
+                    </div>
+                    <div class="score-token-info">
+                        <div class="score-token-name">${p} ${isSelected ? '<span style="color: #60a5fa; font-size: 0.8rem;">★ ACTIVE</span>' : ''}</div>
+                    </div>
+                    <div class="score-token-val" id="player-score-${idx}">${scores[p] || 0}</div>
+                `;
+                list.appendChild(div);
+            });
+
+            // Update Up Next indicator banner
+            const upNextEl = document.getElementById('up-next-player');
+            if (upNextEl) {
+                upNextEl.innerText = getNextPlayerName();
+            }
+        }
+
+        function exitToGameHub(e) {
+            if (e) e.preventDefault();
+            try {
+                // Reset all player scores to 0 when exiting to game hub
+                const players = getPlayers();
+                if (players.length > 0) {
+                    let scores = {};
+                    players.forEach(player => {
+                        scores[player] = 0;
+                    });
+                    const scoresJson = safeStringifyJSON(scores);
+                    if (scoresJson) {
+                        safeSetItem(SCOREBOARD_KEY, scoresJson);
+                    }
+                }
+                
+                // Clear saved selected players and active player from storage and memory
+                safeRemoveItem('gibberish_player_slots');
+                safeRemoveItem(PLAYERS_KEY);
+                safeRemoveItem(ACTIVE_PLAYER_KEY);
+                try {
+                    sessionStorage.removeItem('gibberish_session_active');
+                } catch (e) {
+                    console.warn('sessionStorage access blocked:', e);
+                }
+                safeRemoveItem('gibberish_round_number'); // Clear round number
+                
+                // Clear in-memory fallback
+                fallbackPlayerSlots = [];
+                
+                // Reset game session flag
+                isInGameSession = false;
+                
+                // Also clear any active timers
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
+                // Clear any peer connections with forced cleanup
+                if (conn) {
+                    try {
+                        conn.close();
+                    } catch (err) {
+                        console.warn("Failed to close connection", err);
+                    }
+                    conn = null;
+                }
+                if (peer) {
+                    try {
+                        // Force destroy with timeout to ensure cleanup
+                        peer.destroy();
+                        // Additional cleanup assurance
+                        setTimeout(() => {
+                            peer = null;
+                        }, 100);
+                    } catch (err) {
+                        console.warn("Failed to destroy peer", err);
+                        peer = null;
+                    }
+                }
+                
+                // Reset game state variables
+                score = 0;
+                roundNumber = 1;
+                currentIndex = 0;
+                gameRunning = false;
+                timeLeft = 60;
+                
+                // Reset UI elements to initial state
+                const phraseEl = document.getElementById('phrase-val');
+                const scoreEl = document.getElementById('score-val');
+                const timerEl = document.getElementById('timer-val');
+                
+                if (phraseEl) phraseEl.innerText = 'Ready?';
+                if (scoreEl) scoreEl.innerText = '0';
+                if (timerEl) timerEl.innerText = '60s';
+                
+                const playAgainBtn = document.getElementById('play-again-btn');
+                if (playAgainBtn) playAgainBtn.style.display = 'none';
+                const gameControls = document.getElementById('game-controls');
+                if (gameControls) gameControls.style.display = 'flex';
+                
+                // Force immediate comprehensive render using multiple strategies
+                renderAllUIElements();
+                
+                requestAnimationFrame(() => {
+                    // Trigger comprehensive UI update in a single pass
+                    renderAllUIElements();
+                    
+                    // Force layout read to ensure immediate repaint
+                    const gameContainer = document.querySelector('.game-container');
+                    if (gameContainer) gameContainer.offsetHeight;
+                });
+                
+                // Additional forced render to bypass browser optimization
+                setTimeout(() => {
+                    renderAllUIElements();
+                    renderScoreboard();
+                    
+                    // Hide game screen and show setup screen with synchronous updates
+                    const setupScreen = document.getElementById('setup-screen');
+                    const gameScreen = document.getElementById('game-screen');
+                    const roundBadge = document.getElementById('round-badge');
+                    
+                    if (gameScreen) gameScreen.style.display = 'none';
+                    if (setupScreen) setupScreen.style.display = 'block';
+                    if (roundBadge) roundBadge.style.display = 'none';
+                    
+                    // FORCE SYNCHRONOUS LAYOUT UPDATE FOR IMMEDIATE SCREEN TRANSITION
+                    if (setupScreen) {
+                        // Force immediate style recalculation and layout flush
+                        setupScreen.getBoundingClientRect();
+                        // Force browser to paint immediately
+                        setupScreen.style.transform = 'translateZ(0)'; // GPU acceleration hint
+                        // Force reflow to ensure immediate visual update
+                        setupScreen.offsetHeight;
+                    }
+                }, 10);
+                
+                // Immediately render scoreboard to show reset scores
+                renderScoreboard();
+                
+            } catch (err) {
+                console.error("Failed to clear session data on exit", err);
+            }
+            // Ensure navigation happens even if there are errors
+            setTimeout(() => {
+                window.location.href = '../game-hub.html';
+            }, 100);
+        }
 
 
         function nextCard(action) {
             if (action === 'correct') {
                 score++;
+                const active = getActivePlayer();
+                if (active) adjustScore(active, 1);
             }
             updateScore();
             currentIndex++;
+            
+            // Note: Round progression is handled by advanceTurnToNextPlayer() when resetting
+            // This function just advances to the next card, not necessarily the next player turn
+            
             showCurrentCard();
         }
 
@@ -474,19 +1726,184 @@
         }
 
         function updateScore() {
-            document.getElementById('score-val').innerText = score;
+            const el = document.getElementById('score-val');
+            if (el) {
+                el.innerText = score;
+            }
         }
 
         function startPassAndPlay() {
-            document.getElementById('setup-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'flex';
+            // Mark that we're now in a game session
+            isInGameSession = true;
+            
+            // Reset local game score counter to 0 for fresh start
+            score = 0;
+            
+            const setupScreen = document.getElementById('setup-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const roundBadge = document.getElementById('round-badge');
+            
+            if (setupScreen) setupScreen.style.display = 'none';
+            if (gameScreen) gameScreen.style.display = 'flex';
+            if (roundBadge) {
+                roundBadge.style.display = 'block';
+                roundBadge.innerText = `Round ${roundNumber}`;
+            }
+            
+            // FORCE SYNCHRONOUS LAYOUT UPDATE - Consistent with QR code connection
+            if (gameScreen) {
+                // Force immediate style recalculation and layout flush
+                gameScreen.getBoundingClientRect();
+                // Force browser to paint immediately
+                gameScreen.style.transform = 'translateZ(0)'; // GPU acceleration hint
+                // Force reflow to ensure immediate visual update
+                gameScreen.offsetHeight;
+            }
+            
+            // Initialize all player scores to 0 for a fresh game session
+            initializeZeroScores(true); // Force reset all scores to 0
+            renderScoreboard(); // Immediately render scoreboard to show current scores
+            
+            // Load cards and start game
             loadCardsAndStart();
+            
+            // Force immediate comprehensive render with guaranteed synchronous update
+            renderAllUIElements();
+            
+            // Force immediate layout calculation and paint
+            if (gameScreen) {
+                gameScreen.offsetHeight; // Force reflow
+                // Schedule guaranteed repaint
+                requestAnimationFrame(() => {
+                    renderAllUIElements();
+                    gameScreen.offsetHeight; // Force another reflow in next frame
+                });
+            }
         }
 
         // Run on load
-        window.onload = function() {
-            initPeer();
-        };
+        // Single initialization function to avoid conflicts
+        async function initializeApp() {
+            console.log("Initializing Gibberish Host App");
+            
+            // Always clear stale session state on fresh load to ensure clean start
+            try {
+                sessionStorage.removeItem('gibberish_session_active');
+            } catch (e) {
+                console.warn('sessionStorage access blocked:', e);
+            }
+            
+            // Clear all stale game state to ensure fresh start
+            safeRemoveItem('gibberish_player_slots');
+            safeRemoveItem(PLAYERS_KEY);
+            safeRemoveItem(ACTIVE_PLAYER_KEY);
+            safeRemoveItem('gibberish_round_number');
+            safeRemoveItem(SCOREBOARD_KEY); // Clear scoreboard data
+            
+            // Clear in-memory fallback
+            fallbackPlayerSlots = [];
+            
+            // Reset all game state variables to initial values
+            roundNumber = 1;
+            score = 0;
+            currentIndex = 0;
+            gameRunning = false;
+            timeLeft = 60;
+            isInGameSession = false;
+            
+            // Ensure proper initial screen states
+            const setupScreen = document.getElementById('setup-screen');
+            const gameScreen = document.getElementById('game-screen');
+            
+            if (setupScreen) {
+                setupScreen.style.display = 'block';
+                console.log('Setup screen displayed');
+            } else {
+                console.warn('Setup screen element not found');
+            }
+            
+            // Always hide game screen on fresh load
+            if (gameScreen) {
+                gameScreen.style.display = 'none';
+                console.log('Game screen hidden');
+            }
+            
+            // Reset UI to initial state
+            const phraseEl = document.getElementById('phrase-val');
+            const scoreEl = document.getElementById('score-val');
+            const timerEl = document.getElementById('timer-val');
+            
+            if (phraseEl) phraseEl.innerText = 'Ready?';
+            if (scoreEl) scoreEl.innerText = '0';
+            if (timerEl) timerEl.innerText = '60s';
+            
+            const playAgainBtn = document.getElementById('play-again-btn');
+            if (playAgainBtn) playAgainBtn.style.display = 'none';
+            const gameControls = document.getElementById('game-controls');
+            if (gameControls) gameControls.style.display = 'flex';
+            
+            // Hide round badge
+            const roundBadge = document.getElementById('round-badge');
+            if (roundBadge) {
+                roundBadge.style.display = 'none';
+            }
+            
+            // Force DOM refresh
+            if (phraseEl) phraseEl.offsetHeight;
+            if (scoreEl) scoreEl.offsetHeight;
+            if (timerEl) timerEl.offsetHeight;
+            
+            // Clear any existing timers/intervals
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // Destroy any existing PeerJS connections with proper async cleanup
+            if (conn) {
+                try {
+                    conn.close();
+                } catch (err) {
+                    console.warn("Failed to close existing connection", err);
+                }
+                conn = null;
+            }
+            if (peer) {
+                try {
+                    peer.destroy();
+                } catch (err) {
+                    console.warn("Failed to destroy existing peer", err);
+                }
+                peer = null;
+            }
+            
+            // Mark this as a fresh session
+            try {
+                sessionStorage.setItem('gibberish_session_active', '1');
+            } catch (e) {
+                console.warn('sessionStorage access blocked:', e);
+            }
+            
+            // Initialize fresh PeerJS connection with await
+            await initPeer();
+            
+            // Render fresh tap order selector and scoreboard
+            renderTapOrderSelector();
+            renderScoreboard();
+            
+            // Ensure QR code is generated on load
+            setTimeout(updateQRCode, 150);
+            
+            console.log('Page initialization complete - fresh session started');
+        }
+        
+        // Single initialization trigger
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM content loaded - initializing app");
+            initializeApp().catch(err => {
+                console.error("Failed to initialize app:", err);
+            });
+        });
     </script>
 </body>
 </html>

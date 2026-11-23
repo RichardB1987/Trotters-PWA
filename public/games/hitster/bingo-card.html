@@ -375,7 +375,9 @@
                         return;
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('localStorage access blocked:', e);
+            }
 
             generateNewCard();
         }
@@ -384,7 +386,9 @@
             cardState.text = document.getElementById('answerInput').value;
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(cardState));
-            } catch (e) {}
+            } catch (e) {
+                console.warn('localStorage access blocked:', e);
+            }
         }
 
         function generateNewCard() {
