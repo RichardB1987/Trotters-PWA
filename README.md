@@ -56,6 +56,10 @@ public/
       hitster.html         Hitster (music card game)
       hitster-bingo.html   Hitster Bingo
       js/tracks.js         Track seeds grouped by decade
+    quiz-bingo/
+      quiz-bingo.html      Quiz Bingo host screen (category wheel)
+      bingo-card.html      Quiz Bingo phone card (5x5 grid)
+      questions.json       Quiz Bingo questions grouped by category
   sounds/              Buzzer sound effects
   manifest.json        PWA manifest
   sw.js                Service worker (offline shell caching)
@@ -70,6 +74,7 @@ public/
 | Buzzer Arena | `buzzer.html`                          | Game show buzzers for players and host           |
 | Hitster      | `games/hitster/hitster.html`           | Place songs on a timeline by release year        |
 | Hitster Bingo| `games/hitster/hitster-bingo.html`     | Bingo variant of Hitster with a spinning wheel   |
+| Quiz Bingo   | `games/quiz-bingo/quiz-bingo.html`     | Category wheel quiz with spoken questions and phone bingo cards |
 | Countdown    | `games/countdown/countdown.html`       | Letters and word-guessing game show, 4 players, 13 rounds, final Conundrum. Phones buzz in via QR code |
 | Heads Up!    | `heads-up.html`                        | Category-based guessing game with round timer    |
 | Gibberish Party | `games/gibberish-host.html`         | Host screen plus judge controller on a phone     |
