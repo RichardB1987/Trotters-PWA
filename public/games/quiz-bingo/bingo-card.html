@@ -469,7 +469,18 @@
         function checkBingo() {
             const winningIndices = getWinningIndices();
             const banner = document.getElementById('bingoBanner');
-            banner.style.display = winningIndices.size > 0 ? 'block' : 'none';
+            const allMarked = cardState.marked.length === 25 && cardState.marked.every(Boolean);
+
+            if (allMarked) {
+                banner.textContent = 'WINNER!';
+                banner.style.display = 'block';
+            } else if (winningIndices.size > 0) {
+                banner.textContent = 'BINGO!';
+                banner.style.display = 'block';
+            } else {
+                banner.textContent = 'BINGO!';
+                banner.style.display = 'none';
+            }
         }
 
         document.getElementById('guessInput').addEventListener('input', () => {

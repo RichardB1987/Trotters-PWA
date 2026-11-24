@@ -152,6 +152,44 @@
             transform: none;
             box-shadow: none;
         }
+        /* Modifier rounds: compact header toggle, same surface as the other mode buttons */
+        .banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .modifier-toggle {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            letter-spacing: 1.2px;
+        }
+        .modifier-toggle .mod-state {
+            margin-left: 5px;
+            color: var(--green);
+            text-shadow: 0 0 10px rgba(61, 220, 151, 0.65);
+        }
+        /* OFF state: same button, silently muted rather than a second control */
+        .modifier-toggle.is-off {
+            color: rgba(244, 241, 234, 0.65);
+            text-shadow: none;
+            background-image: linear-gradient(rgba(22, 24, 32, 0.75), rgba(22, 24, 32, 0.75)), linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .modifier-toggle.is-off .mod-state {
+            color: rgba(244, 241, 234, 0.5);
+            text-shadow: none;
+        }
+        .modifier-toggle.is-off:hover {
+            color: rgba(244, 241, 234, 0.85);
+            background-image: linear-gradient(rgba(30, 34, 48, 0.85), rgba(30, 34, 48, 0.85)), linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 255, 255, 0.12);
+        }
 
         .wheel-container {
             position: relative;
@@ -391,6 +429,68 @@
             text-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
         }
 
+        /* Modifier callout: collapsed and invisible until a modifier fires on a spin.
+           Negative margin offsets the card's flex gap so a collapsed slot keeps the
+           original status -> controls spacing exactly as it was. */
+        .modifier-slot {
+            width: 100%;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            margin: -8px 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.4s ease;
+        }
+        .modifier-slot.visible {
+            max-height: 200px;
+            opacity: 1;
+            margin: 0;
+        }
+        .modifier-callout {
+            background: rgba(12, 13, 18, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(244, 241, 234, 0.14);
+            border-left: 4px solid var(--neon-purple);
+            border-radius: 14px;
+            padding: 12px 16px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.35);
+            transition: border-left-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .modifier-tag {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(244, 241, 234, 0.55);
+        }
+        .modifier-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-shadow: 0 0 12px rgba(245, 196, 81, 0.5);
+        }
+        .modifier-rule {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            line-height: 1.35;
+            color: rgba(244, 241, 234, 0.85);
+        }
+        /* One accent per modifier, taken from the page's existing palette */
+        .modifier-callout.token-rush { border-left-color: var(--gold); box-shadow: inset 0 0 22px rgba(245, 196, 81, 0.12); }
+        .modifier-callout.token-rush .modifier-name { color: var(--gold); text-shadow: 0 0 12px rgba(245, 196, 81, 0.6); }
+        .modifier-callout.danger-zone { border-left-color: var(--danger); box-shadow: inset 0 0 22px rgba(224, 35, 35, 0.16); }
+        .modifier-callout.danger-zone .modifier-name { color: #ff7a7a; text-shadow: 0 0 12px rgba(224, 35, 35, 0.6); }
+        .modifier-callout.double-or-nothing { border-left-color: var(--neon-purple); box-shadow: inset 0 0 22px rgba(139, 92, 246, 0.16); }
+        .modifier-callout.double-or-nothing .modifier-name { color: #c4b5fd; text-shadow: 0 0 12px rgba(139, 92, 246, 0.65); }
+
         .controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -494,6 +594,17 @@
             text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 255, 255, 0.15);
         }
+        /* Respin: a physical-token action, only live before the question is revealed */
+        .btn-respin {
+            background: rgba(22, 24, 32, 0.65);
+            background-image: linear-gradient(rgba(22, 24, 32, 0.65), rgba(22, 24, 32, 0.65)), linear-gradient(135deg, var(--neon-cyan), rgba(255, 255, 255, 0.15));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            color: #ffffff;
+            grid-column: span 2;
+            text-shadow: 0 0 6px rgba(6, 182, 212, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 12px rgba(6, 182, 212, 0.25);
+        }
         .btn-back {
             background: rgba(22, 24, 32, 0.65);
             background-image: linear-gradient(rgba(22, 24, 32, 0.65), rgba(22, 24, 32, 0.65)), linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
@@ -541,6 +652,67 @@
             transform: translateY(-3px) scale(1.03);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 25px var(--neon-cyan), 0 0 35px var(--neon-pink);
             color: #ffffff;
+        }
+        /* Bottom-right corner cluster: keeps the phone-cards button where it was
+           and slots the token-guide button in beside it. */
+        .corner-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        /* The phone-cards button keeps its own look; inside the cluster it simply
+           flows beside the token button instead of pinning itself to the corner. */
+        .corner-actions .phone-cards-btn {
+            position: static;
+            bottom: auto;
+            right: auto;
+            z-index: auto;
+        }
+        /* Token-styled guide button: same dark glass + cyan-blue accent as the rest of the page */
+        .token-help-btn {
+            width: 52px;
+            height: 52px;
+            min-height: 0;
+            padding: 0;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            background: rgba(22, 24, 32, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(22, 24, 32, 0.85), rgba(22, 24, 32, 0.85)), linear-gradient(135deg, var(--neon-cyan), var(--primary));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            color: #f4f1ea;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 0;
+            text-transform: none;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.7), 0 0 18px rgba(6, 182, 212, 0.45);
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        /* Dashed inner rim so the button reads as a physical token */
+        .token-help-btn::after {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            border-radius: 50%;
+            border: 1px dashed rgba(6, 182, 212, 0.55);
+            pointer-events: none;
+        }
+        .token-help-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 24px var(--neon-cyan), 0 0 34px rgba(59, 130, 246, 0.55);
+            color: #ffffff;
+        }
+        .token-help-btn:active {
+            transform: translateY(-1px) scale(0.97);
         }
         .qr-modal {
             display: none;
@@ -613,19 +785,110 @@
             margin-top: 5px;
         }
 
+        /* Tokens & Modifiers guide: reuses the QR modal shell, left-aligned for reading */
+        .token-modal-content {
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            text-align: left;
+            align-items: stretch;
+        }
+        .token-modal-content h3 {
+            text-align: center;
+        }
+        .guide-section {
+            background: rgba(12, 13, 18, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(244, 241, 234, 0.14);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.35);
+        }
+        .guide-section.modifiers {
+            border-left-color: var(--neon-purple);
+            box-shadow: inset 0 0 22px rgba(139, 92, 246, 0.14);
+        }
+        .guide-heading {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(245, 196, 81, 0.5);
+        }
+        .guide-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            line-height: 1.35;
+            color: rgba(244, 241, 234, 0.85);
+        }
+        .guide-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            line-height: 1.35;
+            color: rgba(244, 241, 234, 0.85);
+        }
+        .guide-list li {
+            position: relative;
+            padding-left: 16px;
+        }
+        .guide-list li::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 0.5em;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 6px rgba(6, 182, 212, 0.7);
+        }
+        .guide-section.modifiers .guide-list li::before {
+            background: var(--neon-purple);
+            box-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
+        }
+        .guide-item-name {
+            font-weight: 800;
+            color: #ffffff;
+        }
+
         @media (max-width: 480px) {
+            .top-banner-header { flex-wrap: wrap; }
+            .banner-actions { width: 100%; }
+            .modifier-toggle { font-size: 0.72rem; padding: 6px 10px; letter-spacing: 1px; }
+            .modifier-slot { margin: -6px 0; }
+            .modifier-callout { padding: 10px 12px; }
+            .modifier-name { font-size: 0.95rem; }
+            .modifier-rule { font-size: 0.85rem; }
             .card { padding: 20px 16px; gap: 12px; }
             .question-line { min-height: 3.5rem; }
             .controls { gap: 10px; }
             button, .btn-link { font-size: 0.95rem; padding: 0 10px; letter-spacing: 1px; }
             .btn-wheel { font-size: 0.95rem; }
             .phone-cards-btn { bottom: 12px; right: 12px; padding: 10px 14px; font-size: 0.85rem; }
+            .corner-actions { bottom: 12px; right: 12px; gap: 10px; }
+            .token-help-btn { width: 46px; height: 46px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <button class="phone-cards-btn" onclick="openPhoneCardsModal()">📱 Phone Cards</button>
+    <div class="corner-actions">
+        <button class="token-help-btn" onclick="openTokenGuideModal()" aria-label="Tokens and modifiers guide" title="Tokens &amp; modifiers guide">T</button>
+        <button class="phone-cards-btn" onclick="openPhoneCardsModal()">📱 Phone Cards</button>
+    </div>
 
     <!-- Phone bingo cards QR modal -->
     <div class="qr-modal" id="phoneCardsModal">
@@ -637,12 +900,46 @@
         </div>
     </div>
 
+    <!-- Tokens & Modifiers guide modal -->
+    <div class="qr-modal" id="tokenGuideModal">
+        <div class="qr-modal-content token-modal-content">
+            <h3>Tokens &amp; Modifiers</h3>
+
+            <!-- 1. Spending Tokens -->
+            <section class="guide-section">
+                <div class="guide-heading">Spending Tokens</div>
+                <p class="guide-text">Start with <strong>2 tokens</strong>. Earn <strong>+1 token</strong> for a completed line or answering right on an already-completed category colour.</p>
+                <ul class="guide-list">
+                    <li><span class="guide-item-name">Respin · 1 Token (first come, first served)</span> — spin again for a new category. Unrevealed question goes back in the pool; locked modifier stays.</li>
+                    <li><span class="guide-item-name">Wild Colour · 2 Tokens (first come, first served)</span> — counts the spun category as any colour on your card.</li>
+                    <li><span class="guide-item-name">Mute · 3 Tokens</span> — mute one opponent for the round. No back-to-back mutes on the same player.</li>
+                </ul>
+            </section>
+
+            <!-- 2. Modifiers -->
+            <section class="guide-section modifiers">
+                <div class="guide-heading">Modifiers</div>
+                <p class="guide-text">Triggers every <strong>4–6 new spins</strong> (respins don't count), with on-screen and voice callouts. Clears on Next Round; stays locked across a Respin.</p>
+                <ul class="guide-list">
+                    <li><span class="guide-item-name">Token Rush</span> — right = <strong>+2 tokens</strong> &amp; mark square.</li>
+                    <li><span class="guide-item-name">Danger Zone</span> — right = mark square; wrong = <strong>−1 token</strong> (or <strong>−1 square</strong> if at 0 tokens).</li>
+                    <li><span class="guide-item-name">Double or Nothing</span> — right = <strong>+2 tokens</strong> &amp; mark square; wrong = lose all tokens (squares safe).</li>
+                </ul>
+            </section>
+
+            <button class="qr-close-btn" onclick="closeTokenGuideModal()">Close</button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Category wheel banner -->
         <div class="category-banner">
             <div class="top-banner-header">
                 <div class="category-title" id="bannerTitle">🎯 Quiz Bingo Wheel</div>
-                <button id="resetBtn" class="mode-btn" onclick="resetProgress()">Fresh Deck</button>
+                <div class="banner-actions">
+                    <button id="modifierToggle" class="mode-btn modifier-toggle" onclick="toggleModifiers()" aria-pressed="true" title="Modifier rounds are ON — click to turn off">Modifiers:<span class="mod-state">ON</span></button>
+                    <button id="resetBtn" class="mode-btn" onclick="resetProgress()">Fresh Deck</button>
+                </div>
             </div>
             <div class="wheel-container">
                 <div class="wheel-pointer"></div>
@@ -662,10 +959,20 @@
             <div id="answerDisplay" class="card-line answer-line" aria-live="polite">Answer?</div>
             <div id="statusDisplay" class="status-line">Ready — spin the wheel to begin</div>
 
+            <!-- Modifier rounds: stays collapsed and invisible until a modifier fires -->
+            <div class="modifier-slot" id="modifierSlot" aria-hidden="true">
+                <div class="modifier-callout" id="modifierCallout">
+                    <div class="modifier-tag">Modifier Round</div>
+                    <div class="modifier-name" id="modifierName"></div>
+                    <div class="modifier-rule" id="modifierRule"></div>
+                </div>
+            </div>
+
             <div class="controls">
                 <button id="spinBtn" class="btn-wheel" onclick="spinWheel()">🎡 Spin Category Wheel</button>
                 <button id="revealQuestionBtn" class="btn-primary" onclick="revealQuestion()" disabled>Reveal Question</button>
                 <button id="revealAnswerBtn" class="btn-gold" onclick="revealAnswer()" disabled>Reveal Answer</button>
+                <button id="respinBtn" class="btn-respin" onclick="respinWheel()" disabled>🔁 Respin · 1 Token</button>
                 <button id="repeatBtn" class="btn-ghost" onclick="repeatReading()" disabled>🔊 Repeat</button>
                 <button id="nextRoundBtn" class="btn-ghost" onclick="nextRound()" disabled>Next Round</button>
                 <a href="/game-hub.html" class="btn-link btn-back">Back to Games Hub</a>
@@ -697,6 +1004,34 @@
         const WHEEL_SPIN_MS = 4000;
         const DEFAULT_LAN_IP = '192.168.0.242';
 
+        // ---- Modifier rounds -------------------------------------------------
+        // Every 4-6 NEW spins one modifier locks onto the round (physical tokens
+        // are handed out by the players themselves - the host screen only
+        // announces the rule). A respin never counts, never burns a question and
+        // never releases the locked modifier.
+        const MODIFIER_SPIN_MIN = 4;
+        const MODIFIER_SPIN_MAX = 6;
+        const MODIFIERS = [
+            {
+                id: 'token-rush',
+                name: 'Token Rush',
+                rule: 'Answer correctly to earn +2 tokens and mark your square.',
+                speech: 'Modifier round. Token Rush. Answer correctly to earn two extra tokens and mark your square.'
+            },
+            {
+                id: 'danger-zone',
+                name: 'Danger Zone',
+                rule: 'Answer correctly to stay safe and mark your square. Get it wrong and you lose 1 token — or unmark 1 square if you hold none.',
+                speech: 'Modifier round. Danger Zone. Answer correctly to stay safe and mark your square. Answer incorrectly and you lose one token, or unmark one square if you have no tokens.'
+            },
+            {
+                id: 'double-or-nothing',
+                name: 'Double or Nothing',
+                rule: 'Answer correctly to earn +2 tokens and mark your square. Get it wrong and you lose every token you hold.',
+                speech: 'Modifier round. Double or Nothing. Answer correctly to earn two extra tokens and mark your square. Answer incorrectly and you lose all of your tokens.'
+            }
+        ];
+
         const spinBtn = document.getElementById('spinBtn');
         const revealQuestionBtn = document.getElementById('revealQuestionBtn');
         const revealAnswerBtn = document.getElementById('revealAnswerBtn');
@@ -709,6 +1044,12 @@
         const answerDisplay = document.getElementById('answerDisplay');
         const statusDisplay = document.getElementById('statusDisplay');
         const deckProgress = document.getElementById('deckProgress');
+        const modifierToggle = document.getElementById('modifierToggle');
+        const modifierSlot = document.getElementById('modifierSlot');
+        const modifierCallout = document.getElementById('modifierCallout');
+        const modifierName = document.getElementById('modifierName');
+        const modifierRule = document.getElementById('modifierRule');
+        const respinBtn = document.getElementById('respinBtn');
 
         let questionBank = {};   // category name -> array of { id, question, answer }
         let categories = [];     // category names, in questions.json order
@@ -720,8 +1061,19 @@
         let preferredSpeechVoice = null;
         let lastDrawReshuffled = false;
         let speechTimer = null;  // pending lead-in timer for the next utterance
+        let modifiersEnabled = true;          // main-screen toggle, defaults ON
+        let activeModifier = null;            // modifier locked onto the current round
+        let lastModifierId = null;            // avoids the same modifier twice in a row
+        let spinsSinceModifier = 0;
+        let spinsUntilModifier = randomSpinTarget();
+        let drawSnapshot = null;              // usedQuestionIds as it was before the current draw
 
         // ---- Speech (en-GB) -------------------------------------------------
+        // The utterance currently in flight (or waiting behind the 150ms lead-in).
+        // Held at script scope so onend/onerror can clear it and a failed or
+        // interrupted utterance can never wedge the speech queue.
+        let activeUtterance = null;
+
         function loadVoices() {
             if (!('speechSynthesis' in window)) return;
             const voices = window.speechSynthesis.getVoices();
@@ -738,34 +1090,97 @@
                 null;
         }
 
-        function speak(text) {
-            if (!('speechSynthesis' in window) || !text) return;
-            // Drop any pending lead-in so rapid stage changes / repeats never
-            // stack up: each new call replaces the last one cleanly.
-            if (speechTimer) {
-                window.clearTimeout(speechTimer);
-                speechTimer = null;
-            }
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
+        // The Microsoft Ryan Online (Natural) voice we aim for, re-read from the
+        // live voice list (it can populate late), then the cached preference,
+        // then nothing (browser default).
+        function pickPreferredVoice() {
             const voices = window.speechSynthesis.getVoices();
-            // Prefer the resolved Microsoft Ryan en-GB voice, refreshing if the
-            // voice list has only just become available.
-            const voice =
+            return (
                 voices.find((v) => v.name === 'Microsoft Ryan Online (Natural) - English (United Kingdom) (en-GB)') ||
                 voices.find((v) => v.name.includes('Microsoft Ryan Online (Natural)')) ||
                 preferredSpeechVoice ||
-                null;
-            if (voice) utterance.voice = voice;
-            utterance.lang = voice?.lang || 'en-GB';
-            utterance.rate = 0.95;
-            utterance.pitch = 1;
-            // Short lead-in so the cancel() above finishes flushing before we
-            // speak, without the lag a long delay caused.
-            speechTimer = window.setTimeout(() => {
-                speechTimer = null;
-                window.speechSynthesis.speak(utterance);
-            }, 150);
+                null
+            );
+        }
+
+        // The plain en-GB chain used if the online "Natural" voice throws
+        // synthesis-failed: a local (non-online) en-GB voice first, then any
+        // en-GB, then any English, then the browser default.
+        function pickFallbackVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            return (
+                voices.find((v) => v.lang && v.lang.toLowerCase().startsWith('en-gb') && !/online|natural/i.test(v.name)) ||
+                voices.find((v) => v.lang && v.lang.toLowerCase().startsWith('en-gb')) ||
+                voices.find((v) => v.lang && v.lang.toLowerCase().startsWith('en')) ||
+                preferredSpeechVoice ||
+                null
+            );
+        }
+
+        function speak(text) {
+            if (!('speechSynthesis' in window) || !text) return;
+            // First pass may fall back once if the online voice fails.
+            queueSpeech(text, true);
+        }
+
+        // Queues one utterance behind the existing 150ms lead-in buffer. This never
+        // throws: speech is a nice-to-have, so any failure is swallowed and the
+        // on-screen prompt (already written by the caller) always stands.
+        function queueSpeech(text, allowRetry) {
+            if (!('speechSynthesis' in window) || !text) return;
+            try {
+                // Drop any pending lead-in so rapid stage changes / repeats never
+                // stack up: each new call replaces the last one cleanly.
+                if (speechTimer) {
+                    window.clearTimeout(speechTimer);
+                    speechTimer = null;
+                }
+                // Any in-flight utterance is now stale. Clear it before cancel()
+                // so its onerror cannot fire a retry for the superseded line.
+                activeUtterance = null;
+                window.speechSynthesis.cancel();
+
+                const voice = allowRetry ? pickPreferredVoice() : pickFallbackVoice();
+                const usedOnlineVoice = Boolean(voice && /online|natural/i.test(voice.name));
+                const utterance = new SpeechSynthesisUtterance(text);
+                if (voice) utterance.voice = voice;
+                utterance.lang = voice?.lang || 'en-GB';
+                utterance.rate = 0.95;
+                utterance.pitch = 1;
+
+                utterance.onend = () => {
+                    if (activeUtterance === utterance) activeUtterance = null;
+                };
+                utterance.onerror = (event) => {
+                    const isCurrent = activeUtterance === utterance;
+                    if (isCurrent) activeUtterance = null;
+                    // synthesis-failed / interrupted can leave the queue wedged,
+                    // so flush it and let the next line through.
+                    try { window.speechSynthesis.cancel(); } catch (err) { /* ignore */ }
+                    // Retry exactly once, and only when the online "Natural" voice
+                    // was the one that failed, down the plain en-GB chain / default.
+                    if (isCurrent && allowRetry && usedOnlineVoice) {
+                        queueSpeech(text, false);
+                    }
+                    // Otherwise give up silently: never alert or pop up, the
+                    // question/answer/modifier text is already on screen.
+                };
+
+                activeUtterance = utterance;
+                // Short lead-in so the cancel() above finishes flushing before we
+                // speak, without the lag a long delay caused.
+                speechTimer = window.setTimeout(() => {
+                    speechTimer = null;
+                    try {
+                        window.speechSynthesis.speak(utterance);
+                    } catch (err) {
+                        if (activeUtterance === utterance) activeUtterance = null;
+                    }
+                }, 150);
+            } catch (err) {
+                // Speech failed completely - the game carries on without it.
+                activeUtterance = null;
+            }
         }
 
         function cancelSpeech() {
@@ -773,6 +1188,7 @@
                 window.clearTimeout(speechTimer);
                 speechTimer = null;
             }
+            activeUtterance = null;
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
@@ -784,6 +1200,7 @@
             revealAnswerBtn.disabled = stage !== STAGE.QUESTION;
             repeatBtn.disabled = stage !== STAGE.QUESTION && stage !== STAGE.ANSWER;
             nextRoundBtn.disabled = stage !== STAGE.ANSWER;
+            respinBtn.disabled = stage !== STAGE.LANDED;
             resetBtn.disabled = stage === STAGE.SPINNING;
             statusDisplay.textContent = STAGE_MESSAGES[stage];
         }
@@ -791,6 +1208,72 @@
         function setStatus(text) {
             statusDisplay.textContent = text;
         }
+
+        // ---- Modifier rounds ------------------------------------------------
+        // A fresh target of 4, 5 or 6 new spins before the next modifier fires.
+        function randomSpinTarget() {
+            return MODIFIER_SPIN_MIN + Math.floor(Math.random() * (MODIFIER_SPIN_MAX - MODIFIER_SPIN_MIN + 1));
+        }
+
+        function resetModifierCountdown() {
+            spinsSinceModifier = 0;
+            spinsUntilModifier = randomSpinTarget();
+        }
+
+        function pickModifier() {
+            const pool = MODIFIERS.filter((modifier) => modifier.id !== lastModifierId);
+            const list = pool.length ? pool : MODIFIERS;
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function updateModifierToggle() {
+            modifierToggle.classList.toggle('is-off', !modifiersEnabled);
+            modifierToggle.innerHTML = `Modifiers:<span class="mod-state">${modifiersEnabled ? 'ON' : 'OFF'}</span>`;
+            modifierToggle.setAttribute('aria-pressed', modifiersEnabled ? 'true' : 'false');
+            modifierToggle.title = modifiersEnabled
+                ? 'Modifier rounds are ON — click to turn off'
+                : 'Modifier rounds are OFF — click to turn on';
+        }
+
+        // Releases the round's modifier. Called on a new spin, when a round
+        // completes, on a deck reset, and when Modifiers are turned OFF.
+        function clearActiveModifier() {
+            activeModifier = null;
+            modifierSlot.classList.remove('visible');
+            modifierSlot.setAttribute('aria-hidden', 'true');
+            modifierCallout.className = 'modifier-callout';
+            modifierName.textContent = '';
+            modifierRule.textContent = '';
+        }
+
+        function setActiveModifier(modifier) {
+            if (!modifier || !modifiersEnabled) return;
+            activeModifier = modifier;
+            lastModifierId = modifier.id;
+            modifierCallout.className = `modifier-callout ${modifier.id}`;
+            modifierName.textContent = modifier.name;
+            modifierRule.textContent = modifier.rule;
+            modifierSlot.classList.add('visible');
+            modifierSlot.setAttribute('aria-hidden', 'false');
+            // Announce through the same speak() path (and 150ms buffer) as questions.
+            speak(modifier.speech);
+        }
+
+        function toggleModifiers() {
+            modifiersEnabled = !modifiersEnabled;
+            updateModifierToggle();
+            if (!modifiersEnabled) {
+                // OFF: clear the callout/badge straight away and stop any trigger.
+                const hadActiveModifier = Boolean(activeModifier);
+                clearActiveModifier();
+                if (hadActiveModifier) cancelSpeech();
+            } else {
+                // ON: fresh 4-6 spin countdown for upcoming spins, but never fire
+                // immediately just because the toggle was switched back on.
+                resetModifierCountdown();
+            }
+        }
+
 // ---- Unused-question tracking ---------------------------------------
         function totalQuestions() {
             return categories.reduce((sum, category) => sum + questionBank[category].length, 0);
@@ -876,6 +1359,9 @@
 // ---- Game flow ------------------------------------------------------
         function takeQuestion(category) {
             const pool = questionBank[category] || [];
+            // Remember the deck state before this draw so a respin can put an
+            // unrevealed question straight back into the pool.
+            drawSnapshot = new Set(usedQuestionIds);
             let available = pool.filter((question) => !usedQuestionIds.has(question.id));
             lastDrawReshuffled = false;
 
@@ -893,7 +1379,31 @@
         }
 
         function spinWheel() {
-            if (stage !== STAGE.IDLE || categories.length === 0) return;
+            startSpin(false);
+        }
+
+        // A respin costs one physical token and is only allowed before the
+        // question is revealed. It re-spins the wheel, keeps the locked modifier,
+        // does NOT advance the modifier countdown, and puts the unrevealed
+        // question back into the pool so no question is ever burned.
+        function respinWheel() {
+            if (stage !== STAGE.LANDED) return;
+            if (drawSnapshot) {
+                usedQuestionIds = new Set(drawSnapshot);
+                drawSnapshot = null;
+            }
+            startSpin(true);
+        }
+
+        function startSpin(isRespin) {
+            if (categories.length === 0) return;
+            if (!isRespin && stage !== STAGE.IDLE) return;
+
+            if (!isRespin) {
+                // A new round releases the previous round's modifier here; only new
+                // spins count towards the next modifier (see landOnCategory).
+                clearActiveModifier();
+            }
 
             resetBoard();
             setStage(STAGE.SPINNING);
@@ -917,12 +1427,23 @@
             currentRotation += extraSpins + alignDelta;
             wheel.style.transform = `rotate(-${currentRotation}deg)`;
 
-            window.setTimeout(() => landOnCategory(index), WHEEL_SPIN_MS + 100);
+            window.setTimeout(() => landOnCategory(index, isRespin), WHEEL_SPIN_MS + 100);
         }
 
-        function landOnCategory(index) {
+        function landOnCategory(index, isRespin) {
             currentCategory = categories[index];
             currentQuestion = takeQuestion(currentCategory);
+
+            if (!isRespin) {
+                // Only a genuine new spin moves the modifier countdown on. A respin
+                // leaves the counter - and any locked modifier - untouched.
+                spinsSinceModifier += 1;
+                if (modifiersEnabled && currentQuestion && spinsSinceModifier >= spinsUntilModifier) {
+                    spinsSinceModifier = 0;
+                    spinsUntilModifier = randomSpinTarget();
+                    setActiveModifier(pickModifier());
+                }
+            }
 
             categoryDisplay.textContent = currentCategory;
             questionCategory.textContent = currentCategory;
@@ -933,7 +1454,9 @@
                 setStatus('No questions found in this category — spin again');
                 return;
             }
-            if (lastDrawReshuffled) {
+            if (isRespin) {
+                setStatus('Respin spent 1 token — the locked modifier still stands');
+            } else if (lastDrawReshuffled) {
                 setStatus(`Every ${currentCategory} question has been used — that category was reshuffled`);
             }
         }
@@ -963,6 +1486,8 @@
 
         function nextRound() {
             if (stage !== STAGE.ANSWER) return;
+            // Round complete: this is where the round's modifier is released.
+            clearActiveModifier();
             resetBoard();
             setStage(STAGE.IDLE);
         }
@@ -970,6 +1495,9 @@
         function resetProgress() {
             if (stage === STAGE.SPINNING) return;
             usedQuestionIds = new Set();
+            drawSnapshot = null;
+            clearActiveModifier();
+            resetModifierCountdown();
             resetBoard();
             setStage(STAGE.IDLE);
             setStatus('Question deck reset — every question is back in play');
@@ -1012,11 +1540,40 @@
             }
         });
 
+        // ---- Tokens & Modifiers guide modal --------------------------------
+        // Opening or closing this only toggles the overlay: speech, the modifier
+        // trigger/respin logic and the active round state are never touched.
+        function openTokenGuideModal() {
+            document.getElementById('tokenGuideModal').style.display = 'flex';
+        }
+
+        function closeTokenGuideModal() {
+            document.getElementById('tokenGuideModal').style.display = 'none';
+        }
+
+        // Close when clicking outside its content
+        document.getElementById('tokenGuideModal').addEventListener('click', function (event) {
+            if (event.target === this) {
+                closeTokenGuideModal();
+            }
+        });
+
+        // Escape closes the guide (the QR modal keeps its existing close behaviour)
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && document.getElementById('tokenGuideModal').style.display === 'flex') {
+                closeTokenGuideModal();
+            }
+        });
+
         // ---- Start-up -------------------------------------------------------
         if ('speechSynthesis' in window) {
             loadVoices();
             window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
         }
+
+        // Modifiers start ON with a fresh 4-6 spin countdown.
+        updateModifierToggle();
+        resetModifierCountdown();
 
         loadQuestions();
     </script>
