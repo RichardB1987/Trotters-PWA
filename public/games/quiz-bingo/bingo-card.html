@@ -6,24 +6,11 @@
     <title>Quiz Bingo - Player Card</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quiz-bingo-theme.css">
     <style>
-        :root {
-            --bg: #0c0d12;
-            --panel: #161820;
-            --text: #f4f1ea;
-            --gold: #f5c451;
-            --green: #3ddc97;
-            --neon-pink: #ec4899;
-            --neon-cyan: #06b6d4;
-            --neon-purple: #8b5cf6;
-            --cb: #3b82f6;
-            --cp: #8b5cf6;
-            --cn: #ec4899;
-            --ca: #f59e0b;
-            --cg: #10b981;
-        }
-
+        /* Marquee Lights theme: category/tile colours, fonts and the sunburst backdrop live in
+           quiz-bingo-theme.css (shared with quiz-bingo.html). Layout geometry below is unchanged. */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -35,16 +22,8 @@
         }
 
         body {
-            font-family: 'Rajdhani', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            background-image:
-                radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 85% 75%, rgba(236, 72, 153, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 50% 100%, rgba(245, 196, 81, 0.08) 0%, transparent 55%);
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: var(--text);
+            font-family: var(--font-body);
+            color: var(--ink);
             min-height: 100dvh;
             display: flex;
             flex-direction: column;
@@ -53,27 +32,6 @@
             padding: 14px 12px;
             position: relative;
             overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 70% 70%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 50% 80%, rgba(245, 196, 81, 0.05) 0%, transparent 50%);
-            animation: ambientDrift 20s ease infinite alternate;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        @keyframes ambientDrift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-3%, 4%) scale(1.05); }
-            100% { transform: translate(3%, -3%) scale(1.02); }
         }
 
         .container {
@@ -88,48 +46,43 @@
         }
 
         .card-panel {
-            background: rgba(22, 24, 32, 0.75);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 2px solid transparent;
-            background-image: linear-gradient(rgba(22, 24, 32, 0.75), rgba(22, 24, 32, 0.75)), linear-gradient(135deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple), var(--gold));
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
+            background: var(--stout);
+            border: 4px solid var(--ink);
             border-radius: 20px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 13px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(236, 72, 153, 0.25), 0 0 35px rgba(6, 182, 212, 0.2);
+            box-shadow: var(--shadow-hard-lg);
         }
 
         .game-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(1.35rem, 4.2vw, 1.75rem);
-            font-weight: 900;
-            color: var(--gold);
+            font-family: var(--font-display);
+            font-size: clamp(1.4rem, 5vw, 1.85rem);
+            font-weight: 400;
+            color: var(--lamp);
             text-align: center;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             line-height: 1.1;
-            text-shadow: 0 0 10px rgba(245, 196, 81, 0.6), 0 0 22px rgba(236, 72, 153, 0.35);
+            text-shadow: 3px 3px 0 var(--ink);
         }
 
         #bingoBanner {
             display: none;
-            background: linear-gradient(135deg, var(--gold), var(--neon-pink));
-            color: #0c0d12;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.25rem;
-            font-weight: 900;
+            background: var(--lamp);
+            color: var(--ink);
+            font-family: var(--font-display);
+            font-size: 1.3rem;
             padding: 8px 12px;
+            border: 3px solid var(--ink);
             border-radius: 12px;
             text-align: center;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 0 20px rgba(245, 196, 81, 0.55), 0 0 30px rgba(236, 72, 153, 0.45);
+            letter-spacing: 1px;
+            box-shadow: var(--shadow-hard);
         }
-.bingo-grid {
+        .bingo-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 6px;
@@ -137,6 +90,7 @@
             aspect-ratio: 1 / 1;
         }
 
+        /* Tile fill colours (.t-blue ... .t-green) come from quiz-bingo-theme.css */
         .bingo-tile {
             position: relative;
             border-radius: 12px;
@@ -144,45 +98,41 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(255, 255, 255, 0.22);
+            border: 3px solid var(--ink);
             overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.35), 0 4px 10px rgba(0, 0, 0, 0.4);
-            transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            box-shadow: 2px 2px 0 var(--ink);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
             user-select: none;
         }
 
         .bingo-tile:hover {
-            transform: scale(1.04);
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--ink);
         }
 
         .bingo-tile:active {
-            transform: scale(0.96);
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0 var(--ink);
         }
 
+        /* Soft top highlight so each tile reads like a printed game-board square */
         .bingo-tile::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(150deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(0, 0, 0, 0.18) 100%);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 45%);
             pointer-events: none;
         }
-
-        .t-blue { background-color: var(--cb); }
-        .t-purple { background-color: var(--cp); }
-        .t-pink { background-color: var(--cn); }
-        .t-amber { background-color: var(--ca); }
-        .t-green { background-color: var(--cg); }
 
         .mark-x {
             position: relative;
             z-index: 2;
-            font-family: 'Orbitron', sans-serif;
+            font-family: var(--font-display);
             font-size: clamp(1.3rem, 4.5vw, 1.85rem);
-            font-weight: 900;
             color: #ffffff;
             opacity: 0;
             transition: opacity 0.18s ease;
-            text-shadow: 0 0 6px #000000, 0 0 12px rgba(0, 0, 0, 0.9);
+            text-shadow: -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 2px 2px 0 var(--ink);
             pointer-events: none;
         }
 
@@ -191,9 +141,12 @@
         }
 
         .bingo-tile.winning-line {
-            border: 3px solid var(--gold);
-            box-shadow: 0 0 16px var(--gold), 0 0 24px rgba(245, 196, 81, 0.55);
+            border: 3px solid var(--lamp);
+            outline: 3px solid var(--ink);
+            outline-offset: -1px;
+            box-shadow: 0 0 0 2px var(--ink), 0 0 14px var(--lamp);
         }
+
 
         .controls {
             display: flex;
@@ -205,18 +158,18 @@
             display: block;
             width: 100%;
             min-height: 64px;
-            background: rgba(12, 13, 18, 0.88);
-            border: 2px solid var(--neon-cyan);
+            background: var(--paper);
+            border: 3px solid var(--ink);
             border-radius: 14px;
             padding: 12px 16px;
-            color: #ffffff;
-            font-family: 'Rajdhani', sans-serif;
+            color: var(--ink);
+            font-family: var(--font-body);
             font-size: 1.85rem;
-            font-weight: 700;
+            font-weight: 900;
             line-height: 1.15;
-            letter-spacing: 0.5px;
+            letter-spacing: 0;
             outline: none;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.65), 0 0 14px rgba(6, 182, 212, 0.25);
+            box-shadow: inset 2px 2px 0 rgba(17, 17, 17, 0.18), var(--shadow-hard);
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
             /* Multi-line: wrap long answers onto new lines and never scroll sideways */
             white-space: pre-wrap;
@@ -228,14 +181,15 @@
         }
 
         .guess-input::placeholder {
-            color: rgba(244, 241, 234, 0.5);
+            color: rgba(17, 17, 17, 0.45);
             font-size: 1.35rem;
-            font-weight: 600;
+            font-weight: 800;
         }
 
         .guess-input:focus {
-            border-color: var(--gold);
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.65), 0 0 18px rgba(245, 196, 81, 0.4);
+            background: #ffffff;
+            border-color: var(--ink);
+            box-shadow: inset 2px 2px 0 rgba(17, 17, 17, 0.18), 0 0 0 4px var(--lamp), var(--shadow-hard);
         }
 
         .btn-row {
@@ -246,50 +200,37 @@
 
         button {
             min-height: 46px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.82rem;
-            font-weight: 700;
+            font-family: var(--font-display);
+            font-size: 0.78rem;
+            line-height: 1.15;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 12px;
+            letter-spacing: 0.5px;
+            border: 3px solid var(--ink);
+            border-radius: 999px;
             cursor: pointer;
             padding: 9px 12px;
-            transition: all 0.25s ease;
+            color: var(--ink);
+            box-shadow: var(--shadow-hard);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
         }
 
-        .btn-clear {
-            background: rgba(22, 24, 32, 0.75);
-            border: 2px solid rgba(244, 241, 234, 0.22);
-            color: var(--text);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-clear:hover {
-            border-color: var(--neon-cyan);
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 15px rgba(6, 182, 212, 0.35);
-        }
-
-        .btn-new-card {
-            background: rgba(22, 24, 32, 0.75);
-            background-image: linear-gradient(rgba(22, 24, 32, 0.75), rgba(22, 24, 32, 0.75)), linear-gradient(135deg, var(--gold), var(--neon-pink));
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
-            border: 2px solid transparent;
-            color: var(--gold);
-            text-shadow: 0 0 10px rgba(245, 196, 81, 0.55);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 196, 81, 0.25);
-        }
-
-        .btn-new-card:hover {
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 22px rgba(245, 196, 81, 0.55), 0 0 30px rgba(236, 72, 153, 0.35);
+        button:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--ink);
+            filter: brightness(1.05);
         }
 
         button:active {
-            transform: translateY(0) scale(0.98);
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 var(--ink);
+        }
+
+        .btn-clear {
+            background: var(--paper);
+        }
+
+        .btn-new-card {
+            background: var(--lamp);
         }
 
         @media (max-width: 480px) {

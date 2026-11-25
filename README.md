@@ -60,6 +60,7 @@ public/
       quiz-bingo.html      Quiz Bingo host screen (category wheel)
       bingo-card.html      Quiz Bingo phone card (5x5 grid)
       questions.json       Quiz Bingo questions grouped by category
+      quiz-bingo-theme.css Quiz Bingo shared colours/fonts (wheel + card tiles)
   sounds/              Buzzer sound effects
   manifest.json        PWA manifest
   sw.js                Service worker (offline shell caching)
