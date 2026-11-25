@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Quiz Bingo shared theme: "Marquee Lights" pub-quiz look
+   Linked by BOTH quiz-bingo.html (host) and bingo-card.html (phone card).
+   Change a colour here and the host wheel + the player tiles change together.
+   Contains: shared colour/ink/font tokens, the tile colour mapping and the
+   amber sunburst + bubble backdrop. Page layout lives in each HTML file.
+   ========================================================================== */
+
+:root {
+    /* --- Category colours (wheel slice N and the matching card tiles) --- */
+    --cat-1: #e8362c; /* red */
+    --cat-2: #0b8a99; /* teal */
+    --cat-3: #1f9a45; /* green */
+    --cat-4: #d6208c; /* magenta */
+    --cat-5: #2f55d4; /* royal blue */
+
+    /* --- Ink, surfaces and lights --- */
+    --ink: #111111;        /* outlines + hard shadows */
+    --stout: #3a1a0a;      /* dark banner / card-panel surface */
+    --paper: #fff8e8;      /* cream game-card surface */
+    --lamp: #ffd54a;       /* marquee bulb yellow */
+    --amber: #f7931e;      /* backdrop base */
+    --amber-light: #ffb02e;/* backdrop sunburst ray */
+
+    /* --- Modifier accents (host callouts) --- */
+    --mod-rush: var(--lamp);
+    --mod-danger: var(--cat-1);
+    --mod-double: #7c4dff;
+
+    /* --- Crisp offset shadows --- */
+    --shadow-hard: 4px 4px 0 var(--ink);
+    --shadow-hard-lg: 8px 8px 0 var(--ink);
+
+    /* --- Fonts (Google Fonts link in each page, with offline fallbacks) --- */
+    --font-display: 'Bungee', 'Impact', 'Arial Black', 'Segoe UI', sans-serif;
+    --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* --- Bingo tile colours -------------------------------------------------
+   The old class names (t-blue, t-purple...) are saved in phones' localStorage,
+   so they stay. Only the colour behind each name comes from the tokens.
+   Order matches the wheel: slice 1 = --cat-1 ... slice 5 = --cat-5. */
+.t-blue   { background-color: var(--cat-1); }
+.t-purple { background-color: var(--cat-2); }
+.t-pink   { background-color: var(--cat-3); }
+.t-amber  { background-color: var(--cat-4); }
+.t-green  { background-color: var(--cat-5); }
+
+/* --- Amber sunburst backdrop --------------------------------------------- */
+body {
+    background-color: var(--amber);
+    background-image:
+        radial-gradient(circle at 50% 42%, rgba(255, 224, 130, 0.65) 0%, rgba(255, 224, 130, 0) 55%),
+        repeating-conic-gradient(from 0deg at 50% 42%, var(--amber-light) 0deg 7.5deg, var(--amber) 7.5deg 15deg);
+    background-attachment: fixed;
+}
+
+/* Fizzy bubbles + warm vignette (static, sits behind all content) */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 2px, rgba(255, 255, 255, 0) 3px),
+        radial-gradient(circle, rgba(255, 255, 255, 0) 0 3px, rgba(255, 255, 255, 0.45) 3.5px 4.5px, rgba(255, 255, 255, 0) 5px),
+        radial-gradient(ellipse at center, rgba(110, 45, 0, 0) 55%, rgba(110, 45, 0, 0.5) 100%);
+    background-size: 44px 44px, 71px 71px, 100% 100%;
+    background-position: 0 0, 22px 31px, 0 0;
+}
