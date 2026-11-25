@@ -64,6 +64,535 @@
         .card-footer { font-weight: 600; color: var(--primary); font-size: 0.95rem; }
         .back-link { margin-top: 3rem; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; transition: color 0.15s; }
         .back-link:hover { color: var(--text-main); }
+
+        /* UNO Spin tile only: themed to match games/uno-spin (UNO red/blue/green/yellow, dark table, wordmark). */
+        .uno-spin-card {
+            --uno-red: #ed1c24;
+            --uno-blue: #0072bc;
+            --uno-green: #00a651;
+            --uno-yellow: #ffde00;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 0%, rgba(237, 28, 36, 0.38) 0%, rgba(20, 20, 20, 0) 65%), linear-gradient(165deg, #2b0909 0%, #141414 100%);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+        }
+        .uno-spin-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--uno-red) 0 25%, var(--uno-blue) 25% 50%, var(--uno-green) 50% 75%, var(--uno-yellow) 75% 100%);
+        }
+        .uno-spin-card::after {
+            content: "";
+            position: absolute;
+            right: -34px; bottom: -42px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.035);
+            pointer-events: none;
+        }
+        .uno-spin-card .icon-box {
+            background: conic-gradient(var(--uno-red) 0 25%, var(--uno-blue) 0 50%, var(--uno-green) 0 75%, var(--uno-yellow) 0);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 6px #141414;
+        }
+        .uno-spin-card .icon-box svg { stroke: #ffffff; }
+        .uno-spin-card h2 {
+            font-family: 'Arial Black', Impact, system-ui, sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--uno-yellow);
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 3px 0 var(--uno-red);
+        }
+        .uno-spin-card p { color: #d9d2d2; }
+        .uno-spin-card .card-footer { color: var(--uno-yellow); }
+        .uno-spin-card:hover {
+            background: radial-gradient(circle at 50% 0%, rgba(237, 28, 36, 0.5) 0%, rgba(20, 20, 20, 0) 65%), linear-gradient(165deg, #3a0d0d 0%, #171717 100%);
+            border-color: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(237, 28, 36, 0.45);
+        }
+        .uno-spin-card:hover .card-footer { color: #ffffff; }
+
+        /* Herd Mentality tile only: themed to match games/herd-mentality
+           (teal sky, green pasture hill, grass tufts, picket fence, pink + yellow accents). */
+        .herd-card {
+            --herd-ink: #111111;
+            --herd-pink: #f06ab0;
+            --herd-yellow: #ffd23f;
+            position: relative;
+            overflow: hidden;
+            padding: 1.8rem 1.8rem 2.4rem;
+            color: var(--herd-ink);
+            border: 3px solid var(--herd-ink);
+            background-color: #2aa88f;
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Cpath d='M18 44l4-12 4 12M22 44l-1-14M22 44l9-10M78 76l4-12 4 12M82 76l-1-14M82 76l9-10' stroke='%2316705f' stroke-width='3' fill='none' stroke-linecap='round' stroke-opacity='0.4'/%3E%3C/svg%3E"),
+                radial-gradient(ellipse 130% 34% at 50% 104%, #4bbd67 0 66%, rgba(75, 189, 103, 0) 67%),
+                linear-gradient(#3ad0b4 0%, #29a68f 100%);
+            background-repeat: repeat, no-repeat, no-repeat;
+            background-position: 0 0, center center, center center;
+            background-size: 120px 90px, 100% 100%, 100% 100%;
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .herd-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: var(--herd-pink);
+            pointer-events: none;
+        }
+        /* Picket fence sitting on the grass along the bottom edge */
+        .herd-card::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 30px;
+            background-image:
+                linear-gradient(#ffffff 0 40%, #aab6bd 40% 46%, #ffffff 46% 100%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='46'%3E%3Cpath d='M2 12L9 2l7 10v34H2z' fill='%23ffffff' stroke='%23aab6bd' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, repeat-x;
+            background-position: 0 14px, left bottom;
+            background-size: 100% 7px, 12px 30px;
+            pointer-events: none;
+        }
+        .herd-card .icon-box {
+            flex: 0 0 auto;
+            width: 58px;
+            height: 58px;
+            padding: 0;
+            background: #eaf8f4;
+            border: 3px solid var(--herd-ink);
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .herd-card .icon-box svg { width: 100%; height: 100%; stroke: none; }
+        .herd-card h2 {
+            font-family: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            font-weight: 900;
+            font-size: 1.35rem;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+            color: #ffffff;
+            -webkit-text-stroke: 2px var(--herd-ink);
+            paint-order: stroke fill;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+        }
+        .herd-card h2 .mentality {
+            display: inline-block;
+            padding: 0 0.35rem;
+            color: var(--herd-ink);
+            background: var(--herd-pink);
+            border-radius: 0.3rem;
+            -webkit-text-stroke: 0;
+            text-shadow: none;
+        }
+        .herd-card p {
+            color: #0d2b25;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+        }
+        .herd-card .card-footer {
+            position: relative;
+            z-index: 1;
+            align-self: flex-start;
+            padding: 0.3rem 0.7rem;
+            color: var(--herd-ink);
+            background: var(--herd-pink);
+            border: 3px solid var(--herd-ink);
+            border-radius: 0.7rem;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+        .herd-card:hover {
+            background-color: #31bda3;
+            border-color: var(--herd-ink);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 30px -5px rgba(0, 0, 0, 0.45);
+        }
+        .herd-card:hover .card-footer { background: var(--herd-yellow); }
+
+        /* Quiz Bingo tile only: themed to match games/quiz-bingo
+           (dark stout board, warm amber sunburst + marquee glow, fizzy bubbles,
+           the five wheel-slice colours, heavy ink outlines with hard offset shadows).
+           Colour values mirror games/quiz-bingo/quiz-bingo-theme.css so the tile
+           can't drift from the game; the hub links no shared stylesheet. */
+        .quiz-bingo-card {
+            --cat-1: #e8362c; /* red */
+            --cat-2: #0b8a99; /* teal */
+            --cat-3: #1f9a45; /* green */
+            --cat-4: #d6208c; /* pink */
+            --cat-5: #2f55d4; /* blue */
+            --qb-ink: #111111;
+            --qb-stout: #3a1a0a;
+            --qb-paper: #fff8e8;
+            --qb-lamp: #ffd54a;
+            position: relative;
+            overflow: hidden;
+            padding: 1.7rem 1.5rem 1.8rem;
+            color: var(--qb-paper);
+            background-color: var(--qb-stout);
+            background-image:
+                radial-gradient(ellipse 95% 55% at 50% -12%, rgba(255, 183, 46, 0.55) 0%, rgba(255, 183, 46, 0) 68%),
+                radial-gradient(ellipse 115% 45% at 50% 118%, rgba(255, 183, 46, 0.30) 0%, rgba(255, 183, 46, 0) 72%),
+                repeating-conic-gradient(from -90deg at 50% -10%, rgba(255, 176, 46, 0.20) 0deg 7deg, rgba(255, 176, 46, 0) 7deg 14deg),
+                radial-gradient(circle, rgba(255, 255, 255, 0.16) 0 2px, rgba(255, 255, 255, 0) 3px);
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+            background-size: 100% 100%, 100% 100%, 100% 100%, 30px 30px;
+            border: 3px solid var(--qb-ink);
+            border-radius: 1rem;
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.45), 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+        }
+        /* The wheel's five slices run along the top edge like the game card's header strip */
+        .quiz-bingo-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg,
+                var(--cat-1) 0 20%, var(--cat-2) 20% 40%, var(--cat-3) 40% 60%,
+                var(--cat-4) 60% 80%, var(--cat-5) 80% 100%);
+            border-bottom: 2px solid var(--qb-ink);
+            pointer-events: none;
+        }
+        /* Bulb-ringed emblem holding the wheel mark */
+        .quiz-bingo-card .icon-box {
+            flex: 0 0 auto;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            background: radial-gradient(circle at 50% 42%, #5a2a12 0%, #2a1206 100%);
+            border: 3px solid var(--qb-ink);
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px var(--qb-lamp), 0 0 14px rgba(255, 213, 74, 0.4);
+            overflow: hidden;
+        }
+        .quiz-bingo-card .icon-box svg { width: 100%; height: 100%; stroke: none; }
+        .quiz-bingo-card h2 {
+            font-family: 'Bungee', 'Impact', 'Arial Black', 'Segoe UI', system-ui, sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.15rem, 4.5vw, 1.4rem);
+            line-height: 1.05;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--qb-lamp);
+            text-shadow: 3px 3px 0 var(--qb-ink);
+        }
+        .quiz-bingo-card p {
+            color: #f6e9d2;
+            font-weight: 600;
+        }
+        .quiz-bingo-card .card-footer {
+            position: relative;
+            z-index: 1;
+            align-self: flex-start;
+            padding: 0.35rem 0.8rem;
+            color: var(--qb-ink);
+            background: var(--qb-lamp);
+            border: 3px solid var(--qb-ink);
+            border-radius: 0.6rem;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+            font-family: 'Bungee', 'Impact', 'Arial Black', 'Segoe UI', system-ui, sans-serif;
+            font-weight: 900;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .quiz-bingo-card:hover {
+            background-color: #2a1206;
+            border-color: var(--qb-ink);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.5), 0 15px 30px -5px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 183, 46, 0.25);
+        }
+        .quiz-bingo-card:hover .card-footer { background: var(--cat-1); color: var(--qb-paper); }
+        /* Hitster Bingo tile only: themed to match games/hitster/hitster-bingo.html
+           (dark club room, neon pink/cyan/yellow/green sign lettering under a
+           disco-ball glow, a hint of dancefloor + speaker corners, and the
+           concentric vinyl/record ring motif). Colour values mirror that page's
+           :root so the tile can't drift from the game; the hub links no shared
+           stylesheet. */
+        .hitster-bingo-card {
+            --hb-pink: #ec4899;
+            --hb-cyan: #06b6d4;
+            --hb-purple: #8b5cf6;
+            --hb-yellow: #f5c451;
+            --hb-green: #3ddc97;
+            --hb-panel: #161820;
+            position: relative;
+            overflow: hidden;
+            padding: 1.7rem 1.5rem 2.4rem;
+            color: #f4f1ea;
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            background-color: var(--hb-panel);
+            background-image:
+                /* disco-ball glow, top-right */
+                radial-gradient(circle at 88% 8%, rgba(255, 255, 255, 0.95) 0 1.5%, rgba(245, 196, 81, 0.55) 5%, rgba(236, 72, 153, 0.32) 16%, rgba(6, 182, 212, 0.16) 32%, rgba(6, 182, 212, 0) 55%),
+                /* faint speaker cones down the left and right edges (club mood) */
+                radial-gradient(circle at 2% 46%, rgba(0, 0, 0, 0.55) 0 8%, rgba(255, 255, 255, 0.05) 8% 11%, rgba(0, 0, 0, 0.40) 11% 20%, rgba(0, 0, 0, 0) 21%),
+                radial-gradient(circle at 98% 42%, rgba(0, 0, 0, 0.50) 0 7%, rgba(255, 255, 255, 0.04) 7% 10%, rgba(0, 0, 0, 0.35) 10% 19%, rgba(0, 0, 0, 0) 20%),
+                /* concentric vinyl/record grooves behind the copy */
+                repeating-radial-gradient(circle at 50% 42%, rgba(236, 72, 153, 0.28) 0 1.5px, rgba(0, 0, 0, 0) 1.5px 14px, rgba(6, 182, 212, 0.24) 14px 15.5px, rgba(0, 0, 0, 0) 15.5px 28px, rgba(245, 196, 81, 0.22) 28px 29.5px, rgba(0, 0, 0, 0) 29.5px 42px, rgba(139, 92, 246, 0.22) 42px 43.5px, rgba(0, 0, 0, 0) 43.5px 56px),
+                /* dark centre so the copy stays readable over the grooves */
+                radial-gradient(ellipse 80% 64% at 50% 46%, rgba(12, 13, 18, 0.74) 0%, rgba(12, 13, 18, 0.34) 62%, rgba(12, 13, 18, 0) 100%),
+                /* club room: deep purple fading to near-black */
+                linear-gradient(158deg, #241247 0%, #150b28 45%, #0c0d12 100%),
+                /* neon ring that fills the 2px border (same trick as the game's buttons) */
+                linear-gradient(135deg, var(--hb-pink), var(--hb-cyan), var(--hb-purple), var(--hb-yellow));
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 100% 100%;
+            background-origin: border-box;
+            background-clip: padding-box, padding-box, padding-box, padding-box, padding-box, padding-box, border-box;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 18px rgba(236, 72, 153, 0.28), 0 0 30px rgba(6, 182, 212, 0.20);
+        }
+        /* Neon header strip along the top edge */
+        .hitster-bingo-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--hb-pink), var(--hb-purple), var(--hb-cyan), var(--hb-green), var(--hb-yellow));
+            box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
+            pointer-events: none;
+        }
+        /* Tilted dancefloor tile grid along the bottom edge */
+        .hitster-bingo-card::after {
+            content: "";
+            position: absolute;
+            left: -6%; right: -6%; bottom: -10px;
+            height: 62px;
+            background-image: repeating-conic-gradient(from 90deg, rgba(6, 182, 212, 0.55) 0 25%, rgba(236, 72, 153, 0.55) 0 50%);
+            background-size: 44px 44px;
+            transform: perspective(300px) rotateX(58deg);
+            transform-origin: bottom center;
+            -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0) 98%);
+            mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0) 98%);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        /* Keep the copy and footer above the decorative dancefloor layer */
+        .hitster-bingo-card .card-header,
+        .hitster-bingo-card p,
+        .hitster-bingo-card .card-footer { position: relative; z-index: 1; }
+        /* Gold-ringed disc holding the concentric record mark */
+        .hitster-bingo-card .icon-box {
+            flex: 0 0 auto;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            background: radial-gradient(circle at 50% 45%, #1d2130 0%, #0c0d12 76%);
+            border: 3px solid var(--hb-yellow);
+            border-radius: 50%;
+            box-shadow: 0 0 14px rgba(245, 196, 81, 0.5), 0 0 24px rgba(236, 72, 153, 0.35);
+            overflow: hidden;
+        }
+        .hitster-bingo-card .icon-box svg { width: 100%; height: 100%; stroke: none; }
+        .hitster-bingo-card h2 {
+            font-family: 'Orbitron', 'Impact', 'Arial Black', 'Segoe UI', system-ui, sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.2rem, 4.6vw, 1.45rem);
+            line-height: 1.05;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--hb-yellow);
+            filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.75)) drop-shadow(0 0 14px rgba(6, 182, 212, 0.5));
+        }
+        /* Multi-colour neon lettering (pink -> yellow -> cyan -> green), as on the sign */
+        @supports (-webkit-background-clip: text) or (background-clip: text) {
+            .hitster-bingo-card h2 {
+                background-image: linear-gradient(100deg, var(--hb-pink), var(--hb-yellow) 32%, var(--hb-cyan) 64%, var(--hb-green));
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+        }
+        .hitster-bingo-card p {
+            color: #cfd2e0;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+        }
+        .hitster-bingo-card .card-footer {
+            align-self: flex-start;
+            padding: 0.35rem 0.85rem;
+            color: #f4f1ea;
+            border: 2px solid transparent;
+            border-radius: 0.7rem;
+            background-color: rgba(22, 24, 32, 0.85);
+            background-image: linear-gradient(rgba(22, 24, 32, 0.85), rgba(22, 24, 32, 0.85)), linear-gradient(135deg, var(--hb-pink), var(--hb-cyan), var(--hb-purple), var(--hb-yellow));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            font-family: 'Orbitron', 'Impact', 'Arial Black', 'Segoe UI', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(236, 72, 153, 0.6);
+            box-shadow: 0 0 14px rgba(236, 72, 153, 0.3), 0 0 22px rgba(6, 182, 212, 0.22);
+            transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .hitster-bingo-card:hover {
+            background-color: var(--hb-panel);
+            border-color: transparent;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.6), 0 0 26px rgba(236, 72, 153, 0.5), 0 0 44px rgba(6, 182, 212, 0.35);
+        }
+        .hitster-bingo-card:hover .card-footer {
+            background-image: linear-gradient(rgba(30, 34, 48, 0.92), rgba(30, 34, 48, 0.92)), linear-gradient(135deg, var(--hb-cyan), var(--hb-pink), var(--hb-yellow), var(--hb-purple));
+            color: #ffffff;
+            text-shadow: 0 0 10px var(--hb-cyan), 0 0 18px var(--hb-pink);
+            box-shadow: 0 0 18px var(--hb-pink), 0 0 30px var(--hb-cyan);
+        }
+
+        /* Hitster tile only: themed from the Hitster wordmark + retail box artwork
+           (neon magenta wordmark, magenta/cyan/yellow/orange broken arcs, deep
+           black base, a purple->cyan/lime side-edge gradient, a cyan neon frame
+           and a silver speaker cone with mounting screws and a dark dust cap).
+           Colour values are taken from the artwork itself; the hub links no
+           shared stylesheet. */
+        .hitster-card {
+            --hit-pink: #ff2d9b;
+            --hit-magenta: #ff1493;
+            --hit-cyan: #22d3ff;
+            --hit-yellow: #ffd60a;
+            --hit-orange: #ff7a18;
+            --hit-lime: #a3e635;
+            --hit-purple: #7b2ff7;
+            --hit-black: #050507;
+            position: relative;
+            overflow: hidden;
+            padding: 1.7rem 1.5rem 2.4rem;
+            color: #f4f1ea;
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            background-color: var(--hit-black);
+            background-image:
+                /* purple -> cyan -> lime top edge, like the box's side edge */
+                linear-gradient(90deg, var(--hit-purple), var(--hit-cyan) 55%, var(--hit-lime)),
+                /* purple -> cyan wash rising from the bottom edge */
+                linear-gradient(0deg, rgba(123, 47, 247, 0.45) 0%, rgba(34, 211, 255, 0.14) 28%, rgba(34, 211, 255, 0) 58%),
+                /* deep black base */
+                linear-gradient(180deg, #0b0d13 0%, #050507 100%),
+                /* gradient that fills the 2px border (the cyan neon frame) */
+                linear-gradient(135deg, var(--hit-purple), var(--hit-cyan) 52%, var(--hit-lime));
+            background-repeat: no-repeat;
+            background-position: top center, center, center, center;
+            background-size: 100% 6px, 100% 100%, 100% 100%, 100% 100%;
+            background-origin: padding-box, padding-box, padding-box, border-box;
+            background-clip: padding-box, padding-box, padding-box, border-box;
+            box-shadow: 0 0 0 1px rgba(34, 211, 255, 0.35), 0 0 18px rgba(34, 211, 255, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.55);
+        }
+        /* Concentric broken neon arcs (magenta / cyan / yellow / orange), top-right */
+        .hitster-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-image: repeating-radial-gradient(circle at 103% -6%,
+                rgba(255, 45, 155, 0.55) 0 2.5px, rgba(0, 0, 0, 0) 2.5px 13px,
+                rgba(34, 211, 255, 0.50) 13px 15.5px, rgba(0, 0, 0, 0) 15.5px 26px,
+                rgba(255, 214, 10, 0.45) 26px 28.5px, rgba(0, 0, 0, 0) 28.5px 39px,
+                rgba(255, 122, 24, 0.45) 39px 41.5px, rgba(0, 0, 0, 0) 41.5px 52px);
+            -webkit-mask-image: radial-gradient(circle at 103% -6%, #000 0 34%, rgba(0, 0, 0, 0) 66%);
+            mask-image: radial-gradient(circle at 103% -6%, #000 0 34%, rgba(0, 0, 0, 0) 66%);
+            pointer-events: none;
+        }
+        /* Silver speaker cone (mounting ring + dark dust cap) cropped into the bottom-right */
+        .hitster-card::after {
+            content: "";
+            position: absolute;
+            right: -54px;
+            bottom: -58px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%,
+                #0b0d12 0 16%, #cbd2da 16% 22%, #171a20 22% 28%,
+                #5b626c 28% 42%, #aab1bb 42% 47%, #454b55 47% 60%,
+                #868d97 60% 65%, #3a3f48 65% 79%, #9aa1ab 79% 84%,
+                #2b2f37 84% 100%);
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        /* Keep the copy and footer above the two decorative layers */
+        .hitster-card .card-header,
+        .hitster-card p,
+        .hitster-card .card-footer { position: relative; z-index: 1; }
+        /* Cyan neon ring around a dark speaker emblem */
+        .hitster-card .icon-box {
+            flex: 0 0 auto;
+            width: 58px;
+            height: 58px;
+            padding: 0;
+            background: radial-gradient(circle at 50% 38%, #1b2030 0%, #07080c 100%);
+            border: 2px solid rgba(34, 211, 255, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(34, 211, 255, 0.16), 0 0 12px rgba(34, 211, 255, 0.55), 0 0 22px rgba(255, 45, 155, 0.30);
+            overflow: hidden;
+        }
+        .hitster-card .icon-box svg { width: 100%; height: 100%; stroke: none; }
+        /* Neon-tube magenta wordmark */
+        .hitster-card h2 {
+            font-family: 'Orbitron', 'Impact', 'Arial Black', 'Segoe UI', system-ui, sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.25rem, 4.8vw, 1.6rem);
+            line-height: 1.05;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: #ffffff;
+            -webkit-text-stroke: 1px var(--hit-pink);
+            text-shadow:
+                0 0 3px var(--hit-magenta),
+                0 0 8px rgba(255, 45, 155, 0.9),
+                0 0 16px rgba(255, 20, 147, 0.65);
+        }
+        .hitster-card p {
+            color: #d7dbe4;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+        }
+        /* Cyan/lime neon pill, echoing the cyan frame around the wordmark */
+        .hitster-card .card-footer {
+            align-self: flex-start;
+            padding: 0.35rem 0.85rem;
+            color: #eafcff;
+            border: 2px solid transparent;
+            border-radius: 0.7rem;
+            background-color: rgba(5, 6, 11, 0.85);
+            background-image: linear-gradient(rgba(5, 6, 11, 0.85), rgba(5, 6, 11, 0.85)), linear-gradient(90deg, var(--hit-cyan), var(--hit-lime));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            font-family: 'Orbitron', 'Impact', 'Arial Black', 'Segoe UI', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(34, 211, 255, 0.85);
+            box-shadow: 0 0 12px rgba(34, 211, 255, 0.30), inset 0 0 0 1px rgba(34, 211, 255, 0.25);
+            transition: color 0.2s ease, text-shadow 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hitster-card:hover {
+            background-color: var(--hit-black);
+            border-color: transparent;
+            box-shadow: 0 0 0 1px rgba(34, 211, 255, 0.5), 0 0 26px rgba(34, 211, 255, 0.5), 0 0 40px rgba(255, 45, 155, 0.32), 0 15px 30px -5px rgba(0, 0, 0, 0.6);
+        }
+        .hitster-card:hover .card-footer {
+            color: #ffffff;
+            text-shadow: 0 0 12px var(--hit-cyan), 0 0 20px var(--hit-cyan);
+            box-shadow: 0 0 18px rgba(34, 211, 255, 0.55), inset 0 0 0 1px rgba(34, 211, 255, 0.4);
+        }
+        /* Keep the tile legible on a 390px phone */
+        @media (max-width: 420px) {
+            .hitster-card { padding: 1.5rem 1.2rem 2.2rem; }
+            .hitster-card h2 { font-size: 1.3rem; letter-spacing: 0.06em; }
+            .hitster-card::after { width: 124px; height: 124px; right: -44px; bottom: -48px; }
+            .hitster-card .icon-box { width: 52px; height: 52px; }
+        }
+
     </style>
 </head>
 <body>
@@ -87,11 +616,31 @@
         </a>
 
         <!-- Hitster -->
-        <a href="games/hitster/hitster.html" class="hub-card">
+        <a href="games/hitster/hitster.html" class="hub-card hitster-card">
             <div>
                 <div class="card-header">
                     <div class="icon-box">
-                        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                        <svg viewBox="0 0 100 100" aria-hidden="true">
+                            <defs>
+                                <radialGradient id="hitCone" cx="38%" cy="32%" r="80%">
+                                    <stop offset="0" stop-color="#f4f6f9"></stop>
+                                    <stop offset="0.55" stop-color="#9aa1ab"></stop>
+                                    <stop offset="1" stop-color="#464b54"></stop>
+                                </radialGradient>
+                            </defs>
+                            <circle cx="50" cy="50" r="47" fill="none" stroke="#ff2d9b" stroke-width="3" stroke-linecap="round" stroke-dasharray="116 40" transform="rotate(15 50 50)"></circle>
+                            <circle cx="50" cy="50" r="47" fill="none" stroke="#22d3ff" stroke-width="3" stroke-linecap="round" stroke-dasharray="56 102" transform="rotate(-70 50 50)"></circle>
+                            <circle cx="50" cy="50" r="38" fill="#2b2f37"></circle>
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#c9cfd8" stroke-width="4"></circle>
+                            <circle cx="50" cy="12" r="3.4" fill="#aeb4bd" stroke="#eef2f6" stroke-width="1.4"></circle>
+                            <circle cx="88" cy="50" r="3.4" fill="#aeb4bd" stroke="#eef2f6" stroke-width="1.4"></circle>
+                            <circle cx="50" cy="88" r="3.4" fill="#aeb4bd" stroke="#eef2f6" stroke-width="1.4"></circle>
+                            <circle cx="12" cy="50" r="3.4" fill="#aeb4bd" stroke="#eef2f6" stroke-width="1.4"></circle>
+                            <circle cx="50" cy="50" r="29" fill="url(#hitCone)" stroke="#c9cfd8" stroke-width="2"></circle>
+                            <circle cx="50" cy="50" r="20" fill="none" stroke="#6e747e" stroke-width="2"></circle>
+                            <circle cx="50" cy="50" r="13" fill="none" stroke="#6e747e" stroke-width="2"></circle>
+                            <circle cx="50" cy="50" r="9" fill="#14161b" stroke="#b8bec7" stroke-width="2"></circle>
+                        </svg>
                     </div>
                     <h2>Hitster</h2>
                 </div>
@@ -141,11 +690,16 @@
             <div class="card-footer">Play Countdown &rarr;</div>
         </a>
         <!-- Hitster Bingo -->
-        <a href="games/hitster/hitster-bingo.html" class="hub-card">
+        <a href="games/hitster/hitster-bingo.html" class="hub-card hitster-bingo-card">
             <div>
                 <div class="card-header">
                     <div class="icon-box">
-                        <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"></path></svg>
+                        <svg viewBox="0 0 100 100" aria-hidden="true">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#ec4899" stroke-width="5" stroke-linecap="round" stroke-dasharray="118 26" transform="rotate(18 50 50)"></circle>
+                            <circle cx="50" cy="50" r="33" fill="none" stroke="#06b6d4" stroke-width="5" stroke-linecap="round" stroke-dasharray="86 22" transform="rotate(-30 50 50)"></circle>
+                            <circle cx="50" cy="50" r="21" fill="none" stroke="#f5c451" stroke-width="5" stroke-linecap="round" stroke-dasharray="52 18" transform="rotate(60 50 50)"></circle>
+                            <circle cx="50" cy="50" r="8" fill="#0c0d12" stroke="#f5c451" stroke-width="4"></circle>
+                        </svg>
                     </div>
                     <h2>Hitster Bingo</h2>
                 </div>
@@ -155,11 +709,19 @@
         </a>
 
         <!-- Quiz Bingo -->
-        <a href="games/quiz-bingo/quiz-bingo.html" class="hub-card">
+        <a href="games/quiz-bingo/quiz-bingo.html" class="hub-card quiz-bingo-card">
             <div>
                 <div class="card-header">
                     <div class="icon-box">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"></path><path d="M12 16.5h.01"></path></svg>
+                        <svg viewBox="0 0 100 100" aria-hidden="true">
+                            <path d="M50 50 L50 8 A42 42 0 0 1 89.95 37.02 Z" fill="#e8362c"></path>
+                            <path d="M50 50 L89.95 37.02 A42 42 0 0 1 74.69 83.98 Z" fill="#0b8a99"></path>
+                            <path d="M50 50 L74.69 83.98 A42 42 0 0 1 25.31 83.98 Z" fill="#1f9a45"></path>
+                            <path d="M50 50 L25.31 83.98 A42 42 0 0 1 10.05 37.02 Z" fill="#d6208c"></path>
+                            <path d="M50 50 L10.05 37.02 A42 42 0 0 1 50 8 Z" fill="#2f55d4"></path>
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="#111111" stroke-width="6"></circle>
+                            <circle cx="50" cy="50" r="13" fill="#fff8e8" stroke="#111111" stroke-width="5"></circle>
+                        </svg>
                     </div>
                     <h2>Quiz Bingo</h2>
                 </div>
@@ -169,13 +731,26 @@
         </a>
 
         <!-- Herd Mentality -->
-        <a href="games/herd-mentality/herd-mentality.html" class="hub-card">
+        <a href="games/herd-mentality/herd-mentality.html" class="hub-card herd-card">
             <div>
                 <div class="card-header">
                     <div class="icon-box">
-                        <svg viewBox="0 0 24 24"><path d="M5 8l-2-4 5 2M19 8l2-4-5 2"></path><rect x="5" y="6" width="14" height="14" rx="5"></rect><path d="M9.5 12h.01M14.5 12h.01"></path><rect x="8" y="14.5" width="8" height="4" rx="2"></rect></svg>
+                        <svg viewBox="0 -18 100 132" aria-hidden="true">
+                            <ellipse cx="14" cy="36" rx="14" ry="8" transform="rotate(-22 14 36)" fill="#111"></ellipse>
+                            <ellipse cx="86" cy="36" rx="14" ry="8" transform="rotate(22 86 36)" fill="#111"></ellipse>
+                            <path d="M28 22L22 4L40 16Z" fill="#ffd23f" stroke="#111" stroke-width="2.5" stroke-linejoin="round"></path>
+                            <path d="M72 22L78 4L60 16Z" fill="#ffd23f" stroke="#111" stroke-width="2.5" stroke-linejoin="round"></path>
+                            <rect x="24" y="14" width="52" height="82" rx="24" fill="#ffffff" stroke="#111" stroke-width="4"></rect>
+                            <path d="M26 26Q26 16 40 16L50 16Q34 22 34 40Q26 40 26 26Z" fill="#111"></path>
+                            <ellipse cx="39" cy="42" rx="8" ry="10" fill="#fff" stroke="#111" stroke-width="3"></ellipse>
+                            <ellipse cx="61" cy="42" rx="8" ry="10" fill="#fff" stroke="#111" stroke-width="3"></ellipse>
+                            <circle cx="40" cy="44" r="4" fill="#111"></circle>
+                            <circle cx="60" cy="44" r="4" fill="#111"></circle>
+                            <rect x="30" y="60" width="40" height="30" rx="14" fill="#f06ab0" stroke="#111" stroke-width="3.5"></rect>
+                            <path d="M42 72Q40 80 46 80M58 72Q60 80 54 80" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"></path>
+                        </svg>
                     </div>
-                    <h2>Herd Mentality</h2>
+                    <h2>Herd <span class="mentality">Mentality</span></h2>
                 </div>
                 <p>Whatever you do, don't stand out! Match the herd's answer, dodge the Pink Cow, and be first to 8 points.</p>
             </div>
@@ -183,7 +758,7 @@
         </a>
 
         <!-- UNO Spin -->
-        <a href="games/uno-spin/index.html" class="hub-card">
+        <a href="games/uno-spin/index.html" class="hub-card uno-spin-card">
             <div>
                 <div class="card-header">
                     <div class="icon-box">
