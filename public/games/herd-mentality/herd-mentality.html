@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herd Mentality - Trotters Game Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --ink: #111111;
+            --teal: #2fc4a4;
+            --pink: #f06ab0;
+            --pink-dark: #c23a8a;
+            --blue: #4f6fc4;
+            --yellow: #ffd23f;
+            --plank: #4f5aa8;
+            --wave: var(--teal);
+            --font: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { margin: 0; min-height: 100%; }
+
+        body {
+            font-family: var(--font);
+            color: var(--ink);
+            background-color: #2fc4a4;
+            /* Pasture: teal sky, green hill, small grass tufts */
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='120'%3E%3Cpath d='M20 60l4-12 4 12M24 60l-1-14M24 60l9-10M100 100l4-12 4 12M104 100l-1-14M104 100l9-10' stroke='%231f9d84' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),
+                radial-gradient(ellipse 120% 40% at 50% 108%, #3fae5a 0 70%, transparent 71%),
+                linear-gradient(#36cdb2, #2aa88f);
+        }
+
+        button { font-family: var(--font); cursor: pointer; touch-action: manipulation; }
+
+        .screen { display: none; }
+        .screen.active { display: flex; }
+
+        .logo {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            line-height: 0.95;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+        .logo span { display: block; color: var(--pink); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; }
+
+        .big-btn {
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            background: var(--pink);
+            border: 4px solid var(--ink);
+            border-radius: 1rem;
+            box-shadow: 0 6px 0 var(--ink);
+            padding: 0.7rem 1.6rem;
+        }
+        .big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+
+        .link-btn {
+            color: var(--ink);
+            font-weight: 800;
+            text-decoration: none;
+            background: #fff;
+            border: 3px solid var(--ink);
+            border-radius: 0.7rem;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.9rem;
+        }
+
+        /* ---------- Setup screen ---------- */
+        #setupScreen { min-height: 100vh; align-items: center; justify-content: center; padding: 1rem; }
+
+        .setup-card {
+            background: #fff;
+            border: 5px solid var(--ink);
+            border-radius: 1.4rem;
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+            padding: 1.2rem 1.4rem;
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 190px;
+            gap: 1.4rem;
+        }
+
+        .tagline { margin: 0.4rem 0 0.8rem; color: #444; font-weight: 700; }
+
+        .count-row { display: flex; align-items: center; gap: 0.7rem; font-weight: 900; font-size: 1.1rem; margin-bottom: 0.7rem; }
+        .count-row b { font-size: 1.6rem; min-width: 1.6ch; text-align: center; }
+        .count-btn {
+            width: 44px; height: 44px; font-size: 1.6rem; font-weight: 900; line-height: 1;
+            background: var(--yellow); border: 3px solid var(--ink); border-radius: 50%;
+        }
+
+        .player-row { display: grid; grid-template-columns: 58px 1fr; gap: 0.6rem; align-items: center; margin-bottom: 0.45rem; }
+        .avatar-btn { width: 58px; height: 62px; padding: 0; background: #eaf8f4; border: 3px solid var(--ink); border-radius: 0.8rem; }
+        .avatar-btn svg { width: 100%; height: 100%; }
+        .name-input {
+            font-family: var(--font); font-size: 1.15rem; font-weight: 800; padding: 0.6rem 0.8rem;
+            border: 3px solid var(--ink); border-radius: 0.8rem; width: 100%; min-width: 0;
+        }
+        .name-input:focus { outline: 3px solid var(--pink); }
+
+        .setup-actions { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.9rem; }
+
+        .setup-side { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
+        .qr-box { background: #fff; border: 3px solid var(--ink); border-radius: 0.6rem; padding: 6px; width: 136px; height: 136px; }
+        .qr-box img, .qr-box canvas { width: 118px !important; height: 118px !important; display: block; }
+        .qr-caption { font-weight: 900; font-size: 0.9rem; }
+        .qr-url { font-size: 0.7rem; color: #444; word-break: break-all; }
+
+        /* ---------- Game screen ---------- */
+        #gameScreen { flex-direction: column; min-height: 100vh; padding: 0.6rem 0.9rem 0.8rem; }
+
+        .topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+        .topbar .logo { font-size: 1.5rem; color: #fff; -webkit-text-stroke: 0; text-shadow: 3px 3px 0 var(--ink); justify-self: start; }
+        .topbar .logo span { display: inline; margin-left: 0.3rem; font-size: inherit; -webkit-text-stroke: 0; color: var(--ink); text-shadow: none; background: var(--pink); padding: 0 0.35rem; border-radius: 0.3rem; }
+        .progress { background: #fff; border: 3px solid var(--ink); border-radius: 0.7rem; padding: 0.2rem 0.7rem; font-weight: 900; font-size: 1rem; justify-self: center; }
+        .tools { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; justify-self: end; }
+        .tool-btn { background: #fff; color: var(--ink); font-weight: 800; font-size: 0.9rem; border: 3px solid var(--ink); border-radius: 0.7rem; padding: 0.4rem 0.8rem; min-height: 40px; }
+        .tool-btn:disabled { opacity: 0.45; cursor: default; }
+        .tool-btn.undo { background: var(--yellow); }
+
+        .board {
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 440px) minmax(0, 1fr);
+            gap: 0.9rem;
+            height: calc(100vh - 4.6rem);
+            min-height: 520px;
+        }
+        .side { display: flex; flex-direction: column; justify-content: center; gap: 1.1rem; min-height: 0; max-height: 100%; }
+        .side.left { grid-area: left; }
+        .side.right { grid-area: right; }
+        .centre { grid-area: centre; display: flex; flex-direction: column; gap: 0.8rem; min-height: 0; }
+        .board { grid-template-areas: "left centre right"; }
+
+        .player-card {
+            position: relative; display: flex; align-items: center; gap: 0.5rem; min-height: 90px; flex: 0 1 180px;
+            background: var(--plank); border: 4px solid var(--ink); border-radius: 1rem; padding: 0.35rem 0.5rem;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3); transition: box-shadow 0.15s, transform 0.15s;
+        }
+        .side.right .player-card { flex-direction: row-reverse; }
+        .player-card.has-cow { box-shadow: 0 0 0 5px var(--pink), 0 0 22px 6px rgba(240, 106, 176, 0.8); }
+        .player-card.drop-hover, .select-mode .player-card { box-shadow: 0 0 0 5px var(--yellow); }
+        .select-mode .player-card { animation: wiggle 0.9s ease-in-out infinite; cursor: pointer; }
+        .player-card.is-winner { box-shadow: 0 0 0 6px var(--yellow), 0 0 30px 10px rgba(255, 210, 63, 0.9); }
+
+        .p-who { flex: 0 0 auto; width: 84px; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+        .p-avatar { width: 72px; height: 78px; background: #eaf8f4; border: 3px solid var(--ink); border-radius: 50%; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+        .p-avatar svg { width: 100%; height: 100%; }
+        .p-name { color: #fff; font-weight: 900; font-size: 0.85rem; text-shadow: 1px 1px 0 var(--ink), -1px 1px 0 var(--ink), 1px -1px 0 var(--ink), -1px -1px 0 var(--ink); max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+
+        .score-cow { position: relative; flex: 1; min-width: 0; align-self: stretch; user-select: none; -webkit-user-select: none; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .score-cow svg { width: 100%; height: 100%; display: block; overflow: visible; }
+        .score-cow .half-hint { position: absolute; left: 0; right: 0; height: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; color: rgba(255, 255, 255, 0.0); pointer-events: none; }
+        .score-cow .half-hint.top { top: 0; } .score-cow .half-hint.bottom { bottom: 0; }
+        .score-cow:hover .half-hint { color: rgba(255, 255, 255, 0.35); }
+        .score-cow.bump svg { animation: bump 0.3s ease-out; }
+        .score-cow.shrink svg { animation: shrink 0.3s ease-out; }
+        .float-pop { position: absolute; left: 50%; top: 20%; font-weight: 900; font-size: 1.8rem; color: var(--yellow); text-shadow: 2px 2px 0 var(--ink); pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 5; }
+        .float-pop.minus { color: #ff8a8a; }
+
+        .cow-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 3px; background: var(--pink); color: #fff; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; border: 3px solid var(--ink); border-radius: 1rem; padding: 0 0.5rem 0 0.2rem; touch-action: none; cursor: grab; }
+        .cow-badge svg { width: 34px; height: 26px; }
+        .hold-msg { position: absolute; left: 4px; right: 4px; bottom: -13px; z-index: 6; background: var(--yellow); border: 3px solid var(--ink); border-radius: 0.6rem; font-weight: 900; font-size: 0.72rem; text-align: center; padding: 1px 4px; }
+
+        @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.12) rotate(-2deg); } 100% { transform: scale(1); } }
+        @keyframes shrink { 0% { transform: scale(1); } 40% { transform: scale(0.9) rotate(2deg); } 100% { transform: scale(1); } }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -48px); } }
+        @keyframes wiggle { 0%, 100% { transform: rotate(-0.6deg); } 50% { transform: rotate(0.6deg); } }
+
+        /* ---------- Question card ---------- */
+        .question-card {
+            position: relative; background: #fff; border: 4px solid var(--ink); border-radius: 0.9rem;
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3); cursor: pointer; overflow: hidden; flex: 0 0 auto;
+            padding: 1.9rem 1.2rem 5.4rem; min-height: 230px; display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .question-card:active { transform: scale(0.99); }
+        .q-cat { position: absolute; top: 0.5rem; left: 0.8rem; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: #777; }
+        .q-num { position: absolute; top: 0.5rem; right: 0.8rem; font-size: 0.72rem; font-weight: 900; color: #777; }
+        .q-text { margin: 0; text-align: center; font-size: clamp(1.25rem, 2.3vw, 1.75rem); font-weight: 800; line-height: 1.3; }
+        .q-wave { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; width: 100%; display: block; pointer-events: none; }
+        .q-wave path { fill: var(--wave); transition: fill 0.3s; }
+        .q-peek { position: absolute; right: 12px; bottom: -14px; width: 104px; height: 62px; pointer-events: none; }
+        .q-hint { position: absolute; left: 3.2rem; bottom: 0.7rem; font-size: 0.75rem; font-weight: 900; color: #fff; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5); pointer-events: none; }
+        .q-prev { position: absolute; left: 0.6rem; bottom: 0.45rem; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--ink); background: #fff; font-size: 1.3rem; font-weight: 900; line-height: 1; padding: 0; }
+        .q-prev:disabled { opacity: 0.4; }
+
+        /* ---------- Pen ---------- */
+        .pen { position: relative; flex: 1; min-height: 200px; margin-top: 0.2rem; }
+        .fence-back, .fence-front {
+            position: absolute; left: 0; right: 0; height: 46px; z-index: 2;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='46'%3E%3Cpath d='M2 12L9 2l7 10v34H2z' fill='%23fff' stroke='%23aab6bd' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: repeat-x; background-size: 18px 46px;
+        }
+        .fence-back { top: 0; z-index: 0; }
+        .fence-front { bottom: 0; }
+        .fence-back::after, .fence-front::after { content: ""; position: absolute; left: 0; right: 0; top: 26px; height: 6px; background: #fff; border-top: 1.5px solid #aab6bd; border-bottom: 1.5px solid #aab6bd; }
+        .fence-side { position: absolute; top: 22px; bottom: 0; width: 14px; background: #fff; border: 2px solid #aab6bd; border-radius: 4px; z-index: 2; }
+        .fence-side.l { left: 0; } .fence-side.r { right: 0; }
+        .pen-yard {
+            position: absolute; left: 14px; right: 14px; top: 34px; bottom: 30px; z-index: 1;
+            background: rgba(20, 90, 50, 0.28); border-radius: 0.6rem; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0.4rem;
+        }
+        .pen.drop-hover .pen-yard, .select-mode .pen.can-return .pen-yard { outline: 4px dashed var(--yellow); }
+        .pen-empty { color: #fff; font-weight: 800; font-size: 0.9rem; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5); }
+        .pink-cow { height: 100%; max-height: 130px; aspect-ratio: 160 / 110; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.25)); }
+        .pink-cow svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+        .pink-cow.selected { animation: wiggle 0.5s ease-in-out infinite; filter: drop-shadow(0 0 10px var(--yellow)); }
+        .pen-tip { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 0.72rem; font-weight: 900; color: var(--ink); z-index: 3; pointer-events: none; }
+        .drag-ghost { position: fixed; z-index: 300; width: 130px; pointer-events: none; transform: translate(-50%, -60%) rotate(-6deg); filter: drop-shadow(4px 6px 4px rgba(0, 0, 0, 0.35)); }
+        .drag-ghost svg { width: 100%; display: block; }
+
+        /* ---------- Modals ---------- */
+        .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.65); z-index: 100; padding: 1rem; }
+        .modal.open { display: flex; }
+        .modal-card { background: #fff; border: 5px solid var(--ink); border-radius: 1.2rem; box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4); padding: 1.2rem 1.4rem; max-width: 460px; width: 100%; max-height: 92vh; overflow-y: auto; text-align: center; }
+        .modal-card h2 { margin: 0 0 0.6rem; text-transform: uppercase; }
+        .modal-card p, .modal-card li { text-align: left; line-height: 1.45; font-weight: 700; }
+        .modal-card ul { padding-left: 1.2rem; margin: 0 0 0.8rem; }
+        .modal-card .qr-large { display: inline-block; background: #fff; border: 3px solid var(--ink); padding: 10px; border-radius: 0.6rem; }
+        .modal-card .qr-url { font-size: 0.85rem; margin: 0.6rem 0 0.9rem; word-break: break-all; }
+        .modal-actions { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin-top: 0.6rem; }
+        .modal-actions .big-btn { font-size: 1.05rem; padding: 0.55rem 1.1rem; }
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 0.4rem 0 0.8rem; }
+        .avatar-choice { padding: 2px; background: #eaf8f4; border: 3px solid var(--ink); border-radius: 0.8rem; aspect-ratio: 1; }
+        .avatar-choice svg { width: 100%; height: 100%; }
+        .avatar-choice.selected { background: var(--yellow); }
+        .avatar-choice:disabled { opacity: 0.3; cursor: not-allowed; }
+        .winner-avatar { width: 120px; height: 120px; margin: 0 auto 0.4rem; background: #eaf8f4; border: 4px solid var(--ink); border-radius: 50%; overflow: hidden; }
+        .winner-avatar svg { width: 100%; height: 100%; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 900px) {
+            .setup-card { grid-template-columns: 1fr; }
+            .setup-side { flex-direction: row; justify-content: center; text-align: left; }
+            .board { grid-template-columns: 1fr 1fr; grid-template-areas: "centre centre" "left right"; height: auto; min-height: 0; }
+            .pen { flex: 0 0 auto; height: 220px; }
+            .side { justify-content: flex-start; }
+            .player-card { flex: 0 0 150px; }
+            .side.right .player-card { flex-direction: row; }
+        }
+        @media (max-width: 560px) {
+            .player-card, .side.right .player-card { flex-direction: column; flex: 0 0 205px; padding: 0.5rem 0.4rem 0.3rem; }
+            .p-who { flex-direction: row; width: 100%; justify-content: center; gap: 0.3rem; }
+            .p-avatar { width: 44px; height: 48px; }
+            .p-name { max-width: 80px; font-size: 0.8rem; }
+            .score-cow { flex: 1; width: 100%; min-height: 0; }
+            .topbar .logo { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= SETUP ================= -->
+    <section class="screen active" id="setupScreen">
+        <div class="setup-card">
+            <div>
+                <h1 class="logo">Herd<span>Mentality</span></h1>
+                <p class="tagline">Whatever you do, don't stand out! Pick the answer most of the herd will pick.</p>
+                <div class="count-row">
+                    Players
+                    <button class="count-btn" type="button" id="minusBtn" aria-label="Fewer players">&minus;</button>
+                    <b id="countNum">4</b>
+                    <button class="count-btn" type="button" id="plusBtn" aria-label="More players">+</button>
+                    <span style="font-size:0.8rem;color:#555;">(2&ndash;8)</span>
+                </div>
+                <div id="playerRows"></div>
+                <div class="setup-actions">
+                    <button class="big-btn" type="button" id="startBtn">Start Game</button>
+                    <a class="link-btn" href="/game-hub.html" id="setupHubLink">Back to Games Hub</a>
+                </div>
+            </div>
+            <div class="setup-side">
+                <div class="qr-box" id="setupQr"></div>
+                <div>
+                    <div class="qr-caption">Scan for your answer phone</div>
+                    <div class="qr-url" id="setupQrUrl"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= GAME ================= -->
+    <section class="screen" id="gameScreen">
+        <div class="topbar">
+            <h1 class="logo">Herd<span>Mentality</span></h1>
+            <div class="progress" id="progressLabel">Question 1</div>
+            <div class="tools">
+                <button class="tool-btn undo" type="button" id="undoBtn" disabled>&#8630; Undo</button>
+                <button class="tool-btn" type="button" id="qrBtn" aria-label="Show QR code">QR</button>
+                <button class="tool-btn" type="button" id="helpBtn" aria-label="Rules">?</button>
+                <button class="tool-btn" type="button" id="newGameBtn">New Game</button>
+                <a class="tool-btn" href="/game-hub.html" id="toolbarHubLink" style="text-decoration:none;display:inline-flex;align-items:center;">Hub</a>
+            </div>
+        </div>
+        <div class="board" id="board">
+            <div class="side left" id="leftSide"></div>
+            <div class="centre">
+                <div class="question-card" id="questionCard" role="button" tabindex="0" aria-label="Next question">
+                    <span class="q-cat" id="qCat"></span>
+                    <span class="q-num" id="qNum"></span>
+                    <p class="q-text" id="qText">Loading…</p>
+                    <svg class="q-wave" viewBox="0 0 400 84" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30C60 0 120 60 200 34S340 8 400 30V84H0z"/></svg>
+                    <svg class="q-peek" viewBox="0 0 104 62" aria-hidden="true">
+                        <circle cx="14" cy="44" r="6" fill="#fff"/><circle cx="26" cy="52" r="3.5" fill="#fff"/>
+                        <ellipse cx="30" cy="30" rx="15" ry="7" transform="rotate(-12 30 30)" fill="#111"/>
+                        <ellipse cx="82" cy="30" rx="15" ry="7" transform="rotate(12 82 30)" fill="#111"/>
+                        <path d="M42 14L40 2l10 8z" fill="#ffd23f" stroke="#111" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M70 14L72 2l-10 8z" fill="#ffd23f" stroke="#111" stroke-width="2" stroke-linejoin="round"/>
+                        <rect x="38" y="10" width="36" height="60" rx="14" fill="#fff" stroke="#111" stroke-width="3"/>
+                        <path d="M40 14h16Q40 18 40 32z" fill="#111"/>
+                        <ellipse cx="48" cy="32" rx="6" ry="8" fill="#fff" stroke="#111" stroke-width="2.5"/>
+                        <ellipse cx="64" cy="32" rx="6" ry="8" fill="#fff" stroke="#111" stroke-width="2.5"/>
+                        <circle cx="49" cy="34" r="3" fill="#111"/><circle cx="63" cy="34" r="3" fill="#111"/>
+                    </svg>
+                    <span class="q-hint">Tap card for next question</span>
+                    <button class="q-prev" type="button" id="prevBtn" aria-label="Previous question">&#8249;</button>
+                </div>
+                <div class="pen" id="pen">
+                    <div class="fence-back"></div>
+                    <div class="fence-side l"></div><div class="fence-side r"></div>
+                    <div class="pen-yard" id="penYard"></div>
+                    <div class="fence-front"></div>
+                    <div class="pen-tip">Drag the Pink Cow to a player &ndash; or tap it, then tap a player</div>
+                </div>
+            </div>
+            <div class="side right" id="rightSide"></div>
+        </div>
+    </section>
+
+    <!-- ================= MODALS ================= -->
+    <div class="modal" id="qrModal">
+        <div class="modal-card">
+            <h2>Scan to answer</h2>
+            <div class="qr-large" id="qrLarge"></div>
+            <div class="qr-url" id="qrLargeUrl"></div>
+            <button class="big-btn" type="button" data-close="qrModal">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="helpModal">
+        <div class="modal-card">
+            <h2>How to play</h2>
+            <ul>
+                <li>Read the question. Everyone secretly writes an answer on their phone, then shows it.</li>
+                <li>Tap the <b>top half</b> of a player's cow for +1, the <b>bottom half</b> for &minus;1.</li>
+                <li>Score <b>1 point</b> if your answer is in the biggest group. If two or more groups tie for biggest, <b>everyone in each tied group gets +1</b>.</li>
+                <li>Anyone left on their own (not in a group) takes the <b>Pink Cow</b> &ndash; drag it to them.</li>
+                <li>First to <b>8 points</b> wins &ndash; but not while holding the Pink Cow!</li>
+                <li>Made a mistake? Tap <b>Undo</b>.</li>
+            </ul>
+            <button class="big-btn" type="button" data-close="helpModal">Got it</button>
+        </div>
+    </div>
+
+    <div class="modal" id="avatarModal">
+        <div class="modal-card">
+            <h2>Pick a cow</h2>
+            <div class="avatar-grid" id="avatarGrid"></div>
+            <button class="big-btn" type="button" data-close="avatarModal">Cancel</button>
+        </div>
+    </div>
+
+    <div class="modal" id="winModal">
+        <div class="modal-card">
+            <h2 id="winTitle">We have a winner!</h2>
+            <div class="winner-avatar" id="winAvatar"></div>
+            <p id="winText" style="text-align:center;font-size:1.2rem;"></p>
+            <div class="modal-actions">
+                <button class="big-btn" type="button" id="winAgainBtn">Play Again</button>
+                <button class="tool-btn" type="button" id="winUndoBtn">&#8630; Undo</button>
+                <button class="tool-btn" type="button" data-close="winModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------------
+        // Constants
+        // ---------------------------------------------------------------
+        const WIN_SCORE = 8;
+        const MIN_PLAYERS = 2;
+        const MAX_PLAYERS = 8;
+        const DEFAULT_LAN_IP = '192.168.0.242';   // same fallback the other QR games use
+        const SETUP_KEY = 'herdMentalitySetup';
+        const WAVE_COLOURS = ['#2fc4a4', '#f06ab0', '#4f6fc4'];
+        const MAX_UNDO = 150;
+
+        // 8 cow-head variations: white fur colour + one playful accessory each
+        const AVATARS = [
+            { fill: '#ffffff', acc: 'glasses' },
+            { fill: '#fff1b8', acc: 'sunglasses' },
+            { fill: '#cfe8ff', acc: 'moustache' },
+            { fill: '#e5d4ff', acc: 'bowtie' },
+            { fill: '#c9f5e0', acc: 'partyhat' },
+            { fill: '#ffd9c4', acc: 'headband' },
+            { fill: '#ffe0f0', acc: 'monocle' },
+            { fill: '#d6d6d6', acc: 'tophat' }
+        ];
+
+        // ---------------------------------------------------------------
+        // SVG builders (all graphics are drawn here - no image files)
+        // ---------------------------------------------------------------
+        function accessorySvg(acc) {
+            switch (acc) {
+                case 'glasses':
+                    return '<g fill="none" stroke="#111" stroke-width="3"><circle cx="39" cy="42" r="11"/><circle cx="61" cy="42" r="11"/><path d="M50 41q0-2 0 0"/></g>';
+                case 'sunglasses':
+                    return '<g fill="#111"><rect x="26" y="33" width="23" height="15" rx="7"/><rect x="51" y="33" width="23" height="15" rx="7"/><rect x="47" y="37" width="6" height="4"/></g><path d="M31 37h8" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.6"/>';
+                case 'moustache':
+                    return '<path d="M50 62C44 55 32 57 29 64C37 63 44 65 50 63C56 65 63 63 71 64C68 57 56 55 50 62Z" fill="#5a3416" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>';
+                case 'bowtie':
+                    return '<g stroke="#111" stroke-width="2.5" stroke-linejoin="round"><path d="M50 102L33 93V111Z" fill="#e53935"/><path d="M50 102L67 93V111Z" fill="#e53935"/><circle cx="50" cy="102" r="5" fill="#b71c1c"/></g>';
+                case 'partyhat':
+                    return '<g stroke="#111" stroke-width="2.5" stroke-linejoin="round"><path d="M38 17L50 -9L62 17Z" fill="#7e57c2"/><path d="M43 7L57 7" stroke="#ffd23f" stroke-width="4"/><circle cx="50" cy="-10" r="5" fill="#ffd23f"/></g>';
+                case 'headband':
+                    return '<rect x="24" y="22" width="52" height="8" fill="#f06ab0" stroke="#111" stroke-width="2.5"/>';
+                case 'monocle':
+                    return '<circle cx="61" cy="42" r="12" fill="none" stroke="#c9a227" stroke-width="3.5"/><path d="M71 51Q80 70 74 90" fill="none" stroke="#c9a227" stroke-width="2"/>';
+                case 'tophat':
+                    return '<g stroke="#111" stroke-width="2.5" stroke-linejoin="round"><rect x="34" y="-8" width="32" height="24" rx="3" fill="#2b2b2b"/><rect x="34" y="6" width="32" height="6" fill="#e53935"/><rect x="26" y="14" width="48" height="6" rx="3" fill="#2b2b2b"/></g>';
+                default:
+                    return '';
+            }
+        }
+
+        // Cow-head avatar based on the "Player Icon" style
+        function avatarSvg(idx) {
+            const a = AVATARS[idx % AVATARS.length];
+            return '<svg viewBox="0 -18 100 132" aria-hidden="true">' +
+                '<ellipse cx="14" cy="36" rx="14" ry="8" transform="rotate(-22 14 36)" fill="#111"/>' +
+                '<ellipse cx="86" cy="36" rx="14" ry="8" transform="rotate(22 86 36)" fill="#111"/>' +
+                '<path d="M28 22L22 4L40 16Z" fill="#ffd23f" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>' +
+                '<path d="M72 22L78 4L60 16Z" fill="#ffd23f" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>' +
+                '<rect x="24" y="14" width="52" height="82" rx="24" fill="' + a.fill + '" stroke="#111" stroke-width="4"/>' +
+                '<path d="M26 26Q26 16 40 16L50 16Q34 22 34 40Q26 40 26 26Z" fill="#111"/>' +
+                '<ellipse cx="39" cy="42" rx="8" ry="10" fill="#fff" stroke="#111" stroke-width="3"/>' +
+                '<ellipse cx="61" cy="42" rx="8" ry="10" fill="#fff" stroke="#111" stroke-width="3"/>' +
+                '<circle cx="40" cy="44" r="4" fill="#111"/><circle cx="60" cy="44" r="4" fill="#111"/>' +
+                '<rect x="30" y="60" width="40" height="30" rx="14" fill="#f06ab0" stroke="#111" stroke-width="3.5"/>' +
+                '<path d="M42 72Q40 80 46 80M58 72Q60 80 54 80" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/>' +
+                accessorySvg(a.acc) +
+                '</svg>';
+        }
+
+        // Full-body black-and-white score cow. The score number sits on its body.
+        // `flip` makes it face the other way for the right-hand column.
+        function scoreCowSvg(flip) {
+            const g = flip ? ' transform="translate(208 0) scale(-1 1)"' : '';
+            const bx = flip ? 92 : 116;
+            return '<svg viewBox="0 0 208 140" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+                '<g' + g + ' stroke-linejoin="round">' +
+                '<path d="M184 56C202 60 204 84 196 100" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>' +
+                '<path d="M191 98l5 14 5-14z" fill="#111"/>' +
+                '<ellipse cx="124" cy="108" rx="15" ry="9" fill="#f06ab0" stroke="#111" stroke-width="3"/>' +
+                '<rect x="54" y="96" width="16" height="36" rx="5" fill="#fff" stroke="#111" stroke-width="3.5"/><rect x="54" y="123" width="16" height="9" rx="3" fill="#111"/>' +
+                '<rect x="76" y="96" width="16" height="36" rx="5" fill="#fff" stroke="#111" stroke-width="3.5"/><rect x="76" y="123" width="16" height="9" rx="3" fill="#111"/>' +
+                '<rect x="150" y="96" width="16" height="36" rx="5" fill="#fff" stroke="#111" stroke-width="3.5"/><rect x="150" y="123" width="16" height="9" rx="3" fill="#111"/>' +
+                '<rect x="170" y="96" width="16" height="36" rx="5" fill="#fff" stroke="#111" stroke-width="3.5"/><rect x="170" y="123" width="16" height="9" rx="3" fill="#111"/>' +
+                '<rect x="40" y="30" width="148" height="76" rx="32" fill="#fff" stroke="#111" stroke-width="4.5"/>' +
+                '<path d="M62 36q14-6 28 2q8 14-6 22q-18 4-22-24z" fill="#111"/>' +
+                '<path d="M134 36q22-6 38 6q6 18-14 24q-24 2-24-30z" fill="#111"/>' +
+                '<path d="M96 90q16-8 32 0q4 10-12 12q-20 0-20-12z" fill="#111"/>' +
+                '<path d="M52 84q10-10 20 0q2 10-10 14q-12-2-10-14z" fill="#111"/>' +
+                '<path d="M160 82q14-8 24 4q0 12-14 16q-14-4-10-20z" fill="#111"/>' +
+                '<ellipse cx="52" cy="42" rx="15" ry="8" transform="rotate(20 52 42)" fill="#111"/>' +
+                '<path d="M22 26L16 8L34 20Z" fill="#ffd23f" stroke="#111" stroke-width="2.5"/>' +
+                '<rect x="4" y="24" width="50" height="64" rx="22" fill="#fff" stroke="#111" stroke-width="4"/>' +
+                '<path d="M6 38Q6 26 22 26L30 26Q16 34 18 50Q6 50 6 38Z" fill="#111"/>' +
+                '<ellipse cx="20" cy="46" rx="7" ry="9" fill="#fff" stroke="#111" stroke-width="3"/>' +
+                '<ellipse cx="38" cy="46" rx="7" ry="9" fill="#fff" stroke="#111" stroke-width="3"/>' +
+                '<circle cx="21" cy="48" r="3.5" fill="#111"/><circle cx="37" cy="48" r="3.5" fill="#111"/>' +
+                '<rect x="9" y="62" width="40" height="27" rx="12" fill="#f06ab0" stroke="#111" stroke-width="3.5"/>' +
+                '<path d="M21 74Q19 81 25 81M37 74Q39 81 33 81" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>' +
+                '</g>' +
+                '<circle cx="' + bx + '" cy="68" r="25" fill="#fff" stroke="#111" stroke-width="4"/>' +
+                '<text class="score-text" x="' + bx + '" y="79" text-anchor="middle" font-size="31" font-weight="900" fill="#111" font-family="Arial Rounded MT Bold, Trebuchet MS, system-ui, sans-serif">0</text>' +
+                '</svg>';
+        }
+
+        // The chunky Pink Cow
+        function pinkCowSvg() {
+            return '<svg viewBox="0 0 160 110" aria-hidden="true"><g stroke="#111" stroke-linejoin="round">' +
+                '<path d="M152 40Q164 46 158 66" fill="none" stroke-width="4" stroke-linecap="round"/>' +
+                '<rect x="52" y="68" width="15" height="34" rx="5" fill="#f06ab0" stroke-width="3"/><rect x="52" y="94" width="15" height="8" rx="3" fill="#8a2a62" stroke-width="2"/>' +
+                '<rect x="72" y="68" width="15" height="34" rx="5" fill="#f06ab0" stroke-width="3"/><rect x="72" y="94" width="15" height="8" rx="3" fill="#8a2a62" stroke-width="2"/>' +
+                '<rect x="118" y="68" width="15" height="34" rx="5" fill="#f06ab0" stroke-width="3"/><rect x="118" y="94" width="15" height="8" rx="3" fill="#8a2a62" stroke-width="2"/>' +
+                '<rect x="136" y="68" width="15" height="34" rx="5" fill="#f06ab0" stroke-width="3"/><rect x="136" y="94" width="15" height="8" rx="3" fill="#8a2a62" stroke-width="2"/>' +
+                '<rect x="40" y="26" width="114" height="60" rx="20" fill="#f06ab0" stroke-width="3.5"/>' +
+                '<path d="M96 30q18-4 26 8q-4 14-22 12q-10-10-4-20z" fill="#c23a8a" stroke="none"/>' +
+                '<path d="M128 58q12-4 18 6q-6 12-16 8q-6-6-2-14z" fill="#c23a8a" stroke="none"/>' +
+                '<path d="M72 54q10-6 18 2q0 10-10 12q-8-4-8-14z" fill="#c23a8a" stroke="none"/>' +
+                '<ellipse cx="9" cy="28" rx="11" ry="6" transform="rotate(-30 9 28)" fill="#f06ab0" stroke-width="3"/>' +
+                '<ellipse cx="61" cy="28" rx="11" ry="6" transform="rotate(30 61 28)" fill="#f06ab0" stroke-width="3"/>' +
+                '<path d="M18 20L14 5L30 15Z" fill="#ffd23f" stroke-width="2.5"/><path d="M52 20L56 5L40 15Z" fill="#ffd23f" stroke-width="2.5"/>' +
+                '<rect x="4" y="18" width="62" height="62" rx="16" fill="#f06ab0" stroke-width="3.5"/>' +
+                '<ellipse cx="24" cy="40" rx="7" ry="5.5" fill="#fff" stroke-width="2.5"/><ellipse cx="46" cy="40" rx="7" ry="5.5" fill="#fff" stroke-width="2.5"/>' +
+                '<circle cx="25" cy="41.5" r="2.8" fill="#111" stroke="none"/><circle cx="45" cy="41.5" r="2.8" fill="#111" stroke="none"/>' +
+                '<path d="M15 29L31 36M55 29L39 36" fill="none" stroke-width="4" stroke-linecap="round"/>' +
+                '<rect x="13" y="50" width="44" height="27" rx="12" fill="#f9a1d2" stroke-width="3"/>' +
+                '<path d="M25 62Q23 69 29 69M45 62Q47 69 41 69" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
+                '<path d="M22 75L12 88M29 75L25 91M36 75L38 89" fill="none" stroke="#3fae5a" stroke-width="3.5" stroke-linecap="round"/>' +
+                '</g></svg>';
+        }
+
+        // ---------------------------------------------------------------
+        // Small helpers
+        // ---------------------------------------------------------------
+        const $ = id => document.getElementById(id);
+
+        const FALLBACK_QUESTIONS = [
+            { id: 1, category: 'Food & Drink', question: "What's the best type of biscuit?" },
+            { id: 2, category: 'Animals', question: 'Name a farm animal.' },
+            { id: 3, category: 'Everyday Life', question: 'Name something that is round.' }
+        ];
+
+        let questions = FALLBACK_QUESTIONS;
+        let game = null;          // { players:[{name,avatar,score}], holder:null|index, order:[], pos:0 }
+        let history = [];         // JSON snapshots for Undo
+        let announced = '';       // which winner(s) we already showed the modal for
+        let selectMode = false;   // tap-to-assign fallback for the Pink Cow
+
+        function shuffledOrder() {
+            const a = questions.map((_, i) => i);
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+            window.scrollTo(0, 0);
+        }
+
+        function openModal(id) { $(id).classList.add('open'); }
+        function closeModal(id) { $(id).classList.remove('open'); }
+
+        // ---------------------------------------------------------------
+        // QR code for the phone page (same LAN-IP idea as Quiz Bingo)
+        // ---------------------------------------------------------------
+        function phoneUrl() {
+            const h = window.location.hostname;
+            const isLocal = !h || h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+            const base = isLocal ? 'http://' + DEFAULT_LAN_IP + ':3000' : window.location.origin;
+            return base + '/games/herd-mentality/phone-answer.html';
+        }
+
+        function drawQr(container, size) {
+            container.innerHTML = '';
+            if (typeof QRCode === 'undefined') {
+                // QR library blocked or offline - the URL under it can be typed in instead.
+                container.innerHTML = '<div style="padding:8px;font-weight:800;font-size:0.8rem;">QR unavailable &ndash; type the address</div>';
+                return;
+            }
+            new QRCode(container, { text: phoneUrl(), width: size, height: size });
+        }
+
+        // ---------------------------------------------------------------
+        // Setup screen
+        // ---------------------------------------------------------------
+        let setup = loadSetup();
+        let pickerFor = 0;
+
+        function loadSetup() {
+            const d = { count: 4, names: Array(MAX_PLAYERS).fill(''), avatars: [0, 1, 2, 3, 4, 5, 6, 7] };
+            try {
+                const s = JSON.parse(localStorage.getItem(SETUP_KEY));
+                if (s) {
+                    if (Number.isInteger(s.count)) d.count = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, s.count));
+                    if (Array.isArray(s.names)) for (let i = 0; i < MAX_PLAYERS; i++) d.names[i] = String(s.names[i] || '').slice(0, 12);
+                    if (Array.isArray(s.avatars) && s.avatars.length === MAX_PLAYERS) {
+                        const ok = s.avatars.every(a => Number.isInteger(a) && a >= 0 && a < AVATARS.length) && new Set(s.avatars).size === MAX_PLAYERS;
+                        if (ok) d.avatars = s.avatars.slice();
+                    }
+                }
+            } catch (e) { /* storage blocked or bad data - use defaults */ }
+            return d;
+        }
+
+        function saveSetup() {
+            try { localStorage.setItem(SETUP_KEY, JSON.stringify(setup)); } catch (e) { /* ignore */ }
+        }
+
+        // Wipe the remembered names/setup so re-entering Herd Mentality from the
+        // Games Hub always starts with blank name fields. Only the two Hub links
+        // call this; "New Game" and "Play Again" keep the names within a session.
+        function clearSetup() {
+            setup = { count: 4, names: Array(MAX_PLAYERS).fill(''), avatars: [0, 1, 2, 3, 4, 5, 6, 7] };
+            try { localStorage.removeItem(SETUP_KEY); } catch (e) { /* ignore */ }
+            renderSetup();
+        }
+
+        function renderSetup() {
+            $('countNum').textContent = setup.count;
+            $('minusBtn').disabled = setup.count <= MIN_PLAYERS;
+            $('plusBtn').disabled = setup.count >= MAX_PLAYERS;
+            const wrap = $('playerRows');
+            wrap.innerHTML = '';
+            for (let i = 0; i < setup.count; i++) {
+                const row = document.createElement('div');
+                row.className = 'player-row';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'avatar-btn';
+                btn.setAttribute('aria-label', 'Choose cow for player ' + (i + 1));
+                btn.innerHTML = avatarSvg(setup.avatars[i]);
+                btn.addEventListener('click', () => openAvatarPicker(i));
+                const input = document.createElement('input');
+                input.className = 'name-input';
+                input.type = 'text';
+                input.maxLength = 12;
+                input.placeholder = 'Player ' + (i + 1);
+                input.value = setup.names[i];
+                input.setAttribute('aria-label', 'Name for player ' + (i + 1));
+                input.addEventListener('input', () => { setup.names[i] = input.value; saveSetup(); });
+                row.appendChild(btn);
+                row.appendChild(input);
+                wrap.appendChild(row);
+            }
+        }
+
+        function openAvatarPicker(i) {
+            pickerFor = i;
+            const grid = $('avatarGrid');
+            grid.innerHTML = '';
+            AVATARS.forEach((_, a) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'avatar-choice' + (setup.avatars[i] === a ? ' selected' : '');
+                b.innerHTML = avatarSvg(a);
+                b.setAttribute('aria-label', 'Cow ' + (a + 1));
+                b.addEventListener('click', () => {
+                    // Every cow is unique: if someone else has it, swap with them.
+                    const other = setup.avatars.indexOf(a);
+                    if (other !== -1 && other !== pickerFor) setup.avatars[other] = setup.avatars[pickerFor];
+                    setup.avatars[pickerFor] = a;
+                    saveSetup();
+                    closeModal('avatarModal');
+                    renderSetup();
+                });
+                grid.appendChild(b);
+            });
+            openModal('avatarModal');
+        }
+
+        function changeCount(delta) {
+            setup.count = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, setup.count + delta));
+            saveSetup();
+            renderSetup();
+        }
+
+        // ---------------------------------------------------------------
+        // Game state, undo and rules
+        // ---------------------------------------------------------------
+        function startGame() {
+            const players = [];
+            for (let i = 0; i < setup.count; i++) {
+                players.push({
+                    name: (setup.names[i] || '').trim() || 'Player ' + (i + 1),
+                    avatar: setup.avatars[i],
+                    score: 0
+                });
+            }
+            game = { players: players, holder: null, order: shuffledOrder(), pos: 0 };
+            history = [];
+            announced = '';
+            selectMode = false;
+            showScreen('gameScreen');
+            render();
+        }
+
+        // Every change goes through commit() so Undo can step back one change at a time.
+        function commit(change) {
+            history.push(JSON.stringify(game));
+            if (history.length > MAX_UNDO) history.shift();
+            change();
+            render();
+        }
+
+        function undo() {
+            if (!history.length) return;
+            game = JSON.parse(history.pop());
+            closeModal('winModal');
+            render();
+        }
+
+        function changeScore(idx, delta) {
+            const p = game.players[idx];
+            const next = Math.max(0, p.score + delta);
+            if (next === p.score) return;           // already at 0, nothing to undo
+            commit(() => { p.score = next; });
+            flashScore(idx, delta);
+        }
+
+        function nextQuestion() {
+            commit(() => {
+                game.pos++;
+                if (game.pos >= game.order.length) { game.order = shuffledOrder(); game.pos = 0; }
+            });
+        }
+
+        function prevQuestion() {
+            if (game.pos <= 0) return;
+            commit(() => { game.pos--; });
+        }
+
+        function giveCow(idx) {
+            if (game.holder === idx) return;
+            commit(() => { game.holder = idx; });
+        }
+
+        function returnCow() {
+            if (game.holder === null) return;
+            commit(() => { game.holder = null; });
+        }
+
+        // Winners: 8+ points and NOT holding the Pink Cow. Highest score wins.
+        function findWinners() {
+            const eligible = [];
+            game.players.forEach((p, i) => { if (p.score >= WIN_SCORE && i !== game.holder) eligible.push(i); });
+            if (!eligible.length) return [];
+            const top = Math.max(...eligible.map(i => game.players[i].score));
+            return eligible.filter(i => game.players[i].score === top);
+        }
+
+        function checkWin() {
+            const winners = findWinners();
+            if (!winners.length) { announced = ''; return winners; }
+            const key = winners.join(',') + ':' + winners.map(i => game.players[i].score).join(',');
+            if (key !== announced) {
+                announced = key;
+                const names = winners.map(i => game.players[i].name).join(' & ');
+                $('winTitle').textContent = winners.length > 1 ? "It's a tie at the top!" : 'We have a winner!';
+                $('winAvatar').innerHTML = avatarSvg(game.players[winners[0]].avatar);
+                $('winText').textContent = names + (winners.length > 1 ? ' win with ' : ' wins with ') + game.players[winners[0]].score + ' points!';
+                openModal('winModal');
+            }
+            return winners;
+        }
+
+        // ---------------------------------------------------------------
+        // Rendering
+        // ---------------------------------------------------------------
+        function buildCard(p, i, flip, winners) {
+            const hasCow = game.holder === i;
+            const blocked = hasCow && p.score >= WIN_SCORE;
+            const el = document.createElement('div');
+            el.className = 'player-card' + (hasCow ? ' has-cow' : '') + (winners.indexOf(i) !== -1 ? ' is-winner' : '');
+            el.dataset.idx = i;
+            el.innerHTML =
+                '<div class="p-who"><div class="p-avatar">' + avatarSvg(p.avatar) + '</div><div class="p-name"></div></div>' +
+                '<div class="score-cow" aria-label="Score cow: top half adds a point, bottom half takes one away">' + scoreCowSvg(flip) +
+                '<span class="half-hint top">+1</span><span class="half-hint bottom">&minus;1</span></div>' +
+                (hasCow ? '<div class="cow-badge" title="Drag to pass the Pink Cow on">' + pinkCowSvg() + 'Pink Cow</div>' : '') +
+                (blocked ? '<div class="hold-msg">' + WIN_SCORE + '+ pts &ndash; pass the Pink Cow to win!</div>' : '');
+            el.querySelector('.p-name').textContent = p.name;
+            el.querySelector('.score-text').textContent = p.score;
+            return el;
+        }
+
+        function render() {
+            if (!game) return;
+            if (game.holder !== null) selectMode = false;
+            document.body.classList.toggle('select-mode', selectMode);
+
+            const winners = checkWin();
+            const half = Math.ceil(game.players.length / 2);
+            const left = $('leftSide'), right = $('rightSide');
+            left.innerHTML = ''; right.innerHTML = '';
+            game.players.forEach((p, i) => {
+                if (i < half) left.appendChild(buildCard(p, i, false, winners));
+                else right.appendChild(buildCard(p, i, true, winners));
+            });
+
+            // Pen: only the Pink Cow lives here, and only while nobody holds it
+            const yard = $('penYard');
+            if (game.holder === null) {
+                yard.innerHTML = '<div class="pink-cow' + (selectMode ? ' selected' : '') + '" role="button" aria-label="Pink Cow">' + pinkCowSvg() + '</div>';
+            } else {
+                yard.innerHTML = '<div class="pen-empty"></div>';
+                yard.firstChild.textContent = game.players[game.holder].name + ' has the Pink Cow. Drag it back here or to another player.';
+            }
+            $('pen').classList.toggle('can-return', game.holder !== null);
+
+            // Question card
+            const q = questions[game.order[game.pos]] || FALLBACK_QUESTIONS[0];
+            $('qText').textContent = q.question;
+            $('qCat').textContent = q.category || '';
+            $('qNum').textContent = '#' + q.id;
+            $('questionCard').style.setProperty('--wave', WAVE_COLOURS[game.pos % WAVE_COLOURS.length]);
+            $('progressLabel').textContent = 'Question ' + (game.pos + 1) + ' of ' + game.order.length;
+            $('prevBtn').disabled = game.pos <= 0;
+            $('undoBtn').disabled = history.length === 0;
+        }
+
+        function flashScore(idx, delta) {
+            const cow = document.querySelector('.player-card[data-idx="' + idx + '"] .score-cow');
+            if (!cow) return;
+            cow.classList.add(delta > 0 ? 'bump' : 'shrink');
+            const pop = document.createElement('span');
+            pop.className = 'float-pop' + (delta < 0 ? ' minus' : '');
+            pop.textContent = delta > 0 ? '+1' : '\u22121';
+            cow.appendChild(pop);
+            setTimeout(() => pop.remove(), 850);
+        }
+
+        // ---------------------------------------------------------------
+        // Pink Cow: drag-and-drop (mouse + touch via pointer events) with
+        // a tap-to-assign fallback.
+        // ---------------------------------------------------------------
+        let ignoreClickUntil = 0;
+        let drag = null;
+
+        function dropTargetAt(x, y) {
+            const el = document.elementFromPoint(x, y);
+            if (!el) return null;
+            const card = el.closest('.player-card');
+            if (card) return { type: 'player', idx: Number(card.dataset.idx) };
+            if (el.closest('#pen')) return { type: 'pen' };
+            return null;
+        }
+
+        function clearDropHover() {
+            document.querySelectorAll('.drop-hover').forEach(e => e.classList.remove('drop-hover'));
+        }
+
+        function startCowPointer(e) {
+            if (e.button !== undefined && e.button !== 0) return;
+            const source = e.target.closest('.pink-cow, .cow-badge');
+            if (!source) return;
+            e.preventDefault();
+            drag = {
+                fromPen: source.classList.contains('pink-cow'),
+                x0: e.clientX, y0: e.clientY, moved: false, ghost: null
+            };
+        }
+
+        function movePointer(e) {
+            if (!drag) return;
+            if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 8) {
+                drag.moved = true;
+                drag.ghost = document.createElement('div');
+                drag.ghost.className = 'drag-ghost';
+                drag.ghost.innerHTML = pinkCowSvg();
+                document.body.appendChild(drag.ghost);
+            }
+            if (!drag.moved) return;
+            drag.ghost.style.left = e.clientX + 'px';
+            drag.ghost.style.top = e.clientY + 'px';
+            clearDropHover();
+            const t = dropTargetAt(e.clientX, e.clientY);
+            if (t && t.type === 'player') document.querySelector('.player-card[data-idx="' + t.idx + '"]').classList.add('drop-hover');
+            if (t && t.type === 'pen') $('pen').classList.add('drop-hover');
+        }
+
+        function endPointer(e) {
+            if (!drag) return;
+            const d = drag;
+            drag = null;
+            ignoreClickUntil = Date.now() + 400;
+            if (d.ghost) d.ghost.remove();
+            clearDropHover();
+            if (d.moved) {
+                const t = dropTargetAt(e.clientX, e.clientY);
+                if (t && t.type === 'player') giveCow(t.idx);
+                else if (t && t.type === 'pen') returnCow();
+                else render();
+            } else if (d.fromPen) {
+                selectMode = !selectMode;          // tap the cow, then tap a player
+                render();
+            } else {
+                returnCow();                       // tap the badge to send the cow back
+            }
+        }
+
+        function cancelPointer() {
+            if (!drag) return;
+            if (drag.ghost) drag.ghost.remove();
+            drag = null;
+            clearDropHover();
+        }
+
+        document.addEventListener('pointerdown', startCowPointer);
+        document.addEventListener('pointermove', movePointer);
+        document.addEventListener('pointerup', endPointer);
+        document.addEventListener('pointercancel', cancelPointer);
+
+        // ---------------------------------------------------------------
+        // Clicks: tap-to-assign, score cow halves
+        // ---------------------------------------------------------------
+        document.addEventListener('click', function (e) {
+            if (!game || !$('gameScreen').classList.contains('active')) return;
+            if (Date.now() < ignoreClickUntil) return;
+
+            if (selectMode) {
+                const card = e.target.closest('.player-card');
+                if (card) {
+                    e.stopPropagation();
+                    giveCow(Number(card.dataset.idx));
+                } else {
+                    // Tapping the question card just cancels the mode (it should not also draw a question)
+                    if (e.target.closest('#questionCard')) e.stopPropagation();
+                    selectMode = false;
+                    render();
+                }
+                return;
+            }
+
+            const cow = e.target.closest('.score-cow');
+            if (cow) {
+                const idx = Number(cow.closest('.player-card').dataset.idx);
+                const r = cow.getBoundingClientRect();
+                changeScore(idx, e.clientY < r.top + r.height / 2 ? 1 : -1);
+            }
+        }, true);
+
+        // ---------------------------------------------------------------
+        // Button wiring
+        // ---------------------------------------------------------------
+        $('minusBtn').addEventListener('click', () => changeCount(-1));
+        $('plusBtn').addEventListener('click', () => changeCount(1));
+        $('startBtn').addEventListener('click', async () => {
+            await questionsReady;
+            startGame();
+        });
+
+        $('undoBtn').addEventListener('click', undo);
+        $('winUndoBtn').addEventListener('click', undo);
+        $('prevBtn').addEventListener('click', e => { e.stopPropagation(); prevQuestion(); });
+        $('questionCard').addEventListener('click', nextQuestion);
+        $('questionCard').addEventListener('keydown', e => {
+            if (e.target !== $('questionCard')) return;
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nextQuestion(); }
+        });
+
+        $('qrBtn').addEventListener('click', () => {
+            drawQr($('qrLarge'), 240);
+            $('qrLargeUrl').textContent = phoneUrl();
+            openModal('qrModal');
+        });
+        $('helpBtn').addEventListener('click', () => openModal('helpModal'));
+
+        $('newGameBtn').addEventListener('click', () => {
+            if (confirm('Start a new game? Current scores will be lost.')) {
+                game = null;
+                history = [];
+                closeModal('winModal');
+                renderSetup();
+                showScreen('setupScreen');
+            }
+        });
+        $('winAgainBtn').addEventListener('click', () => { closeModal('winModal'); startGame(); });
+
+        // Leaving for the Games Hub forgets the players, so the next visit starts blank.
+        $('setupHubLink').addEventListener('click', clearSetup);
+        $('toolbarHubLink').addEventListener('click', clearSetup);
+
+        // Close buttons and click-outside-to-close on every modal
+        document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
+        document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+        // ---------------------------------------------------------------
+        // Start-up
+        // ---------------------------------------------------------------
+        const questionsReady = fetch('questions.json')
+            .then(r => r.json())
+            .then(list => {
+                const clean = Array.isArray(list) ? list.filter(q => q && typeof q.question === 'string') : [];
+                if (clean.length) questions = clean;
+            })
+            .catch(() => { /* keep the built-in fallback questions */ });
+
+        renderSetup();
+        drawQr($('setupQr'), 118);
+        $('setupQrUrl').textContent = phoneUrl();
+    </script>
+</body>
+</html>
+
