@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dumb Dumber Dumbest - Buzzer</title>
+    <style>
+        :root {
+            --cream: #fff6dc; --cream2: #fde3b8; --orange: #ea5a24; --ink: #5a1f0c; --sky: #6bbbe3; --sky2: #a9dcf3;
+            --font: "Arial Rounded MT Bold", "Arial Black", Impact, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; }
+        body {
+            font-family: var(--font); color: var(--ink); background-color: var(--orange); overflow: hidden;
+            background-image: radial-gradient(circle, rgba(120, 30, 5, 0.28) 1px, transparent 1.5px), radial-gradient(circle, rgba(255, 220, 170, 0.28) 1px, transparent 1.5px);
+            background-size: 9px 9px, 13px 13px; background-position: 0 0, 4px 6px;
+            -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+        }
+        #scallop { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        #burst { position: fixed; inset: 18px; z-index: 1; border-radius: 16px; pointer-events: none; background: repeating-conic-gradient(from 0deg at 50% 55%, var(--cream) 0 7deg, var(--cream2) 7deg 14deg); }
+        #app { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; align-items: center; padding: 30px 26px 26px; gap: 0.6rem; }
+        .back {
+            align-self: flex-start; text-decoration: none; color: var(--cream); background: var(--ink); border: 3px solid var(--ink);
+            border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.8rem; box-shadow: 3px 3px 0 var(--orange);
+        }
+        h1 {
+            margin: 0; text-align: center; text-transform: uppercase; font-size: clamp(1.5rem, 8vw, 2.4rem); line-height: 1; color: var(--cream);
+            -webkit-text-stroke: 9px var(--orange); paint-order: stroke fill; text-shadow: 3px 4px 0 var(--ink); transform: rotate(-2deg);
+        }
+        .stage { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 0; }
+        #buzz {
+            --col: #e5262b; position: relative; width: min(78vw, 36vh, 360px); aspect-ratio: 1; padding: 0; background: none; border: 0; cursor: pointer;
+            filter: drop-shadow(4px 6px 0 rgba(90, 31, 12, 0.45)) drop-shadow(0 0 10px var(--col)); transition: transform 0.08s;
+        }
+        #buzz svg { width: 100%; height: 100%; display: block; }
+        #buzz.hit { transform: scale(0.92); }
+        #buzz .word {
+            position: absolute; left: 0; right: 0; bottom: 4%; text-align: center; font-family: var(--font); font-size: clamp(1.4rem, 7vw, 2.2rem);
+            text-transform: uppercase; color: var(--cream); -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill; pointer-events: none;
+        }
+        .picker { width: 100%; max-width: 420px; background: var(--sky); border: 5px solid var(--orange); border-radius: 20px; box-shadow: 0 0 0 3px var(--ink), 4px 5px 0 3px var(--ink); padding: 0.4rem 0.8rem 0.7rem; text-align: center; }
+        .picker .lab { text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.3rem; }
+        .opts { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+        .opt { flex: 1 1 4.2rem; font-family: inherit; font-size: 0.95rem; text-transform: uppercase; color: var(--ink); background: var(--cream); border: 3px solid var(--ink); border-radius: 999px; padding: 0.45rem 0.2rem; cursor: pointer; box-shadow: 2px 3px 0 var(--orange); }
+        .opt.on { background: var(--orange); color: var(--cream); }
+        .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem; }
+        .sw {
+            position: relative; display: flex; align-items: center; justify-content: center; gap: 0.22rem; min-width: 0;
+            font-family: inherit; font-size: 0.6rem; text-transform: uppercase; color: var(--ink); background: var(--cream);
+            border: 3px solid var(--ink); border-radius: 999px; padding: 0.2rem 0.15rem; cursor: pointer; box-shadow: 2px 2px 0 var(--orange);
+        }
+        .sw i { flex: none; width: 0.85rem; height: 0.85rem; border-radius: 50%; border: 2px solid var(--ink); background: var(--col); }
+        .sw.on { transform: scale(1.05); box-shadow: 0 0 0 3px var(--ink); }
+        .sw.on::after {
+            content: "\2713"; position: absolute; top: -7px; right: -5px; width: 1.05rem; height: 1.05rem; line-height: 1rem;
+            font-size: 0.7rem; text-align: center; background: var(--ink); color: var(--cream); border-radius: 50%;
+        }
+        /* Compact settings toggle: the Buzzer Sound and Your Colour pickers sit behind this button */
+        .settings-toggle {
+            display: flex; align-items: center; gap: 0.45rem; width: 100%; max-width: 420px; text-align: left;
+            font-family: inherit; font-size: 0.8rem; text-transform: uppercase; color: var(--ink); background: var(--cream);
+            border: 3px solid var(--ink); border-radius: 999px; padding: 0.35rem 0.8rem; cursor: pointer; box-shadow: 2px 3px 0 var(--orange);
+        }
+        .settings-toggle .dot { flex: none; width: 0.95rem; height: 0.95rem; border-radius: 50%; border: 2px solid var(--ink); background: #a6d92b; }
+        .settings-toggle .summary { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .settings-toggle .caret { flex: none; font-size: 0.7rem; line-height: 1; transition: transform 0.15s; }
+        .settings-toggle[aria-expanded="true"] .caret { transform: rotate(180deg); }
+        .settings-toggle:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+        .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+        .settings-panel {
+            width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 0.5rem;
+            max-height: 56vh; overflow-y: auto; overscroll-behavior: contain; padding: 8px;
+        }
+        .settings-panel[hidden] { display: none; }
+        /* While the settings are open the buzz button gets smaller and the page may scroll, so nothing is cut off */
+        body.settings-open #buzz { width: min(66vw, 26vh, 300px); }
+        body.settings-open #app { overflow-y: auto; }
+        body.settings-open .stage { min-height: min(30vh, 240px); }
+        #msg { min-height: 1.2em; font-size: 0.8rem; text-align: center; }
+    </style>
+</head>
+<body>
+<svg id="scallop" aria-hidden="true"></svg>
+<div id="burst"></div>
+<div id="app">
+    <a class="back" href="game-hub.html">&larr; Back to Games Hub</a>
+    <h1>Dumb Dumber Dumbest</h1>
+    <div class="stage">
+        <button id="buzz" type="button" aria-label="Buzz"><span id="buzzArt"></span><span class="word">Buzz!</span></button>
+    </div>
+    <button id="settingsToggle" class="settings-toggle" type="button" aria-expanded="false" aria-controls="settingsPanel">
+        <span class="dot" id="toggleDot" aria-hidden="true"></span>
+        <span class="summary"><span class="sr-only">Buzzer settings: </span><b id="toggleSound">Horn</b> &middot; <span id="toggleColour">Lime</span></span>
+        <span class="caret" aria-hidden="true">&#9662;</span>
+    </button>
+    <div id="settingsPanel" class="settings-panel" hidden>
+        <div class="picker">
+            <div class="lab">Buzzer sound</div>
+            <div class="opts" id="opts"></div>
+        </div>
+        <div class="picker">
+            <div class="lab">Your colour: <b id="colName">Lime</b></div>
+            <div class="swatches" id="colOpts"></div>
+        </div>
+    </div>
+    <div id="msg">&nbsp;</div>
+</div>
+<script>
+(function () {
+'use strict';
+var INK = '#5a1f0c', PINK = '#e58ad0';
+var $ = function (id) { return document.getElementById(id); };
+
+/* ---------- Art ---------- */
+function eye(x, y) {
+    return '<ellipse cx="' + x + '" cy="' + y + '" rx="6.5" ry="7.5" fill="#fff" stroke="' + INK + '" stroke-width="2.4"/><circle cx="' + (x + 1) + '" cy="' + (y + 2) + '" r="3" fill="' + INK + '"/>';
+}
+function brainTongue() {
+    var L = [[28,42,17],[48,28,19],[70,34,18],[78,56,15],[66,74,17],[42,76,17],[24,62,15],[50,52,24]], o = '', f = '', i, l;
+    for (i = 0; i < L.length; i++) {
+        l = L[i];
+        o += '<circle cx="' + l[0] + '" cy="' + l[1] + '" r="' + (l[2] + 3) + '"/>';
+        f += '<circle cx="' + l[0] + '" cy="' + l[1] + '" r="' + l[2] + '"/>';
+    }
+    return '<g fill="' + INK + '">' + o + '</g><g fill="' + PINK + '">' + f + '</g>' +
+        '<path d="M50 10Q44 28 50 42M28 34Q36 38 33 47M72 26Q64 36 70 45M24 60Q33 58 38 66M78 54Q68 60 66 70" fill="none" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<path d="M30 30Q36 22 44 20" fill="none" stroke="#fff" stroke-opacity="0.75" stroke-width="3.5" stroke-linecap="round"/>' +
+        eye(41, 54) + eye(59, 54) +
+        '<path d="M40 66Q50 74 60 66Z" fill="' + INK + '" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<path d="M46 68Q50 82 54 68Z" fill="#ff5a7a" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>';
+}
+/* col = the player's token colour (see COLOURS below), the same one they use in the host game */
+function buzzArt(col) {
+    var s = '', k, a;
+    for (k = 0; k < 12; k++) {
+        a = k * Math.PI / 6;
+        s += '<circle cx="' + (50 + 36 * Math.cos(a)).toFixed(2) + '" cy="' + (50 + 36 * Math.sin(a)).toFixed(2) + '" r="11"/>';
+    }
+    s += '<circle cx="50" cy="50" r="36"/>';
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="' + INK + '" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round">' + s + '</g>' +
+        '<g fill="' + (col || '#e5262b') + '">' + s + '</g><circle cx="50" cy="50" r="29" fill="' + INK + '"/><circle cx="50" cy="50" r="27" fill="#fff6dc"/>' +
+        '<g transform="translate(50 50) scale(0.5) translate(-50 -50)">' + brainTongue() + '</g></svg>';
+}
+function drawScallop() {
+    var w = window.innerWidth, h = window.innerHeight, r = 15, inset = 18, d = '', x, y, n, sx, sy, el = $('scallop');
+    if (w < 120 || h < 120) return;
+    el.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    n = Math.max(2, Math.round((w - 2 * inset) / (r * 2))); sx = (w - 2 * inset) / n;
+    for (x = 0; x < n; x++) d += '<circle cx="' + (inset + sx * (x + 0.5)) + '" cy="' + (inset - 2) + '" r="' + (sx / 2 + 1) + '"/><circle cx="' + (inset + sx * (x + 0.5)) + '" cy="' + (h - inset + 2) + '" r="' + (sx / 2 + 1) + '"/>';
+    n = Math.max(2, Math.round((h - 2 * inset) / (r * 2))); sy = (h - 2 * inset) / n;
+    for (y = 0; y < n; y++) d += '<circle cx="' + (inset - 2) + '" cy="' + (inset + sy * (y + 0.5)) + '" r="' + (sy / 2 + 1) + '"/><circle cx="' + (w - inset + 2) + '" cy="' + (inset + sy * (y + 0.5)) + '" r="' + (sy / 2 + 1) + '"/>';
+    el.innerHTML = '<g fill="' + INK + '" transform="translate(1.5 2)">' + d + '</g><g fill="#fff6dc">' + d + '</g><rect x="' + inset + '" y="' + inset + '" width="' + (w - 2 * inset) + '" height="' + (h - 2 * inset) + '" rx="14" fill="#fff6dc"/>';
+}
+window.addEventListener('resize', drawScallop);
+drawScallop();
+/* ---------- Sounds ----------
+   To use a real MP3 later, put it in public/sounds/ and fill in "file" (e.g. '/sounds/my-horn.mp3').
+   Leave file as '' to use the built-in synth tone. Each entry keeps a synth fallback so a buzz
+   still makes a sound if the MP3 cannot play. */
+function tone(c, t, type, freq, dur, vol) {
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+}
+var SOUNDS = [
+    { id: 'horn',  label: 'Horn',  file: '', synth: function (c, t) { tone(c, t, 'sawtooth', 220, 0.8, 0.35); tone(c, t, 'square', 223, 0.8, 0.2); } },
+    { id: 'chime', label: 'Chime', file: '', synth: function (c, t) { tone(c, t, 'sine', 880, 1.2, 0.4); tone(c, t + 0.12, 'sine', 1318, 1.1, 0.3); tone(c, t + 0.24, 'sine', 1760, 1.0, 0.2); } },
+    { id: 'buzz',  label: 'Buzz',  file: '', synth: function (c, t) { tone(c, t, 'square', 110, 0.6, 0.3); tone(c, t, 'sawtooth', 117, 0.6, 0.25); } },
+    /* One real MP3 buzzer per player (the synth above each is only the fallback). */
+    { id: 'beverley', label: 'Beverley', file: '/sounds/beverley-buzzer.mp3', synth: function (c, t) { tone(c, t, 'square', 523, 0.5, 0.3); tone(c, t + 0.15, 'square', 659, 0.5, 0.25); } },
+    { id: 'kate',     label: 'Kate',     file: '/sounds/kate-buzzer.mp3',     synth: function (c, t) { tone(c, t, 'triangle', 440, 0.5, 0.35); tone(c, t + 0.14, 'triangle', 588, 0.5, 0.3); } },
+    { id: 'norrie',   label: 'Norrie',   file: '/sounds/norrie-buzzer.mp3',   synth: function (c, t) { tone(c, t, 'sawtooth', 330, 0.6, 0.3); tone(c, t + 0.16, 'sawtooth', 247, 0.6, 0.28); } },
+    { id: 'richard',  label: 'Richard',  file: '/sounds/richard-buzzer.mp3',  synth: function (c, t) { tone(c, t, 'sine', 660, 0.45, 0.35); tone(c, t + 0.13, 'sine', 990, 0.45, 0.28); } }
+];
+var ctx = null, KEY = 'dumbDumberBuzzerSound', sel = SOUNDS[0].id;
+function audio() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!ctx) ctx = new AC();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+}
+function current() { return SOUNDS.filter(function (s) { return s.id === sel; })[0] || SOUNDS[0]; }
+function play(snd) {
+    var c, a, p;
+    if (snd.file) {
+        a = new Audio(snd.file);
+        p = a.play();
+        if (p && p.catch) p.catch(function () { var cc = audio(); if (cc) snd.synth(cc, cc.currentTime); });
+        return;
+    }
+    c = audio();
+    if (c) snd.synth(c, c.currentTime);
+}
+function renderOpts() {
+    var html = '';
+    SOUNDS.forEach(function (s) { html += '<button type="button" class="opt' + (s.id === sel ? ' on' : '') + '" data-id="' + s.id + '">' + s.label + '</button>'; });
+    $('opts').innerHTML = html;
+}
+try {
+    var saved = localStorage.getItem(KEY);
+    if (saved && SOUNDS.some(function (s) { return s.id === saved; })) sel = saved;
+} catch (e) { /* ignore */ }
+renderOpts();
+$('opts').addEventListener('click', function (e) {
+    var b = e.target.closest('.opt');
+    if (!b) return;
+    sel = b.getAttribute('data-id');
+    try { localStorage.setItem(KEY, sel); } catch (err) { /* ignore */ }
+    renderOpts();
+    renderSummary();
+    play(current()); /* preview; also unlocks audio on iOS */
+});
+/* ---------- Token colour (same 8 colours as PLAYERS in dumb-dumber-dumbest.html) ---------- */
+var COLOURS = [
+    { id: 'lime', name: 'Lime', col: '#a6d92b' }, { id: 'orange', name: 'Orange', col: '#f5821f' },
+    { id: 'yellow', name: 'Yellow', col: '#ffd92e' }, { id: 'red', name: 'Red', col: '#e5262b' },
+    { id: 'magenta', name: 'Magenta', col: '#e0289b' }, { id: 'purple', name: 'Purple', col: '#8a3ec9' },
+    { id: 'blue', name: 'Blue', col: '#2c7be5' }, { id: 'white', name: 'White', col: '#ffffff' }
+];
+var COL_KEY = 'dumbDumberBuzzerColour', colSel = COLOURS[0].id;
+function currentColour() { return COLOURS.filter(function (c) { return c.id === colSel; })[0] || COLOURS[0]; }
+function drawBuzzer() {
+    var c = currentColour();
+    $('buzzArt').innerHTML = buzzArt(c.col);
+    $('buzz').style.setProperty('--col', c.col);   /* glow round the token matches the colour too */
+}
+function renderColours() {
+    var html = '';
+    COLOURS.forEach(function (o) {
+        html += '<button type="button" class="sw' + (o.id === colSel ? ' on' : '') + '" style="--col:' + o.col + '" data-id="' + o.id +
+            '" aria-pressed="' + (o.id === colSel ? 'true' : 'false') + '"><i></i>' + o.name + '</button>';
+    });
+    $('colOpts').innerHTML = html;
+    $('colName').textContent = currentColour().name;
+}
+/* ---------- Compact settings toggle (the sound and colour pickers live behind it) ---------- */
+var panel = $('settingsPanel'), toggle = $('settingsToggle');
+function renderSummary() {
+    $('toggleSound').textContent = current().label;
+    $('toggleColour').textContent = currentColour().name;
+    $('toggleDot').style.background = currentColour().col;
+}
+function setPanel(open) {
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('settings-open', open);
+}
+toggle.addEventListener('click', function () { setPanel(panel.hidden); });
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !panel.hidden) { setPanel(false); toggle.focus(); }
+});
+try {
+    var savedCol = localStorage.getItem(COL_KEY);
+    if (savedCol && COLOURS.some(function (c) { return c.id === savedCol; })) colSel = savedCol;
+} catch (e) { /* ignore */ }
+drawBuzzer(); renderColours(); renderSummary();
+$('colOpts').addEventListener('click', function (e) {
+    var b = e.target.closest('.sw');
+    if (!b) return;
+    colSel = b.getAttribute('data-id');
+    try { localStorage.setItem(COL_KEY, colSel); } catch (err) { /* ignore */ }
+    drawBuzzer(); renderColours(); renderSummary();
+    $('msg').textContent = currentColour().name + ' token selected';
+});
+var buzzBtn = $('buzz');
+function hit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    buzzBtn.classList.add('hit');
+    setTimeout(function () { buzzBtn.classList.remove('hit'); }, 120);
+    play(current());
+    if (navigator.vibrate) navigator.vibrate(60);
+    $('msg').textContent = currentColour().name.toUpperCase() + ' BUZZED!';
+    setTimeout(function () { $('msg').innerHTML = '&nbsp;'; }, 900);
+}
+if (window.PointerEvent) buzzBtn.addEventListener('pointerdown', hit);
+else { buzzBtn.addEventListener('touchstart', hit); buzzBtn.addEventListener('mousedown', hit); }
+buzzBtn.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') hit(e); });
+})();
+</script>
+</body>
+</html>

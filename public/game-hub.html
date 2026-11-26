@@ -593,6 +593,92 @@
             .hitster-card .icon-box { width: 52px; height: 52px; }
         }
 
+        /* Dumb Dumber Dumbest tile only: retro cream + burnt-orange sunburst, scalloped edge, pink brain token. */
+        .dumb-card {
+            --dd-cream: #fff6dc;
+            --dd-orange: #ea5a24;
+            --dd-ink: #5a1f0c;
+            --dd-sky: #6bbbe3;
+            position: relative;
+            overflow: hidden;
+            padding: 2.1rem 1.8rem 2.4rem;
+            color: var(--dd-ink);
+            border: 3px solid var(--dd-ink);
+            background-color: var(--dd-cream);
+            background-image: repeating-conic-gradient(from 0deg at 50% 38%, rgba(234, 90, 36, 0.22) 0deg 9deg, rgba(255, 246, 220, 0) 9deg 18deg);
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        /* Scalloped orange edge along the top */
+        .dumb-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 14px;
+            background:
+                radial-gradient(circle at 10px 0, var(--dd-orange) 0 9px, rgba(234, 90, 36, 0) 10px) 0 0 / 20px 14px repeat-x;
+            pointer-events: none;
+        }
+        /* Scalloped orange edge along the bottom */
+        .dumb-card::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 14px;
+            background:
+                radial-gradient(circle at 10px 14px, var(--dd-orange) 0 9px, rgba(234, 90, 36, 0) 10px) 0 0 / 20px 14px repeat-x;
+            pointer-events: none;
+        }
+        .dumb-card .icon-box {
+            flex: 0 0 auto;
+            width: 64px;
+            height: 64px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+        }
+        .dumb-card .icon-box svg { width: 100%; height: 100%; stroke: none; overflow: visible; }
+        .dumb-card h2 {
+            font-family: "Arial Rounded MT Bold", "Arial Black", Impact, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+            color: var(--dd-cream);
+            -webkit-text-stroke: 5px var(--dd-orange);
+            paint-order: stroke fill;
+            text-shadow: 3px 3px 0 var(--dd-ink);
+        }
+        .dumb-card p {
+            color: var(--dd-ink);
+            font-weight: 700;
+        }
+        .dumb-card .card-footer {
+            position: relative;
+            z-index: 1;
+            align-self: flex-start;
+            padding: 0.3rem 0.8rem;
+            color: var(--dd-cream);
+            background: var(--dd-orange);
+            border: 3px solid var(--dd-ink);
+            border-radius: 999px;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+        .dumb-card:hover {
+            background-color: #fff0c4;
+            border-color: var(--dd-ink);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 30px -5px rgba(0, 0, 0, 0.45);
+        }
+        .dumb-card:hover .card-footer { background: var(--dd-sky); color: var(--dd-ink); }
+        /* Keep the tile legible on a 390px phone */
+        @media (max-width: 420px) {
+            .dumb-card { padding: 1.9rem 1.2rem 2.2rem; }
+            .dumb-card h2 { font-size: 1.15rem; }
+            .dumb-card .icon-box { width: 56px; height: 56px; }
+        }
+
     </style>
 </head>
 <body>
@@ -769,6 +855,60 @@
                 <p>The classic UNO spin wheel of fate. Spin for action cards and change the game's momentum.</p>
             </div>
             <div class="card-footer">Play UNO Spin &rarr;</div>
+        </a>
+
+        <!-- Dumb Dumber Dumbest -->
+        <a href="dumb-dumber-dumbest.html" class="hub-card dumb-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 100 100" aria-hidden="true">
+                            <g stroke="#5a1f0c" stroke-width="4" fill="#5a1f0c" stroke-linejoin="round">
+                                <circle cx="50" cy="50" r="36"></circle>
+                                <circle cx="86" cy="50" r="11"></circle><circle cx="81.18" cy="68" r="11"></circle>
+                                <circle cx="68" cy="81.18" r="11"></circle><circle cx="50" cy="86" r="11"></circle>
+                                <circle cx="32" cy="81.18" r="11"></circle><circle cx="18.82" cy="68" r="11"></circle>
+                                <circle cx="14" cy="50" r="11"></circle><circle cx="18.82" cy="32" r="11"></circle>
+                                <circle cx="32" cy="18.82" r="11"></circle><circle cx="50" cy="14" r="11"></circle>
+                                <circle cx="68" cy="18.82" r="11"></circle><circle cx="81.18" cy="32" r="11"></circle>
+                            </g>
+                            <g fill="#ea5a24">
+                                <circle cx="50" cy="50" r="36"></circle>
+                                <circle cx="86" cy="50" r="11"></circle><circle cx="81.18" cy="68" r="11"></circle>
+                                <circle cx="68" cy="81.18" r="11"></circle><circle cx="50" cy="86" r="11"></circle>
+                                <circle cx="32" cy="81.18" r="11"></circle><circle cx="18.82" cy="68" r="11"></circle>
+                                <circle cx="14" cy="50" r="11"></circle><circle cx="18.82" cy="32" r="11"></circle>
+                                <circle cx="32" cy="18.82" r="11"></circle><circle cx="50" cy="14" r="11"></circle>
+                                <circle cx="68" cy="18.82" r="11"></circle><circle cx="81.18" cy="32" r="11"></circle>
+                            </g>
+                            <circle cx="50" cy="50" r="27" fill="#fff6dc" stroke="#5a1f0c" stroke-width="3"></circle>
+                            <g transform="translate(50 50) scale(0.5) translate(-50 -50)">
+                                <g fill="#5a1f0c">
+                                    <circle cx="28" cy="42" r="20"></circle><circle cx="48" cy="28" r="22"></circle>
+                                    <circle cx="70" cy="34" r="21"></circle><circle cx="78" cy="56" r="18"></circle>
+                                    <circle cx="66" cy="74" r="20"></circle><circle cx="42" cy="76" r="20"></circle>
+                                    <circle cx="24" cy="62" r="18"></circle><circle cx="50" cy="52" r="27"></circle>
+                                </g>
+                                <g fill="#e58ad0">
+                                    <circle cx="28" cy="42" r="17"></circle><circle cx="48" cy="28" r="19"></circle>
+                                    <circle cx="70" cy="34" r="18"></circle><circle cx="78" cy="56" r="15"></circle>
+                                    <circle cx="66" cy="74" r="17"></circle><circle cx="42" cy="76" r="17"></circle>
+                                    <circle cx="24" cy="62" r="15"></circle><circle cx="50" cy="52" r="24"></circle>
+                                </g>
+                                <path d="M50 12Q44 30 50 44M30 36Q36 40 34 48M70 30Q64 38 70 46M26 62Q34 60 38 66M76 58Q68 62 66 70" fill="none" stroke="#5a1f0c" stroke-width="3" stroke-linecap="round"></path>
+                                <ellipse cx="41" cy="54" rx="6.5" ry="7.5" fill="#fff" stroke="#5a1f0c" stroke-width="2.5"></ellipse>
+                                <ellipse cx="59" cy="54" rx="6.5" ry="7.5" fill="#fff" stroke="#5a1f0c" stroke-width="2.5"></ellipse>
+                                <circle cx="42" cy="56" r="3" fill="#5a1f0c"></circle><circle cx="60" cy="56" r="3" fill="#5a1f0c"></circle>
+                                <path d="M40 66Q50 74 60 66Z" fill="#5a1f0c" stroke="#5a1f0c" stroke-width="2" stroke-linejoin="round"></path>
+                                <path d="M46 68Q50 82 54 68Z" fill="#ff5a7a" stroke="#5a1f0c" stroke-width="2" stroke-linejoin="round"></path>
+                            </g>
+                        </svg>
+                    </div>
+                    <h2>Dumb Dumber Dumbest</h2>
+                </div>
+                <p>Quick-fire general knowledge under pressure. Beat the 6-second clock, climb the IQ ladder and avoid being the Dumbest.</p>
+            </div>
+            <div class="card-footer">Play Dumb Dumber Dumbest &rarr;</div>
         </a>
 
 

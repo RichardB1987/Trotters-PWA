@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dumb Dumber Dumbest</title>
+    <style>
+        :root {
+            --cream: #fff6dc;
+            --cream2: #fde3b8;
+            --orange: #ea5a24;
+            --orange2: #f7a25a;
+            --ink: #5a1f0c;
+            --sky: #6bbbe3;
+            --sky2: #a9dcf3;
+            --pink: #e58ad0;
+            --font: "Arial Rounded MT Bold", "Arial Black", Impact, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; }
+        body {
+            font-family: var(--font);
+            color: var(--ink);
+            background-color: var(--orange);
+            background-image:
+                radial-gradient(circle, rgba(120, 30, 5, 0.28) 1px, transparent 1.5px),
+                radial-gradient(circle, rgba(255, 220, 170, 0.28) 1px, transparent 1.5px);
+            background-size: 9px 9px, 13px 13px;
+            background-position: 0 0, 4px 6px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #scallop { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        #burst {
+            position: fixed; inset: 24px; z-index: 1; border-radius: 18px; pointer-events: none;
+            background:
+                radial-gradient(circle, rgba(234, 90, 36, 0.16) 1px, transparent 1.5px) 0 0 / 11px 11px,
+                repeating-conic-gradient(from 0deg at 50% 50%, var(--cream) 0 7deg, var(--cream2) 7deg 14deg);
+        }
+        #app { position: relative; z-index: 2; min-height: 100vh; padding: 38px 40px; }
+        .screen[hidden], [hidden] { display: none !important; }
+        .back {
+            display: inline-block; text-decoration: none; color: var(--cream); background: var(--ink);
+            border: 3px solid var(--ink); border-radius: 999px; padding: 0.3rem 0.9rem; font-size: 0.85rem;
+            box-shadow: 3px 3px 0 var(--orange);
+        }
+        .back:hover { background: var(--orange); }
+        .title {
+            margin: 0.2rem 0 0; text-align: center; text-transform: uppercase; line-height: 0.95;
+            font-size: clamp(2rem, min(7vw, 9.5vh), 4.6rem); letter-spacing: -0.01em; color: var(--cream);
+            -webkit-text-stroke: 14px var(--orange); paint-order: stroke fill;
+            text-shadow: 5px 6px 0 var(--ink);
+            transform: rotate(-2deg);
+        }
+        .title span { display: block; }
+        .title span:nth-child(2) { font-size: 1.1em; }
+        .title span:nth-child(3) { font-size: 1.2em; }
+        .sub { text-align: center; font-size: 1.1rem; margin: 1rem 0 0.4rem; }
+        button { font-family: inherit; color: inherit; cursor: pointer; }
+        .bigBtn {
+            font-size: 1.2rem; text-transform: uppercase; color: var(--cream); background: var(--orange);
+            border: 4px solid var(--ink); border-radius: 999px; padding: 0.55rem 1.6rem;
+            box-shadow: 4px 5px 0 var(--ink); transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .bigBtn:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 5px 6px 0 var(--ink); }
+        .bigBtn:active:not(:disabled) { transform: translate(3px, 4px); box-shadow: 1px 1px 0 var(--ink); }
+        .bigBtn:disabled { background: #cdb79b; color: #f3e7d2; cursor: not-allowed; box-shadow: 2px 3px 0 #8b6a55; }
+        .bigBtn.blue { background: var(--sky); color: var(--ink); }
+        .smallBtn {
+            font-size: 0.8rem; text-transform: uppercase; background: var(--cream); border: 3px solid var(--ink);
+            border-radius: 999px; padding: 0.3rem 0.8rem; box-shadow: 3px 3px 0 var(--orange);
+        }
+        .smallBtn:hover { background: var(--sky2); }
+        /* Lobby */
+        .tokenGrid { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 1rem; max-width: 1200px; margin: 0.5rem auto 1rem; }
+        .pick {
+            position: relative; width: clamp(84px, min(20vw, 14vh), 150px); background: none; border: 0; padding: 0;
+            transition: transform 0.15s;
+        }
+        .pick:hover { transform: scale(1.06) rotate(-3deg); }
+        .pick svg { width: 100%; height: auto; display: block; filter: drop-shadow(3px 4px 0 rgba(90, 31, 12, 0.35)); }
+        .pick.on { transform: scale(1.1); }
+        .pick.on::after {
+            content: ""; position: absolute; left: -6px; right: -6px; top: -6px; aspect-ratio: 1; border-radius: 50%;
+            border: 5px dashed var(--ink); animation: spinSlow 8s linear infinite; pointer-events: none;
+        }
+        .pick .badge {
+            position: absolute; top: -2px; right: -2px; width: 2rem; height: 2rem; line-height: 1.6rem; z-index: 2;
+            border-radius: 50%; border: 3px solid var(--ink); background: var(--cream); font-size: 1rem; text-align: center;
+        }
+        .pick .nm { display: block; text-align: center; font-size: 0.8rem; margin-top: 2px; text-transform: uppercase; }
+        @keyframes spinSlow { to { transform: rotate(360deg); } }
+        .lobbyBtns { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 1.2rem; margin-top: 0.8rem; }
+        .qrBtn {
+            display: flex; align-items: center; gap: 0.5rem; background: var(--sky); border: 4px solid var(--ink);
+            border-radius: 999px; padding: 0.2rem 1.2rem 0.2rem 0.4rem; font-size: 1rem; text-transform: uppercase;
+            box-shadow: 4px 5px 0 var(--ink);
+        }
+        .qrBtn:hover { background: var(--sky2); }
+        .qrBrain svg { width: 52px; height: 52px; display: block; }
+        /* Game layout */
+        .topBar { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+        .topBtns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .board { --rowH: clamp(36px, 6vh, 56px); display: grid; grid-template-columns: minmax(340px, 33%) minmax(120px, 170px) 1fr; gap: 1rem; align-items: start; }
+        /* Red reference scoreboard card: speckled red, scalloped white inner trim */
+        .ladderWrap {
+            position: relative; border: 4px solid var(--ink); border-radius: 18px; padding: 26px 20px; box-shadow: 5px 6px 0 3px var(--ink);
+            background:
+                radial-gradient(circle, rgba(255, 255, 255, 0.4) 1px, transparent 1.6px) 0 0 / 23px 29px,
+                radial-gradient(circle, rgba(255, 255, 255, 0.28) 1px, transparent 1.5px) 9px 13px / 37px 31px,
+                linear-gradient(180deg, #e53925, #df321f);
+        }
+        .ladderWrap::before {
+            content: ""; position: absolute; inset: 4px; pointer-events: none; border-radius: 12px;
+            background:
+                radial-gradient(circle at 6px 6px, #fff 5.8px, transparent 6.3px) 0 0 / 12px 12px repeat-x,
+                linear-gradient(#fff, #fff) 0 6px / 100% 6px no-repeat,
+                radial-gradient(circle at 6px 6px, #fff 5.8px, transparent 6.3px) 0 100% / 12px 12px repeat-x,
+                linear-gradient(#fff, #fff) 0 calc(100% - 12px) / 100% 6px no-repeat,
+                radial-gradient(circle at 6px 6px, #fff 5.8px, transparent 6.3px) 0 0 / 12px 12px repeat-y,
+                linear-gradient(#fff, #fff) 6px 0 / 6px 100% no-repeat,
+                radial-gradient(circle at 6px 6px, #fff 5.8px, transparent 6.3px) 100% 0 / 12px 12px repeat-y,
+                linear-gradient(#fff, #fff) calc(100% - 12px) 0 / 6px 100% no-repeat;
+        }
+        .ladder { position: relative; height: calc(var(--rowH) * 10); }
+        .rung {
+            position: absolute; left: 0; right: 0; height: var(--rowH); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px;
+            padding: 0 4px; border-bottom: 2px solid rgba(255, 205, 90, 0.75); top: calc(var(--i) * var(--rowH));
+        }
+        .rung.last { border-bottom-color: transparent; }
+        /* 4-point gold sparkles at both ends of each divider */
+        .rung::before, .rung::after {
+            content: ""; position: absolute; bottom: -6px; width: 11px; height: 11px; background: #ffc928; pointer-events: none;
+            clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+        }
+        .rung::before { left: -3px; }
+        .rung::after { right: -3px; }
+        .rung.last::before, .rung.last::after { display: none; }
+        .rank {
+            display: flex; align-items: center; justify-content: center; width: calc(var(--rowH) * 1.15); height: calc(var(--rowH) - 8px);
+            background: var(--cream); border: 3px solid var(--ink); border-radius: 10px; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+            font-size: calc(var(--rowH) * 0.34); line-height: 1; color: #fff; -webkit-text-stroke: 4px #e53925; paint-order: stroke fill;
+            text-shadow: 1px 2px 0 var(--ink); letter-spacing: 0.02em;
+        }
+        .rVal {
+            display: flex; align-items: baseline; justify-content: flex-start; padding-left: 4px; gap: 0.12em; white-space: nowrap; line-height: 1; color: #fff;
+            font-family: "Arial Black", "Arial Rounded MT Bold", Impact, system-ui, sans-serif; -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill;
+            text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.3);
+        }
+        .rVal .num { font-size: calc(var(--rowH) * 0.74); letter-spacing: 0.01em; }
+        .rVal .iq { font-size: calc(var(--rowH) * 0.34); -webkit-text-stroke-width: 3px; }
+        .rIcon {
+            position: relative; display: flex; align-items: center; justify-content: center; width: calc(var(--rowH) - 6px); height: calc(var(--rowH) - 6px);
+            background: #fff; border: 3px solid var(--ink); border-radius: 10px; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+        }
+        .rIcon svg { width: 90%; height: 90%; display: block; transform-origin: 50% 60%; }
+        /* Clever tiers: crisp pop + gold sparkle. Middle: lively bob. Low tiers: slow dazed wobble. */
+        .rung.t0 .rIcon svg, .rung.t1 .rIcon svg, .rung.t2 .rIcon svg { animation: smartPop 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -0.9s); }
+        .rung.t0 .rIcon::after, .rung.t1 .rIcon::after, .rung.t2 .rIcon::after {
+            content: ""; position: absolute; top: -7px; right: -7px; width: 13px; height: 13px; background: #ffc928; pointer-events: none; opacity: 0;
+            clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+            animation: twinkle 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -0.9s);
+        }
+        .rung.t3 .rIcon svg, .rung.t4 .rIcon svg, .rung.t5 .rIcon svg { animation: reactBob 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * -0.55s); }
+        .rung.t6 .rIcon svg, .rung.t7 .rIcon svg, .rung.t8 .rIcon svg, .rung.t9 .rIcon svg { animation: dazedWobble 4.2s ease-in-out infinite; animation-delay: calc(var(--i) * -0.7s); }
+        .rung.t6 { --amp: 4deg; } .rung.t7 { --amp: 5deg; } .rung.t8 { --amp: 7deg; } .rung.t9 { --amp: 9deg; }
+        .rung.t8 .rIcon svg, .rung.t9 .rIcon svg { animation-duration: 5.4s; }
+        @keyframes smartPop { 0%, 78%, 100% { transform: scale(1) rotate(0); } 84% { transform: scale(1.16) rotate(-4deg); } 90% { transform: scale(0.97) rotate(2deg); } 95% { transform: scale(1.04) rotate(0); } }
+        @keyframes twinkle { 0%, 80%, 100% { opacity: 0; transform: scale(0.2) rotate(0); } 86% { opacity: 1; transform: scale(1.1) rotate(45deg); } 94% { opacity: 0; transform: scale(0.4) rotate(90deg); } }
+        @keyframes reactBob { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-2px) rotate(-3deg); } 65% { transform: translateY(1px) rotate(3deg); } }
+        @keyframes dazedWobble {
+            0%, 100% { transform: rotate(0) translate(0, 0) scale(1, 1); }
+            25% { transform: rotate(calc(var(--amp, 5deg) * -1)) translate(-1px, 0) scale(1, 0.98); }
+            50% { transform: rotate(0) translate(0, 1px) scale(1.03, 0.95); }
+            75% { transform: rotate(var(--amp, 5deg)) translate(1px, 0) scale(1, 0.98); }
+        }
+        @media (prefers-reduced-motion: reduce) { .rIcon svg, .rIcon::after { animation: none !important; } }
+        .rTok {
+            position: absolute; z-index: 3; width: calc(var(--rowH) * 1.05); height: calc(var(--rowH) * 1.05);
+            top: calc(var(--r) * var(--rowH) - var(--rowH) * 0.02); left: var(--x);
+            transition: top 0.6s cubic-bezier(0.3, 1.5, 0.5, 1), left 0.3s;
+        }
+        .rTok svg { width: 100%; height: 100%; display: block; overflow: visible; }
+        .rTok .sc {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -20%); min-width: 1.6em; text-align: center;
+            font-size: calc(var(--rowH) * 0.34); line-height: 1.1; padding: 0 3px; background: var(--cream);
+            border: 2px solid var(--ink); border-radius: 999px;
+        }
+        /* Timer */
+        .timerCol { display: flex; flex-direction: column; align-items: center; justify-content: center; align-self: stretch; gap: 0.5rem; }
+        .timer { position: relative; width: 100%; max-width: 180px; aspect-ratio: 1; }
+        .timer svg { width: 100%; height: 100%; display: block; }
+        .tBack { fill: var(--cream); stroke: var(--ink); stroke-width: 10; }
+        .tRing { fill: none; stroke: var(--orange); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 326.7; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+        .timerNum { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: clamp(2.6rem, 6vw, 4.6rem); color: var(--ink); }
+        .timer.idle { opacity: 0.55; }
+        .timer.run { animation: pulse 1s ease-in-out infinite; }
+        .timer.run.low { animation: pulseFast 0.5s ease-in-out infinite; }
+        .timer.run.low .tRing { stroke: #d01818; }
+        .timer.up { animation: flash 0.6s steps(2) infinite; }
+        .timer.up .timerNum { font-size: clamp(1rem, 2.2vw, 1.6rem); text-align: center; color: #d01818; }
+        @keyframes pulse { 50% { transform: scale(1.04); } }
+        @keyframes pulseFast { 50% { transform: scale(1.12); } }
+        @keyframes flash { 50% { transform: scale(1.08); filter: brightness(1.15) hue-rotate(-10deg); } }
+        .timerMsg { min-height: 1.2em; font-size: 0.85rem; text-align: center; text-transform: uppercase; }
+        /* Q&A */
+        .qa { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
+        .card { position: relative; border: 5px solid var(--orange); border-radius: 22px; padding: 0.4rem 1rem 0.8rem; box-shadow: 0 0 0 3px var(--ink), 4px 5px 0 3px var(--ink); }
+        .qCard { background: var(--sky); min-height: calc(var(--rowH) * 2.4); }
+        .aCard { background: var(--cream); min-height: calc(var(--rowH) * 2.8); }
+        .cardLabel { text-transform: uppercase; font-size: clamp(1.3rem, 3vh, 2rem); color: var(--cream); -webkit-text-stroke: 7px var(--orange); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
+        .aCard .cardLabel { -webkit-text-stroke-color: #d01818; }
+        .cardText { font-size: clamp(1.2rem, 3.2vh, 2.1rem); line-height: 1.2; color: var(--ink); }
+        .aCard .cardText { font-size: clamp(1.6rem, 4.4vh, 3rem); color: #b01010; }
+        .qa .bigBtn { align-self: flex-start; }
+        .note { min-height: 1.2em; font-size: 0.85rem; }
+        /* Bottom players */
+        .playerBar { display: flex; justify-content: center; gap: clamp(0.4rem, 2vw, 1.6rem); margin-top: 0.8rem; flex-wrap: wrap; }
+        .pTok { position: relative; width: clamp(96px, 15vh, 150px); touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+        .pTok svg { width: 100%; height: auto; display: block; filter: drop-shadow(3px 4px 0 rgba(90, 31, 12, 0.35)); }
+        .pTok .half { position: absolute; left: 0; right: 0; height: 50%; cursor: pointer; z-index: 2; }
+        .pTok .half.up { top: 0; }
+        .pTok .half.dn { bottom: 0; }
+        .pTok .half:active { background: rgba(255, 255, 255, 0.35); }
+        .pTok .half.up:active { border-radius: 50% 50% 0 0; }
+        .pTok .half.dn:active { border-radius: 0 0 50% 50%; }
+        .pTok .tag { text-align: center; font-size: 0.85rem; margin-top: 2px; }
+        .pTok .tag b { font-size: 1.15rem; }
+        .floaters { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+        .fl { position: fixed; font-size: 2.2rem; animation: floatUp 0.9s ease-out forwards; -webkit-text-stroke: 5px var(--cream); paint-order: stroke fill; }
+        .fl.plus { color: #1c9a2a; }
+        .fl.minus { color: #d01818; }
+        @keyframes floatUp { from { opacity: 1; transform: translate(-50%, 0) scale(1); } to { opacity: 0; transform: translate(-50%, -70px) scale(1.4); } }
+        /* Overlays */
+        .overlay { position: fixed; inset: 0; z-index: 20; background: rgba(90, 31, 12, 0.7); display: flex; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto; }
+        .panel { background: var(--cream); border: 6px solid var(--orange); border-radius: 26px; box-shadow: 0 0 0 4px var(--ink), 7px 8px 0 4px var(--ink); padding: 1.2rem 1.6rem; max-width: 640px; width: 100%; text-align: center; }
+        .panelTitle { margin: 0 0 0.8rem; text-transform: uppercase; font-size: clamp(1.6rem, 5vw, 2.6rem); color: var(--cream); -webkit-text-stroke: 10px var(--orange); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--ink); }
+        .panelBtns { display: flex; gap: 0.8rem; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+        .winList { display: flex; flex-direction: column; gap: 0.5rem; }
+        .winRow { display: flex; align-items: center; gap: 0.8rem; background: var(--sky2); border: 4px solid var(--orange); border-radius: 16px; padding: 0.3rem 0.8rem; text-align: left; }
+        .winRow.first { background: #ffe08a; transform: scale(1.04); }
+        .winRow svg { width: 64px; height: 64px; flex: none; }
+        .winRow .who { flex: 1; font-size: 1.5rem; text-transform: uppercase; }
+        .winRow .who small { display: block; font-size: 0.7rem; opacity: 0.7; }
+        .winRow .pts { font-size: 1.3rem; }
+        .qrPanel { max-width: 420px; }
+        .qrBox { background: #fff; border: 5px solid var(--ink); border-radius: 12px; padding: 8px; width: 260px; max-width: 100%; margin: 0 auto; }
+        .qrBox svg { width: 100%; height: auto; display: block; }
+        .qrUrl { word-break: break-all; font-size: 0.85rem; margin-top: 0.6rem; }
+        .qrHint { font-size: 0.85rem; margin: 0.3rem 0 0.8rem; }
+        /* Wide (desktop/landscape) host screens: the game screen fills the viewport and the
+           ladder rows are sized by fitBoard() to whatever height is left, so the whole screen
+           fits with no stray scrollbar. Narrow or very short viewports keep the scrolling layout. */
+        @media (min-width: 901px) {
+            body.playing { overflow: hidden; }
+            body.playing #game { display: flex; flex-direction: column; height: calc(100vh - 76px); }
+            body.playing #game .board { flex: 1; min-height: 0; }
+            body.playing #game .playerBar { flex: none; }
+        }
+        @media (max-width: 900px) {
+            #app { padding: 30px 22px; }
+            .board { grid-template-columns: 1fr; }
+            .timerCol { flex-direction: row; justify-content: center; }
+            .timer { max-width: 120px; }
+            .ladderWrap { max-width: 420px; margin: 0 auto; width: 100%; }
+        }
+        @media (max-width: 480px) {
+            .ladderWrap { padding: 24px 14px; }
+            .rVal .num { font-size: calc(var(--rowH) * 0.6); }
+            .rVal .iq { font-size: calc(var(--rowH) * 0.28); }
+            .rank { width: calc(var(--rowH) * 1.05); font-size: calc(var(--rowH) * 0.3); }
+        }
+        @media (max-width: 420px) { .title { -webkit-text-stroke-width: 10px; } }
+    </style>
+</head>
+<body>
+<svg id="scallop" aria-hidden="true"></svg>
+<div id="burst"></div>
+<div id="app">
+    <!-- LOBBY -->
+    <section id="lobby" class="screen">
+        <a class="back" href="game-hub.html">&larr; Back to Games Hub</a>
+        <h1 class="title"><span>Dumb</span><span>Dumber</span><span>Dumbest</span></h1>
+        <p class="sub">Pick 2 to 5 brains to play. <b id="pickCount">0 picked</b></p>
+        <div id="tokenGrid" class="tokenGrid"></div>
+        <div class="lobbyBtns">
+            <button id="qrBtn" class="qrBtn" type="button" aria-label="Phone Buzzer QR">
+                <span id="qrBtnBrain" class="qrBrain"></span>
+                <span>Phone Buzzer QR</span>
+            </button>
+            <button id="startBtn" class="bigBtn" type="button" disabled>Start Game</button>
+        </div>
+    </section>
+
+    <!-- GAME -->
+    <section id="game" class="screen" hidden>
+        <div class="topBar">
+            <a class="back" href="game-hub.html">&larr; Back to Games Hub</a>
+            <div class="topBtns">
+                <button id="buzzBtn" class="smallBtn" type="button">Host Buzz</button>
+                <button id="finishBtn" class="smallBtn" type="button">Finish Game</button>
+                <button id="lobbyBtn" class="smallBtn" type="button">Lobby</button>
+            </div>
+        </div>
+        <div class="board">
+            <div id="ladderWrap" class="ladderWrap"><div id="ladder" class="ladder"></div></div>
+            <div class="timerCol">
+                <div id="timer" class="timer">
+                    <svg viewBox="0 0 120 120" aria-hidden="true">
+                        <circle cx="60" cy="60" r="52" class="tBack"></circle>
+                        <circle id="tRing" cx="60" cy="60" r="52" class="tRing" transform="rotate(-90 60 60)"></circle>
+                    </svg>
+                    <div id="timerNum" class="timerNum">6</div>
+                </div>
+                <div id="timerMsg" class="timerMsg">&nbsp;</div>
+            </div>
+            <div class="qa">
+                <div class="card qCard">
+                    <div class="cardLabel">Question</div>
+                    <div id="qText" class="cardText">Press Reveal Question to start.</div>
+                </div>
+                <div class="card aCard">
+                    <div class="cardLabel">Answer</div>
+                    <div id="aText" class="cardText"></div>
+                </div>
+                <button id="mainBtn" class="bigBtn" type="button">Reveal Question</button>
+                <div id="note" class="note">&nbsp;</div>
+            </div>
+        </div>
+        <div id="playerBar" class="playerBar"></div>
+    </section>
+
+    <!-- WINNER -->
+    <div id="winner" class="overlay" hidden>
+        <div class="panel">
+            <h2 class="panelTitle">Final IQ Standings</h2>
+            <div id="winList" class="winList"></div>
+            <div class="panelBtns">
+                <button id="playAgain" class="bigBtn" type="button">Play Again</button>
+                <button id="winLobby" class="bigBtn blue" type="button">Back to Lobby</button>
+                <a class="back" href="game-hub.html">&larr; Back to Games Hub</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR MODAL -->
+    <div id="qrModal" class="overlay" hidden>
+        <div class="panel qrPanel">
+            <h2 class="panelTitle">Phone Buzzer</h2>
+            <div id="qrBox" class="qrBox"></div>
+            <div id="qrUrl" class="qrUrl"></div>
+            <p class="qrHint">Scan with a phone on the same Wi-Fi.</p>
+            <button id="qrClose" class="bigBtn" type="button">Close</button>
+        </div>
+    </div>
+
+    <div id="floaters" class="floaters"></div>
+</div>
+<script>
+(function () {
+'use strict';
+var INK = '#5a1f0c', PINK = '#e58ad0';
+var $ = function (id) { return document.getElementById(id); };
+
+/* ---------- Brain art (inline SVG, no images) ---------- */
+var LOBES = [[28,42,17],[48,28,19],[70,34,18],[78,56,15],[66,74,17],[42,76,17],[24,62,15],[50,52,24]];
+function brainBody() {
+    var o = '', f = '', i, l;
+    for (i = 0; i < LOBES.length; i++) {
+        l = LOBES[i];
+        o += '<circle cx="' + l[0] + '" cy="' + l[1] + '" r="' + (l[2] + 3) + '"/>';
+        f += '<circle cx="' + l[0] + '" cy="' + l[1] + '" r="' + l[2] + '"/>';
+    }
+    return '<g fill="' + INK + '">' + o + '</g><g fill="' + PINK + '">' + f + '</g>' +
+        '<path d="M50 10Q44 28 50 42M28 34Q36 38 33 47M72 26Q64 36 70 45M24 60Q33 58 38 66M78 54Q68 60 66 70M56 80Q58 70 64 68" fill="none" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<path d="M30 30Q36 22 44 20M70 44Q76 46 78 52" fill="none" stroke="#fff" stroke-opacity="0.75" stroke-width="3.5" stroke-linecap="round"/>' +
+        '<path d="M34 78Q44 86 58 80M70 70Q74 62 76 58" fill="none" stroke="#b9559f" stroke-width="3" stroke-linecap="round" stroke-opacity="0.6"/>';
+}
+function eye(x, y) {
+    return '<ellipse cx="' + x + '" cy="' + y + '" rx="6.5" ry="7.5" fill="#fff" stroke="' + INK + '" stroke-width="2.4"/>' +
+        '<circle cx="' + (x + 1) + '" cy="' + (y + 2) + '" r="3" fill="' + INK + '"/>';
+}
+function line(d, w) { return '<path d="' + d + '" fill="none" stroke="' + INK + '" stroke-width="' + (w || 3) + '" stroke-linecap="round" stroke-linejoin="round"/>'; }
+function swirl(x, y) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="7" fill="#fff" stroke="' + INK + '" stroke-width="2.4"/>' +
+        '<path d="M' + x + ' ' + y + 'm0-1a1.5 1.5 0 1 1-1.5 1.5a3 3 0 1 1 3 3a4.6 4.6 0 1 1-4.6-4.6" fill="none" stroke="' + INK + '" stroke-width="1.6" stroke-linecap="round"/>';
+}
+var TONGUE = '<path d="M40 66Q50 74 60 66Z" fill="' + INK + '" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M46 68Q50 82 54 68Z" fill="#ff5a7a" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' + line('M50 70V76', 1.5);
+/* 0 Einstein ... 9 blank/drooling: clever-to-clueless expressions down the ladder (one per rung) */
+var FACES = [
+    line('M30 20Q22 6 34 8M42 14Q40 0 50 6M56 12Q60 -2 66 8M68 20Q80 8 76 22', 2.6) + eye(41, 54) + eye(59, 54) + line('M38 48Q41 44 44 48M56 48Q59 44 62 48', 2) + line('M40 66Q50 76 60 66', 3),
+    '<rect x="31" y="47" width="17" height="13" rx="4" fill="#cfeaf7" stroke="' + INK + '" stroke-width="2.6"/><rect x="52" y="47" width="17" height="13" rx="4" fill="#cfeaf7" stroke="' + INK + '" stroke-width="2.6"/>' + line('M48 52H52', 2.6) + line('M34 54Q39 58 44 54M56 54Q61 58 66 54', 2.2) + line('M42 68Q50 74 58 68', 3),
+    eye(41, 54) + eye(59, 54) + line('M33 46L47 49M67 46L53 49', 3) + line('M40 66Q52 76 62 64', 3),
+    eye(41, 54) + eye(59, 54) + '<ellipse cx="50" cy="69" rx="6" ry="8" fill="' + INK + '"/>' + line('M33 42Q41 38 47 43M53 43Q59 38 67 42', 2.6),
+    eye(41, 54) + eye(59, 54) + '<path d="M38 64Q50 80 62 64Z" fill="#fff" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>',
+    eye(41, 54) + eye(59, 54) + line('M40 66Q50 73 60 66', 3),
+    '<circle cx="41" cy="54" r="3.4" fill="' + INK + '"/><circle cx="59" cy="54" r="3.4" fill="' + INK + '"/>' + line('M42 68H58', 3.2),
+    eye(41, 52) + eye(59, 52) + '<circle cx="42" cy="48" r="3" fill="' + INK + '"/><circle cx="60" cy="48" r="3" fill="' + INK + '"/>' + line('M42 68Q50 66 58 68', 3),
+    /* 20iQ woozy: swirly eyes, wobbly mouth */
+    swirl(41, 54) + swirl(59, 54) + line('M38 70Q43 64 48 69Q53 74 58 67Q60 66 62 68', 3),
+    /* 0iQ blank: half-lidded empty eyes, flat mouth, drool */
+    '<ellipse cx="41" cy="56" rx="6.5" ry="6" fill="#fff" stroke="' + INK + '" stroke-width="2.4"/><circle cx="41" cy="58" r="1.8" fill="' + INK + '"/>' +
+        '<ellipse cx="59" cy="56" rx="6.5" ry="6" fill="#fff" stroke="' + INK + '" stroke-width="2.4"/><circle cx="59" cy="58" r="1.8" fill="' + INK + '"/>' +
+        '<path d="M33 54H49M51 54H67" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' + line('M42 70H58', 3) +
+        '<path d="M57 71Q56 78 59 78Q61 74 59 71Z" fill="#6bbbe3" stroke="' + INK + '" stroke-width="1.5"/>'
+];
+function brain(face, tongue) { return brainBody() + (tongue ? eye(41, 54) + eye(59, 54) + TONGUE : FACES[face]); }
+function brainSvg(face, tongue) { return '<svg viewBox="0 0 100 100" aria-hidden="true">' + brain(face, tongue) + '</svg>'; }
+/* 12-lobed scalloped ring token with the tongue-out brain inside */
+function tokenSvg(col, face, scoreTxt) {
+    var s = '', k, a, x, y;
+    for (k = 0; k < 12; k++) {
+        a = k * Math.PI / 6;
+        x = (50 + 36 * Math.cos(a)).toFixed(2); y = (50 + 36 * Math.sin(a)).toFixed(2);
+        s += '<circle cx="' + x + '" cy="' + y + '" r="11"/>';
+    }
+    s += '<circle cx="50" cy="50" r="36"/>';
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="' + INK + '" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round">' + s + '</g>' +
+        '<g fill="' + col + '">' + s + '</g><circle cx="50" cy="50" r="29" fill="' + INK + '"/><circle cx="50" cy="50" r="27" fill="#fff6dc"/>' +
+        '<g transform="translate(50 52) scale(0.48) translate(-50 -50)">' + brain(face === undefined ? 0 : face, true) + '</g></svg>';
+}
+var PLAYERS = [
+    { id: 'lime', name: 'Lime', col: '#a6d92b' }, { id: 'orange', name: 'Orange', col: '#f5821f' },
+    { id: 'yellow', name: 'Yellow', col: '#ffd92e' }, { id: 'red', name: 'Red', col: '#e5262b' },
+    { id: 'magenta', name: 'Magenta', col: '#e0289b' }, { id: 'purple', name: 'Purple', col: '#8a3ec9' },
+    { id: 'blue', name: 'Blue', col: '#2c7be5' }, { id: 'white', name: 'White', col: '#ffffff' }
+];
+/* ---------- Tiny offline QR encoder (byte mode, EC level M, versions 1-6) ---------- */
+var QR_VER = [null,
+    { dc: 16, ec: 10, bl: 1 }, { dc: 28, ec: 16, bl: 1 }, { dc: 44, ec: 26, bl: 1 },
+    { dc: 64, ec: 18, bl: 2 }, { dc: 86, ec: 24, bl: 2 }, { dc: 108, ec: 16, bl: 4 }];
+var QR_ALIGN = [0, 0, 18, 22, 26, 30, 34];
+var EXP = [], LOG = [];
+(function () { var x = 1, i; for (i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; } for (i = 255; i < 512; i++) EXP[i] = EXP[i - 255]; })();
+function gmul(a, b) { return (a && b) ? EXP[LOG[a] + LOG[b]] : 0; }
+function rsRemainder(data, deg) {
+    var gen = [1], i, j, res, f, next;
+    for (i = 0; i < deg; i++) {
+        next = [];
+        for (j = 0; j <= gen.length; j++) next[j] = (j < gen.length ? gen[j] : 0) ^ (j > 0 ? gmul(gen[j - 1], EXP[i]) : 0);
+        gen = next;
+    }
+    res = []; for (i = 0; i < deg; i++) res.push(0);
+    for (i = 0; i < data.length; i++) {
+        f = data[i] ^ res.shift(); res.push(0);
+        for (j = 0; j < deg; j++) res[j] ^= gmul(gen[j + 1], f);
+    }
+    return res;
+}
+function qrEncode(text) {
+    var bytes = unescape(encodeURIComponent(text)).split('').map(function (c) { return c.charCodeAt(0); });
+    var ver = 0, v, info, bits = [], i, j, size, mod = [], fn = [];
+    for (v = 1; v <= 6; v++) if (bytes.length + 2 <= QR_VER[v].dc) { ver = v; break; }
+    if (!ver) return null;
+    info = QR_VER[ver]; size = 17 + 4 * ver;
+    function put(val, n) { for (var k = n - 1; k >= 0; k--) bits.push((val >>> k) & 1); }
+    put(4, 4); put(bytes.length, 8); bytes.forEach(function (b) { put(b, 8); });
+    for (i = 0; i < 4 && bits.length < info.dc * 8; i++) bits.push(0);
+    while (bits.length % 8) bits.push(0);
+    for (i = 0; bits.length < info.dc * 8; i++) put(i % 2 ? 0x11 : 0xEC, 8);
+    var data = []; for (i = 0; i < bits.length; i += 8) { var by = 0; for (j = 0; j < 8; j++) by = by * 2 + bits[i + j]; data.push(by); }
+    var per = info.dc / info.bl, blocks = [], ecs = [];
+    for (i = 0; i < info.bl; i++) { blocks.push(data.slice(i * per, (i + 1) * per)); ecs.push(rsRemainder(blocks[i], info.ec)); }
+    var all = [];
+    for (i = 0; i < per; i++) for (j = 0; j < info.bl; j++) all.push(blocks[j][i]);
+    for (i = 0; i < info.ec; i++) for (j = 0; j < info.bl; j++) all.push(ecs[j][i]);
+    for (i = 0; i < size; i++) { mod.push([]); fn.push([]); for (j = 0; j < size; j++) { mod[i].push(false); fn[i].push(false); } }
+    function setF(x, y, d) { if (x >= 0 && y >= 0 && x < size && y < size) { mod[y][x] = d; fn[y][x] = true; } }
+    for (i = 0; i < size; i++) { setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+    function finder(cx, cy) { for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++) { var d = Math.max(Math.abs(dx), Math.abs(dy)); setF(cx + dx, cy + dy, d !== 2 && d !== 4); } }
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    if (ver > 1) { var ap = QR_ALIGN[ver]; for (var ay = -2; ay <= 2; ay++) for (var ax = -2; ax <= 2; ax++) setF(ap + ax, ap + ay, Math.max(Math.abs(ax), Math.abs(ay)) !== 1); }
+    function fmt(mask) {
+        var rem = mask, b, a;
+        for (a = 0; a < 10; a++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+        b = ((mask << 10) | rem) ^ 0x5412;
+        function bt(n) { return ((b >>> n) & 1) !== 0; }
+        for (a = 0; a <= 5; a++) setF(8, a, bt(a));
+        setF(8, 7, bt(6)); setF(8, 8, bt(7)); setF(7, 8, bt(8));
+        for (a = 9; a < 15; a++) setF(14 - a, 8, bt(a));
+        for (a = 0; a < 8; a++) setF(size - 1 - a, 8, bt(a));
+        for (a = 8; a < 15; a++) setF(8, size - 15 + a, bt(a));
+        setF(8, size - 8, true);
+    }
+    fmt(0);
+    var n = 0, right, vert, x, y, up;
+    for (right = size - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (vert = 0; vert < size; vert++) for (j = 0; j < 2; j++) {
+            x = right - j; up = ((right + 1) & 2) === 0; y = up ? size - 1 - vert : vert;
+            if (!fn[y][x] && n < all.length * 8) { mod[y][x] = ((all[n >> 3] >>> (7 - (n & 7))) & 1) !== 0; n++; }
+        }
+    }
+    function maskFn(m, x, y) {
+        switch (m) {
+            case 0: return (x + y) % 2 === 0;
+            case 1: return y % 2 === 0;
+            case 2: return x % 3 === 0;
+            case 3: return (x + y) % 3 === 0;
+            case 4: return (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0;
+            case 5: return x * y % 2 + x * y % 3 === 0;
+            case 6: return (x * y % 2 + x * y % 3) % 2 === 0;
+            default: return ((x + y) % 2 + x * y % 3) % 2 === 0;
+        }
+    }
+    function applyMask(m) { for (var yy = 0; yy < size; yy++) for (var xx = 0; xx < size; xx++) if (!fn[yy][xx] && maskFn(m, xx, yy)) mod[yy][xx] = !mod[yy][xx]; }
+    function penalty() {
+        var p = 0, a, b, run, dark = 0, ln, dir, cur, prev, mt;
+        for (a = 0; a < size; a++) for (dir = 0; dir < 2; dir++) {
+            run = 1; ln = '';
+            for (b = 0; b < size; b++) {
+                cur = dir ? mod[b][a] : mod[a][b];
+                ln += cur ? '1' : '0';
+                if (b > 0) {
+                    prev = dir ? mod[b - 1][a] : mod[a][b - 1];
+                    if (cur === prev) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1;
+                }
+            }
+            mt = ln.match(/(?=(00001011101|10111010000))/g); if (mt) p += 40 * mt.length;
+        }
+        for (a = 0; a < size - 1; a++) for (b = 0; b < size - 1; b++) { cur = mod[a][b]; if (cur === mod[a][b + 1] && cur === mod[a + 1][b] && cur === mod[a + 1][b + 1]) p += 3; }
+        for (a = 0; a < size; a++) for (b = 0; b < size; b++) if (mod[a][b]) dark++;
+        return p + Math.floor(Math.abs(dark * 20 - size * size * 10) / (size * size)) * 10;
+    }
+    var best = 0, bestP = Infinity, m, pp;
+    for (m = 0; m < 8; m++) { applyMask(m); fmt(m); pp = penalty(); if (pp < bestP) { bestP = pp; best = m; } applyMask(m); }
+    applyMask(best); fmt(best);
+    return mod;
+}
+function qrSvg(text) {
+    var m = qrEncode(text), q = 4, s, d = '', x, y;
+    if (!m) return '<p>URL too long for QR</p>';
+    s = m.length + q * 2;
+    for (y = 0; y < m.length; y++) for (x = 0; x < m.length; x++) if (m[y][x]) d += 'M' + (x + q) + ' ' + (y + q) + 'h1v1h-1z';
+    return '<svg viewBox="0 0 ' + s + ' ' + s + '" shape-rendering="crispEdges"><rect width="' + s + '" height="' + s + '" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+}
+/* ---------- Scalloped frame (redrawn on resize so waves stay even) ---------- */
+function drawScallop() {
+    var w = window.innerWidth, h = window.innerHeight, r = 17, inset = 24, d = '', x, y, n;
+    var el = $('scallop');
+    if (w < 120 || h < 120) return;
+    el.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    n = Math.max(2, Math.round((w - 2 * inset) / (r * 2)));
+    var sx = (w - 2 * inset) / n;
+    for (x = 0; x < n; x++) d += '<circle cx="' + (inset + sx * (x + 0.5)) + '" cy="' + (inset - 2) + '" r="' + (sx / 2 + 1) + '"/><circle cx="' + (inset + sx * (x + 0.5)) + '" cy="' + (h - inset + 2) + '" r="' + (sx / 2 + 1) + '"/>';
+    n = Math.max(2, Math.round((h - 2 * inset) / (r * 2)));
+    var sy = (h - 2 * inset) / n;
+    for (y = 0; y < n; y++) d += '<circle cx="' + (inset - 2) + '" cy="' + (inset + sy * (y + 0.5)) + '" r="' + (sy / 2 + 1) + '"/><circle cx="' + (w - inset + 2) + '" cy="' + (inset + sy * (y + 0.5)) + '" r="' + (sy / 2 + 1) + '"/>';
+    el.innerHTML = '<g fill="' + INK + '" transform="translate(1.5 2)">' + d + '</g><g fill="#fff6dc">' + d + '</g>' +
+        '<rect x="' + inset + '" y="' + inset + '" width="' + (w - 2 * inset) + '" height="' + (h - 2 * inset) + '" rx="16" fill="#fff6dc"/>';
+}
+window.addEventListener('resize', drawScallop);
+drawScallop();
+
+/* ---------- State ---------- */
+var RUNGS = [200, 180, 160, 130, 100, 80, 60, 40, 20, 0]; /* top row first */
+var picked = [];       /* PLAYERS indexes in tap order */
+var players = [];      /* { p: PLAYERS entry, score } */
+var deck = [], deckPos = 0, questions = [];
+var phase = 'idle';    /* idle | waiting | speaking | timing | up | answered */
+var current = null;
+
+function rungRow(score) {
+    var i;
+    for (i = 0; i < RUNGS.length; i++) if (RUNGS[i] <= score) return i;
+    return RUNGS.length - 1;
+}
+function clamp(s) { return Math.max(0, Math.min(200, s)); }
+function show(id) {
+    ['lobby', 'game'].forEach(function (s) { $(s).hidden = (s !== id); });
+    if (id !== 'game') document.body.classList.remove('playing');
+    window.scrollTo(0, 0);
+}
+
+/* ---------- Lobby ---------- */
+function renderLobby() {
+    var html = '';
+    PLAYERS.forEach(function (p, i) {
+        var pos = picked.indexOf(i);
+        html += '<button type="button" class="pick' + (pos >= 0 ? ' on' : '') + '" data-i="' + i + '" aria-pressed="' + (pos >= 0) + '" aria-label="' + p.name + ' brain">' +
+            (pos >= 0 ? '<span class="badge">' + (pos + 1) + '</span>' : '') + tokenSvg(p.col, 0) + '<span class="nm">' + p.name + '</span></button>';
+    });
+    $('tokenGrid').innerHTML = html;
+    $('pickCount').textContent = picked.length + ' picked';
+    $('startBtn').disabled = picked.length < 2;
+}
+$('tokenGrid').addEventListener('click', function (e) {
+    var b = e.target.closest('.pick'), i, pos;
+    if (!b) return;
+    i = +b.getAttribute('data-i'); pos = picked.indexOf(i);
+    if (pos >= 0) picked.splice(pos, 1);
+    else if (picked.length < 5) picked.push(i);
+    renderLobby();
+});
+$('qrBtnBrain').innerHTML = brainSvg(0, true);
+function buzzerUrl() {
+    var host = location.host, proto = location.protocol, base;
+    if (!host || /^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(host) || proto === 'file:') { host = '192.168.0.242:3000'; proto = 'http:'; }
+    base = proto + '//' + host + location.pathname.replace(/[^\/]*$/, '');
+    return base + 'dumb-dumber-buzzer.html';
+}
+$('qrBtn').addEventListener('click', function () {
+    var u = buzzerUrl();
+    $('qrBox').innerHTML = qrSvg(u); $('qrUrl').textContent = u; $('qrModal').hidden = false;
+});
+$('qrClose').addEventListener('click', function () { $('qrModal').hidden = true; });
+$('qrModal').addEventListener('click', function (e) { if (e.target === $('qrModal')) $('qrModal').hidden = true; });
+/* ---------- Ladder + player bar ---------- */
+function buildLadder() {
+    var html = '', i, n = RUNGS.length;
+    for (i = 0; i < n; i++) {
+        html += '<div class="rung t' + i + (i === 0 ? ' top' : '') + (i === n - 1 ? ' last' : '') + '" style="--i:' + i + '"><span class="rank">#' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
+            '<span class="rVal"><span class="num">' + RUNGS[i] + '</span><span class="iq">iQ</span></span><span class="rIcon">' + brainSvg(i, false) + '</span></div>';
+    }
+    players.forEach(function (pl, k) { html += '<div class="rTok" id="rt' + k + '">' + tokenSvg(pl.p.col, 0) + '<span class="sc" id="rs' + k + '">0</span></div>'; });
+    $('ladder').innerHTML = html;
+    updateLadder();
+}
+function updateLadder() {
+    var groups = {}, size = $('ladder').clientHeight / 10 * 1.05, icon = $('ladder').querySelector('.rIcon'), rungs = $('ladder').querySelectorAll('.rung');
+    /* tokens sit between the row's IQ text and the brain card, packed against the card */
+    var right = icon ? icon.offsetLeft - 4 : $('ladder').clientWidth;
+    players.forEach(function (pl, k) {
+        var r = rungRow(pl.score);
+        (groups[r] = groups[r] || []).push(k);
+    });
+    Object.keys(groups).forEach(function (r) {
+        var g = groups[r], iq = rungs[r] ? rungs[r].querySelector('.iq') : null, left = iq ? iq.offsetLeft + iq.offsetWidth + 4 : 0;
+        var gap = g.length > 1 ? Math.max(size * 0.35, Math.min(size * 0.95, (right - left - size) / (g.length - 1))) : 0;
+        g.forEach(function (k, idx) {
+            var t = $('rt' + k);
+            t.style.setProperty('--r', r);
+            t.style.setProperty('--x', Math.max(0, right - size - gap * (g.length - 1 - idx)).toFixed(1) + 'px');
+            t.style.zIndex = 3 + idx;
+        });
+    });
+    players.forEach(function (pl, k) { $('rs' + k).textContent = pl.score; });
+}
+/* ---------- Wide-screen fit (keeps the host screen on one page) ---------- */
+var boardEl = document.querySelector('.board');
+function fitBoard() {
+    var inner, rowH;
+    if ($('game').hidden || window.innerWidth <= 900) {
+        document.body.classList.remove('playing');
+        boardEl.style.removeProperty('--rowH');
+        return;
+    }
+    document.body.classList.add('playing');   /* flex column: .board is now exactly the leftover height */
+    inner = boardEl.clientHeight - 60;        /* minus the ladder card's border (8) and padding (52) */
+    if (inner < 260) {                        /* too short to lay out neatly: go back to the scrolling layout */
+        document.body.classList.remove('playing');
+        boardEl.style.removeProperty('--rowH');
+        return;
+    }
+    rowH = Math.min(80, Math.floor(inner / 10));   /* 10 rungs in the ladder */
+    boardEl.style.setProperty('--rowH', rowH + 'px');
+}
+function buildBar() {
+    var html = '';
+    players.forEach(function (pl, k) {
+        html += '<div class="pTok" data-k="' + k + '" id="pt' + k + '" role="group" aria-label="' + pl.p.name + ' score controls">' + tokenSvg(pl.p.col, 0) +
+            '<div class="half up" data-d="1" role="button" aria-label="' + pl.p.name + ' plus 10"></div><div class="half dn" data-d="-1" role="button" aria-label="' + pl.p.name + ' minus 10"></div>' +
+            '<div class="tag">' + pl.p.name + ' <b id="ps' + k + '">0</b></div></div>';
+    });
+    $('playerBar').innerHTML = html;
+}
+$('playerBar').addEventListener('click', function (e) {
+    var h = e.target.closest('.half'), t, k;
+    if (!h) return;
+    t = h.closest('.pTok'); k = +t.getAttribute('data-k');
+    changeScore(k, +h.getAttribute('data-d') * 10, h);
+});
+function changeScore(k, delta, anchor) {
+    var pl = players[k], before = pl.score, f, r;
+    pl.score = clamp(pl.score + delta);
+    $('ps' + k).textContent = pl.score;
+    updateLadder();
+    f = document.createElement('div');
+    f.className = 'fl ' + (delta > 0 ? 'plus' : 'minus');
+    f.textContent = (delta > 0 ? '+' : '\u2212') + '10';
+    r = anchor.getBoundingClientRect();
+    f.style.left = (r.left + r.width / 2) + 'px';
+    f.style.top = (delta > 0 ? r.top + 6 : r.bottom - 40) + 'px';
+    $('floaters').appendChild(f);
+    setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 950);
+    if (pl.score === 200 && before < 200) setTimeout(function () { showWinner(); }, 900);
+}
+
+/* ---------- Deck (Fisher-Yates, no repeats until exhausted) ---------- */
+function shuffleDeck() {
+    var i, j, t;
+    deck = questions.map(function (q, idx) { return idx; });
+    for (i = deck.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
+    deckPos = 0;
+}
+function nextQuestion() {
+    var reshuffled = false;
+    if (!questions.length) return null;
+    if (deckPos >= deck.length) { shuffleDeck(); reshuffled = true; }
+    return { q: questions[deck[deckPos++]], reshuffled: reshuffled };
+}
+/* ---------- Speech (prefers Microsoft Ryan, then en-GB, then any English) ---------- */
+var hasSpeech = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+var RYAN = 'Microsoft Ryan Online (Natural) - English (United Kingdom) (en-GB)';
+function pickVoice(plain) {
+    var v = hasSpeech ? window.speechSynthesis.getVoices() : [], f;
+    if (!plain) {
+        f = v.find(function (x) { return x.name === RYAN; }) || v.find(function (x) { return /ryan/i.test(x.name) && /en-GB/i.test(x.lang); });
+        if (f) return f;
+    }
+    return v.find(function (x) { return x.lang && /^en-gb/i.test(x.lang) && (!plain || !/online|natural/i.test(x.name)); }) ||
+        v.find(function (x) { return x.lang && /^en/i.test(x.lang); }) || null;
+}
+if (hasSpeech) { window.speechSynthesis.onvoiceschanged = function () {}; window.speechSynthesis.getVoices(); }
+var speechToken = 0, safetyTimer = null, startTimer = null;
+function stopSpeech() {
+    speechToken++;
+    if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
+    if (hasSpeech) { try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
+}
+/* speak(text, onDone): onDone fires once, on end, on error, or after a safety timeout */
+function speak(text, onDone) {
+    var my = ++speechToken, done = false, tried = false;
+    function finish() {
+        if (done || my !== speechToken) return;
+        done = true;
+        if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
+        if (onDone) onDone();
+    }
+    safetyTimer = setTimeout(finish, 3000 + text.length * 120);
+    if (!hasSpeech) { setTimeout(finish, 600); return; }
+    function go(plain) {
+        var u = new SpeechSynthesisUtterance(text), voice = pickVoice(plain);
+        if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-GB';
+        u.rate = 1; u.pitch = 1;
+        u.onend = function () { finish(); };
+        u.onerror = function (ev) {
+            if (my !== speechToken || done) return;
+            if (ev && (ev.error === 'interrupted' || ev.error === 'canceled')) return;
+            if (!plain && !tried) { tried = true; try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ } setTimeout(function () { if (my === speechToken && !done) go(true); }, 60); }
+            else finish();
+        };
+        try { window.speechSynthesis.speak(u); } catch (e) { finish(); }
+    }
+    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+    setTimeout(function () { if (my === speechToken && !done) go(false); }, 60);
+}
+
+/* ---------- Timer ---------- */
+var tLeft = 6, tInt = null, CIRC = 326.7;
+/* Time-up sound: plays when the round timer hits zero. Held at 0.5 volume so it
+   sits under the full-volume spoken questions and answers. resetTimer() clears it. */
+var timeUpAudio = new Audio('/sounds/times-up-sound.mp3');
+timeUpAudio.volume = 0.5;
+function playTimeUp() {
+    try {
+        timeUpAudio.currentTime = 0;
+        var p = timeUpAudio.play();
+        if (p && p.catch) p.catch(function () { /* ignore */ });
+    } catch (e) { /* ignore */ }
+}
+function stopTimeUp() {
+    try { timeUpAudio.pause(); timeUpAudio.currentTime = 0; } catch (e) { /* ignore */ }
+}
+function setTimerView(state) {
+    var t = $('timer');
+    t.className = 'timer ' + state;
+}
+function resetTimer() {
+    stopTimeUp();          /* next question / new round / back to lobby: drop the old time-up sound */
+    clearInterval(tInt); tInt = null; tLeft = 6;
+    $('timerNum').textContent = '6'; $('timerMsg').innerHTML = '&nbsp;';
+    $('tRing').style.transition = 'none'; $('tRing').style.strokeDashoffset = 0;
+    setTimerView('idle');
+}
+function startTimer6() {
+    clearInterval(tInt); tLeft = 6;
+    $('timerNum').textContent = '6'; $('timerMsg').textContent = 'Go!';
+    setTimerView('run');
+    $('tRing').style.transition = 'none'; $('tRing').style.strokeDashoffset = 0;
+    void $('tRing').getBoundingClientRect();
+    $('tRing').style.transition = 'stroke-dashoffset 1s linear';
+    $('tRing').style.strokeDashoffset = (CIRC / 6).toFixed(1);
+    tInt = setInterval(function () {
+        tLeft--;
+        $('timerNum').textContent = tLeft;
+        $('tRing').style.strokeDashoffset = (CIRC * (6 - tLeft) / 6).toFixed(1);
+        if (tLeft <= 2) $('timer').classList.add('low');
+        if (tLeft <= 0) { clearInterval(tInt); tInt = null; timeUp(); }
+    }, 1000);
+}
+function timeUp() {
+    phase = 'up';
+    playTimeUp();                       /* the 6-second countdown has reached zero */
+    setTimerView('up');
+    $('timerNum').textContent = "TIME'S UP";
+    $('timerMsg').textContent = 'Reveal the answer';
+    setMain('Reveal Answer', false);
+    $('note').textContent = '';
+}
+/* ---------- Question flow ---------- */
+var waitTimer = null;
+function setMain(label, disabled) { $('mainBtn').textContent = label; $('mainBtn').disabled = !!disabled; }
+function cancelRound() {
+    if (waitTimer) { clearTimeout(waitTimer); waitTimer = null; }
+    stopSpeech(); resetTimer();
+}
+function resetRound() {
+    cancelRound();
+    phase = 'idle'; current = null;
+    $('qText').textContent = 'Press Reveal Question to start.';
+    $('aText').textContent = '';
+    $('note').innerHTML = '&nbsp;';
+    setMain('Reveal Question', !questions.length);
+}
+function revealQuestion() {
+    var nq = nextQuestion();
+    if (!nq) { $('note').textContent = 'No questions loaded.'; return; }
+    stopSpeech(); resetTimer();         /* clear the finished round before the next one */
+    current = nq.q; phase = 'waiting';
+    $('aText').textContent = '';
+    $('qText').textContent = '...';
+    $('note').textContent = nq.reshuffled ? 'Deck reshuffled. Get ready...' : 'Get ready...';
+    setMain('Reveal Answer', true);
+    waitTimer = setTimeout(function () {
+        waitTimer = null; phase = 'speaking';
+        $('qText').textContent = current.question;
+        $('note').textContent = 'Listen...';
+        setMain('Reveal Answer', false);
+        speak(current.question, function () {
+            if (phase !== 'speaking') return;
+            phase = 'timing';
+            $('note').innerHTML = '&nbsp;';
+            setMain('Reveal Answer', false);
+            startTimer6();
+        });
+    }, 2000);
+}
+function revealAnswer() {
+    if (phase !== 'timing' && phase !== 'up' && phase !== 'speaking') return;
+    stopSpeech();                       /* never overlap speech */
+    clearInterval(tInt); tInt = null;
+    if (phase === 'timing' || phase === 'speaking') { setTimerView('idle'); $('timerMsg').innerHTML = '&nbsp;'; }
+    phase = 'answered';
+    $('qText').textContent = current.question;
+    $('aText').textContent = current.answer;
+    $('note').innerHTML = '&nbsp;';
+    setMain('Next Question', false);
+    speak('The answer is. ' + current.answer, null);
+}
+$('mainBtn').addEventListener('click', function () {
+    /* Next Question goes straight into the next round: reveal (and speak) it, then start the timer */
+    if (phase === 'idle' || phase === 'answered') revealQuestion();
+    else if (phase === 'timing' || phase === 'up') revealAnswer();
+});
+
+/* ---------- Host buzz (Web Audio synth horn) ---------- */
+var actx = null;
+$('buzzBtn').addEventListener('click', function () {
+    try {
+        var AC = window.AudioContext || window.webkitAudioContext, o, g, o2;
+        if (!AC) return;
+        actx = actx || new AC();
+        if (actx.state === 'suspended') actx.resume();
+        o = actx.createOscillator(); o2 = actx.createOscillator(); g = actx.createGain();
+        o.type = 'sawtooth'; o2.type = 'square'; o.frequency.value = 220; o2.frequency.value = 223;
+        g.gain.setValueAtTime(0.0001, actx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.35, actx.currentTime + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.7);
+        o.connect(g); o2.connect(g); g.connect(actx.destination);
+        o.start(); o2.start(); o.stop(actx.currentTime + 0.75); o2.stop(actx.currentTime + 0.75);
+    } catch (e) { /* ignore */ }
+});
+
+/* ---------- Winner ---------- */
+var TITLES = { 2: ['Einstein', 'Dumbest'], 3: ['Einstein', 'Dumb', 'Dumbest'], 4: ['Einstein', 'Dumb', 'Dumber', 'Dumbest'], 5: ['Einstein', 'Dumb', 'Dumber', 'Dumbest', 'Thicko'] };
+function rankPlayers() {
+    var order = players.map(function (pl, k) { return { pl: pl, k: k }; });
+    var titles = TITLES[players.length] || TITLES[5], out = [], i, rank = 0;
+    order.sort(function (a, b) { return b.pl.score - a.pl.score || a.k - b.k; });
+    for (i = 0; i < order.length; i++) {
+        if (i === 0 || order[i].pl.score !== order[i - 1].pl.score) rank = i;
+        out.push({ pl: order[i].pl, rank: rank + 1, title: titles[Math.min(rank, titles.length - 1)] });
+    }
+    return out;
+}
+function showWinner() {
+    if (!players.length || !$('winner').hidden) return;
+    cancelRound();
+    var html = '';
+    rankPlayers().forEach(function (r) {
+        html += '<div class="winRow' + (r.rank === 1 ? ' first' : '') + '">' + tokenSvg(r.pl.p.col, 0) +
+            '<div class="who">' + r.title + '<small>#' + r.rank + ' &middot; ' + r.pl.p.name + '</small></div><div class="pts">' + r.pl.score + ' iQ</div></div>';
+    });
+    $('winList').innerHTML = html;
+    $('winner').hidden = false;
+}
+function resetScores() {
+    players.forEach(function (pl, k) { pl.score = 0; $('ps' + k).textContent = '0'; });
+    updateLadder();
+}
+$('finishBtn').addEventListener('click', showWinner);
+$('playAgain').addEventListener('click', function () {
+    $('winner').hidden = true; resetScores(); shuffleDeck(); resetRound();
+});
+function toLobby() {
+    $('winner').hidden = true; cancelRound(); players = []; show('lobby'); renderLobby();
+}
+$('winLobby').addEventListener('click', toLobby);
+$('lobbyBtn').addEventListener('click', toLobby);
+
+/* ---------- Start + init ---------- */
+$('startBtn').addEventListener('click', function () {
+    if (picked.length < 2) return;
+    players = picked.map(function (i) { return { p: PLAYERS[i], score: 0 }; });
+    show('game'); buildLadder(); buildBar(); shuffleDeck(); resetRound();
+    fitBoard(); updateLadder();
+});
+window.addEventListener('resize', function () { if (players.length) { fitBoard(); updateLadder(); } });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') $('qrModal').hidden = true; });
+renderLobby();
+fetch('dumb-dumber-questions.json').then(function (r) { return r.json(); }).then(function (list) {
+    questions = (Array.isArray(list) ? list : []).filter(function (q) { return q && q.question && q.answer !== undefined; });
+    shuffleDeck();
+    if (phase === 'idle' && !$('game').hidden) setMain('Reveal Question', !questions.length);
+}).catch(function () {
+    questions = [];
+    $('note').textContent = 'Could not load dumb-dumber-questions.json';
+});
+})();
+</script>
+</body>
+</html>
