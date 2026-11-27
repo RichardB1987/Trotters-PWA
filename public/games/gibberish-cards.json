@@ -442,5 +442,1829 @@
         "gibberish": "Hint a few width diva umpire",
         "answer": "Interview with a Vampire",
         "hint": "Gothic film with Tom Cruise and Brad Pitt"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Mark karen nah",
+        "answer": "Macarena",
+        "hint": "Nineties wedding-floor hit with its own arm routine"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Calm black hated",
+        "answer": "Complicated",
+        "hint": "Avril Lavigne's 2002 teen-angst hit"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "White knee who stan",
+        "answer": "Whitney Houston",
+        "hint": "Voice behind \"I Will Always Love You\""
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Dam zinc ween",
+        "answer": "Dancing Queen",
+        "hint": "ABBA's glittery 1976 floor-filler"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Match hick much rheums",
+        "answer": "Magic mushrooms",
+        "hint": "Fungi that supposedly make you see things"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Toned gif mi uhick he",
+        "answer": "Don't give me a hickey",
+        "hint": "Neck-bruise request you'd rather refuse"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Dale hers whiffed",
+        "answer": "Taylor Swift",
+        "hint": "Anti-Hero singer with a record-breaking Eras tour"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Mime elks ache brim saul dubai's tooth uh yod",
+        "answer": "My milkshake brings all the boys to the yard",
+        "hint": "Kelis lyric boasting about her drink's pulling power"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Cheek keen and dose",
+        "answer": "Cheeky Nando's",
+        "hint": "Impromptu trip for flame-grilled peri-peri"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Sore tit out",
+        "answer": "Sort it out",
+        "hint": "Pull yourself together, or fix the mess"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Wale oil beef hooked",
+        "answer": "Well I'll be f***ed",
+        "hint": "Very surprised, said with a swear"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Sos gin bahher",
+        "answer": "Sausage in batter",
+        "hint": "Chip-shop order also known as a battered saveloy"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Staw edge whores",
+        "answer": "Storage Wars",
+        "hint": "Reality show where bidders gamble on abandoned lockers"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Pour on stares",
+        "answer": "Pawn Stars",
+        "hint": "Vegas pawn-shop series with Chumlee"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Weh theh spuh oonz",
+        "answer": "Wetherspoons",
+        "hint": "Cheap pub chain famous for its app and patterned carpets"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Buh ee trix pah tuh",
+        "answer": "Beatrix Potter",
+        "hint": "Peter Rabbit's creator"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Jin chirp red mon",
+        "answer": "Gingerbread Man",
+        "hint": "Biscuit shaped like a little person, iced with a smile"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Jars wam morose tea",
+        "answer": "Just one more roastie",
+        "hint": "The final potato from the Sunday tray"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Toner hull",
+        "answer": "Toad in the hole",
+        "hint": "Sausages baked in a giant Yorkshire pudding"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "A gaffa fork wrist he",
+        "answer": "Agatha Christie",
+        "hint": "Queen of Crime who invented Poirot and Miss Marple"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Lung demur thong",
+        "answer": "London Marathon",
+        "hint": "26.2 miles of fancy dress and sore knees"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Wryd a ghost slink",
+        "answer": "Ryan Gosling",
+        "hint": "Ken in Barbie, and the driver in Drive"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Fleas a saw sir",
+        "answer": "Flying saucer",
+        "hint": "Disc-shaped craft in alien stories"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Eyed a maim den",
+        "answer": "Iron Maiden",
+        "hint": "Metal band with a skeletal mascot called Eddie"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Mare he risk muss",
+        "answer": "Merry Christmas",
+        "hint": "The greeting on every card in December"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Owes is au pair lee mint",
+        "answer": "Houses of Parliament",
+        "hint": "Gothic riverside building next to Big Ben"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Bay lease",
+        "answer": "Baileys",
+        "hint": "Creamy Irish liqueur poured over ice at Christmas"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Fife skies",
+        "answer": "Five Guys",
+        "hint": "Burger chain whose fries overflow the bag"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Piss A Ut",
+        "answer": "Pizza Hut",
+        "hint": "Chain with a red roof logo"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Dough build egg curb ass",
+        "answer": "Double decker bus",
+        "hint": "Two-storey red London ride"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Da wan kiss slink",
+        "answer": "The Weakest Link",
+        "hint": "Quiz show that dismisses contestants with \"goodbye\""
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Duh en age hiss",
+        "answer": "The NHS",
+        "hint": "Free-at-use health service founded in 1948"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Owed to a reener",
+        "answer": "O2 Arena",
+        "hint": "Dome-shaped London venue that hosts the Brits"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Rared hes teddies gukk",
+        "answer": "Ready Steady Cook",
+        "hint": "Daytime show where chefs improvise from a bag of ingredients"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Chair roam meek aisle",
+        "answer": "Jeremy Kyle",
+        "hint": "Daytime host of lie-detector showdowns"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Clock sins firm",
+        "answer": "Clarkson's Farm",
+        "hint": "Diddly Squat, a Lamborghini tractor and a lot of rain"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Elf tone jawn",
+        "answer": "Elton John",
+        "hint": "Rocketman at the piano in giant glasses"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "We knee deep ooh",
+        "answer": "Winnie the Pooh",
+        "hint": "Honey-loving bear from the Hundred Acre Wood"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye knee deep ooh",
+        "answer": "I need a poo",
+        "hint": "Urgent bathroom announcement"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Sarn they rows",
+        "answer": "Sunday roast",
+        "hint": "Weekend dinner with all the trimmings"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Whale less sand chrome hit",
+        "answer": "Wallace and Gromit",
+        "hint": "Claymation inventor and his long-suffering dog"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Hem herd ale",
+        "answer": "Emmerdale",
+        "hint": "Yorkshire soap with a farm and the Woolpack"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Arab poor ta",
+        "answer": "Harry Potter",
+        "hint": "Boy wizard of Hogwarts"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Knot mic up huff tee",
+        "answer": "Not my cup of tea",
+        "hint": "Polite way to say you don't like it"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Don keys ears",
+        "answer": "Donkey's years",
+        "hint": "A very long time, in British slang"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Fog in a debt hoarse",
+        "answer": "Flogging a dead horse",
+        "hint": "Wasting effort on a hopeless argument"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Tay kin thur pis",
+        "answer": "Taking the piss",
+        "hint": "Rude way to say you are winding someone up"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Ghet ooda mie pup",
+        "answer": "Get outta my pub",
+        "hint": "Peggy Mitchell's EastEnders roar"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Raw been hoot",
+        "answer": "Robin Hood",
+        "hint": "Nottingham outlaw with a bow and a band of merry men"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Share put spy",
+        "answer": "Shepherd's pie",
+        "hint": "Minced lamb under a mash roof"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "My boo miss fairy",
+        "answer": "My bum is hairy",
+        "hint": "Over-sharing confession about a hairy rear"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye shard head my pans",
+        "answer": "I sharted my pants",
+        "hint": "Toilet disaster halfway through a laugh"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Eye knee doll ooh role",
+        "answer": "I need a loo roll",
+        "hint": "Bathroom request when the holder is empty"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Poo the cat ill un",
+        "answer": "Put the kettle on",
+        "hint": "British way to start solving any problem"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Mine dagger app",
+        "answer": "Mind the gap",
+        "hint": "Tube platform warning"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye aim my boar key",
+        "answer": "I ate my bogey",
+        "hint": "Disgusting childhood confession"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "May breads tinks",
+        "answer": "My breath stinks",
+        "hint": "Confession before a close conversation"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye wed the bet",
+        "answer": "I wet the bed",
+        "hint": "Childhood accident confession"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye four gat to why pea",
+        "answer": "I forgot to wipe",
+        "hint": "Bathroom confession that is far too much information"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye halve a wedge key",
+        "answer": "I have a wedgie",
+        "hint": "Underwear complaint after a tight walk"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Pea sofa ache",
+        "answer": "Piece of cake",
+        "hint": "Something ridiculously easy"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Gay muff rowns",
+        "answer": "Game of Thrones",
+        "hint": "Westeros saga of Iron Thrones and dragons"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Stare oars",
+        "answer": "Star Wars",
+        "hint": "Lightsabers, the Force and a galaxy far away"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Bray call egg",
+        "answer": "Break a leg",
+        "hint": "Theatre good-luck wish before a show"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Sea monk how",
+        "answer": "Simon Cowell",
+        "hint": "Talent-show judge famous for brutal honesty and high trousers"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Thee own leer weighs air secs",
+        "answer": "The Only Way Is Essex",
+        "hint": "Reality soap of vajazzles and \"shut up!\""
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Arm farie stew pidd",
+        "answer": "I'm very stupid",
+        "hint": "Dim-witted confession about yourself"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Wun hund rid ant ay tea",
+        "answer": "One hundred and eighty",
+        "hint": "The perfect three-dart score, bellowed by darts crowds"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Arm fear linga bip heck eesh",
+        "answer": "I'm feeling a bit peckish",
+        "hint": "Slightly hungry, in British speak"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Shur ter gown peks hey vers",
+        "answer": "Should've gone to Specsavers",
+        "hint": "Optician ad slogan for someone who misread something"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Isle of view",
+        "answer": "I love you",
+        "hint": "Three words for someone special"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Jog clay die scream",
+        "answer": "Chocolate ice cream",
+        "hint": "Brown scoop in a cone"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Up hair hush ooze",
+        "answer": "A pair of shoes",
+        "hint": "What you need two of for your feet"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Eggs hearse sized hay lee",
+        "answer": "Exercise daily",
+        "hint": "Doctor's advice about moving every day"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "My cull chore den",
+        "answer": "Michael Jordan",
+        "hint": "Basketball legend of the Chicago Bulls"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Aid are crank loud",
+        "answer": "A dark rain cloud",
+        "hint": "Storm warning brewing overhead"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Delete elmer maid",
+        "answer": "The Little Mermaid",
+        "hint": "Ariel's underwater story"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Is bunch pops queer pans",
+        "answer": "SpongeBob SquarePants",
+        "hint": "Bikini Bottom's fry cook"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Eyed rink gay tour eight",
+        "answer": "I drink Gatorade",
+        "hint": "Sports-drink confession after a workout"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Im issues home hutch",
+        "answer": "I miss you so much",
+        "hint": "Text to someone far away"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "High dance eek",
+        "answer": "Hide and seek",
+        "hint": "Counting to twenty with your eyes shut"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "We knit train sip oars",
+        "answer": "When it rains it pours",
+        "hint": "Bad luck arriving all at once"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Read hick yule us",
+        "answer": "Ridiculous",
+        "hint": "Utterly daft, and the word for it"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Eighty part mints tore",
+        "answer": "A department store",
+        "hint": "Big shop with floors for clothes and homeware"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Than cue button hoe",
+        "answer": "Thank you but no",
+        "hint": "Polite refusal"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Rap hun sell",
+        "answer": "Rapunzel",
+        "hint": "Long-haired prisoner of a tower"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Wad abe hummer",
+        "answer": "What a bummer",
+        "hint": "Sympathy for a rubbish outcome"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Nod itch ants",
+        "answer": "Not a chance",
+        "hint": "Absolutely no way"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Shoe gird hone huts",
+        "answer": "Sugar donuts",
+        "hint": "Fried rings rolled in sweet granules"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Pea pill arf honey",
+        "answer": "People are funny",
+        "hint": "Observation about human oddness"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Leaf meal own",
+        "answer": "Leave me alone",
+        "hint": "Request for personal space"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Marry addle ladle am",
+        "answer": "Mary had a little lamb",
+        "hint": "Nursery rhyme whose fleece was white as snow"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Paper own heap heats aah",
+        "answer": "Pepperoni pizza",
+        "hint": "Cheesy takeaway with red discs on top"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Hit sub pow dine",
+        "answer": "It's about time",
+        "hint": "Said when something finally happens"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Eye canned tooth his hen neem or",
+        "answer": "I can't do this anymore",
+        "hint": "Giving up, dramatically"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "lie fuf dup heart he",
+        "answer": "Life of the party",
+        "hint": "The one everyone gravitates towards at a do"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Raw kit min",
+        "answer": "Rocket Man",
+        "hint": "Elton John's \"burning out his fuse up here alone\""
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Down chew fork ate app out meat",
+        "answer": "Don't you forget about me",
+        "hint": "Simple Minds anthem from The Breakfast Club"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Weather wife oaty who",
+        "answer": "With or Without You",
+        "hint": "U2 ballad that builds to \"and I wait\""
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Zag keep oops",
+        "answer": "Saggy boobs",
+        "hint": "Gravity's effect, unkindly described"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Dig dock maid meep pie yet",
+        "answer": "TikTok made me buy it",
+        "hint": "Excuse for an impulse purchase online"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Calf phin nate ted",
+        "answer": "Caffeinated",
+        "hint": "Buzzing from one espresso too many"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Pig cull paul",
+        "answer": "Pickleball",
+        "hint": "Paddle sport with a perforated plastic ball"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Asked allah fizz tub hay bee",
+        "answer": "Hasta la vista baby",
+        "hint": "Arnie's Terminator farewell"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Duke aunt dutch fizz",
+        "answer": "You can't touch this",
+        "hint": "MC Hammer's baggy-trousers hit"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Fart swat cheese head",
+        "answer": "That's what she said",
+        "hint": "Cheap punchline after an innocent remark"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Aisle hike pig putt sand ike anne ought lye",
+        "answer": "I like big butts and I cannot lie",
+        "hint": "Sir Mix-a-Lot's booming 1992 hit"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Had meow null ink den",
+        "answer": "Add me on LinkedIn",
+        "hint": "Networking request from a stranger in a suit"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Arrgh hugh win two huts tough",
+        "answer": "Are you into butt stuff",
+        "hint": "Very forward question about rear-end preferences"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Heck plan team owe gee",
+        "answer": "Eggplant emoji",
+        "hint": "Purple vegetable used as a flirty signal"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Aim choose axe sea",
+        "answer": "I'm Too Sexy",
+        "hint": "Right Said Fred's strutting hit"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Height hook uphill henna bees huh",
+        "answer": "I took a pill in Ibiza",
+        "hint": "Mike Posner's tale of a miserable island trip"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Bins un tust",
+        "answer": "Beans on toast",
+        "hint": "Student classic on a slice"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Gray eggs",
+        "answer": "Greggs",
+        "hint": "Bakery chain famous for its sausage roll"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Half Oweds",
+        "answer": "Halfords",
+        "hint": "Bike and car parts shop with a fitting desk"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Butes",
+        "answer": "Boots",
+        "hint": "High-street chemist with a blue sign"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Joon loo us",
+        "answer": "John Lewis",
+        "hint": "Department store whose Christmas ad makes people cry"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Are gross",
+        "answer": "Argos",
+        "hint": "Catalogue shop with laminated tickets and a collection desk"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "White rows",
+        "answer": "Waitrose",
+        "hint": "Posh supermarket with free coffee for members"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Bee anne cue",
+        "answer": "B&Q",
+        "hint": "Orange warehouse full of DIY bits"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Pry mark",
+        "answer": "Primark",
+        "hint": "Cheap clothes shop with legendary queues"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Sanes buries",
+        "answer": "Sainsbury's",
+        "hint": "Supermarket with an orange logo and Taste the Difference"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Eye Key Ah",
+        "answer": "IKEA",
+        "hint": "Flat-pack maze with meatballs at the end"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "As duh",
+        "answer": "Asda",
+        "hint": "Green supermarket founded in Leeds"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Moat ur aye",
+        "answer": "Motorway",
+        "hint": "Three-lane road where lorries overtake at a crawl"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Moat or oil uh",
+        "answer": "Motorola",
+        "hint": "Phone brand behind the Razr flip"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Awe Dee",
+        "answer": "Audi",
+        "hint": "Four rings on the grille"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Pea joe",
+        "answer": "Peugeot",
+        "hint": "French car maker with a lion badge"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Vooks owl",
+        "answer": "Vauxhall",
+        "hint": "Griffin badge on the Astra and Corsa"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Milk an beans",
+        "answer": "Milton Keynes",
+        "hint": "New town known for roundabouts and concrete cows"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Peek disk tricked",
+        "answer": "Peak District",
+        "hint": "Mam Tor, Bakewell pudding and muddy boots"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Lung done done gin",
+        "answer": "London Dungeon",
+        "hint": "Gory tourist attraction near Waterloo"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Lung done sue",
+        "answer": "London Zoo",
+        "hint": "Regent's Park home of the animals"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Tow her off lung done",
+        "answer": "Tower of London",
+        "hint": "Crown Jewels and ravens by the Thames"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Site eh oof lung dun",
+        "answer": "City of London",
+        "hint": "The Square Mile"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Lung done heat roo",
+        "answer": "London Heathrow",
+        "hint": "Britain's busiest airport, out west"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Chair roam mee bed ill",
+        "answer": "Jeremy Beadle",
+        "hint": "Beadle's About prankster with a tiny hand"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Brew four sight",
+        "answer": "Bruce Forsyth",
+        "hint": "Entertainer who never lost that, to see you"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Kill her black",
+        "answer": "Cilla Black",
+        "hint": "Blind Date matchmaker with a Scouse accent"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Itch hard made lee",
+        "answer": "Richard Madeley",
+        "hint": "This Morning host known for clumsy gaffes"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Grey ham north town",
+        "answer": "Graham Norton",
+        "hint": "Chat show host with a big red chair"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Raw bean wheel hymns",
+        "answer": "Robin Williams",
+        "hint": "Voice of the Genie, with manic energy"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Vile age peep ale",
+        "answer": "Village People",
+        "hint": "Disco troupe behind YMCA and the sailor suit"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Bee cheese",
+        "answer": "Bee Gees",
+        "hint": "Gibbs brothers of Saturday Night Fever"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Pink floored",
+        "answer": "Pink Floyd",
+        "hint": "The Wall, and a flying pig"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Jaw j my cull",
+        "answer": "George Michael",
+        "hint": "Wham! singer who wanted your faith"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Mad on uh",
+        "answer": "Madonna",
+        "hint": "Material Girl with the cone bra"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "My cull act son",
+        "answer": "Michael Jackson",
+        "hint": "Moonwalking King of Pop"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Been a dick hum per batch",
+        "answer": "Benedict Cumberbatch",
+        "hint": "Sherlock in a long coat, also Doctor Strange"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Oi suck hard",
+        "answer": "Oyster card",
+        "hint": "Blue plastic pass for London transport"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Earn udder won buys udders",
+        "answer": "Another One Bites the Dust",
+        "hint": "Queen stomp with a famous bassline"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ew no wah dimes hay ink",
+        "answer": "You know what I'm saying",
+        "hint": "Innit, though?"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Ma thumb hat icks",
+        "answer": "Mathematics",
+        "hint": "School subject full of x and y"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ice mail ask hunk",
+        "answer": "I smell a skunk",
+        "hint": "Something whiffs around here"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Spar cling what her",
+        "answer": "Sparkling water",
+        "hint": "Fizzy alternative to still"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hand pea haul eat eights",
+        "answer": "Happy holidays",
+        "hint": "Season's greeting that covers everything"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "A weigh yin hum age her",
+        "answer": "Away in a Manger",
+        "hint": "Carol sung by sleepy children at the nativity"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Joint tooth a whirled",
+        "answer": "Joy to the World",
+        "hint": "Handel-tune carol sung at the end of a service"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Herb a knees sure screw huge",
+        "answer": "Ebenezer Scrooge",
+        "hint": "Miser who says \"Bah, humbug!\""
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Wee issue hum airy eek wrist must",
+        "answer": "We wish you a Merry Christmas",
+        "hint": "Carol demanding figgy pudding"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hall eye won fork wrist must",
+        "answer": "All I want for Christmas",
+        "hint": "Mariah Carey's festive wish-list song"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Nor tea horn ice",
+        "answer": "Naughty or nice",
+        "hint": "Santa's two-list check on your behaviour"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hand uh hat bean gru ear",
+        "answer": "And a happy new year",
+        "hint": "Second half of the festive greeting"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hunter the crisp mystery",
+        "answer": "Under the Christmas tree",
+        "hint": "Where the presents wait on the 25th"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Chin gulp ells",
+        "answer": "Jingle Bells",
+        "hint": "One-horse open sleigh song"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hunt dearth thumb is hole tow",
+        "answer": "Under the mistletoe",
+        "hint": "Where you are meant to kiss"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Ache reese must care old",
+        "answer": "A Christmas Carol",
+        "hint": "Dickens tale of three ghosts"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Mail can cook keys four sent duh",
+        "answer": "Milk & cookies for Santa",
+        "hint": "Snack left by the fireplace"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Hall liege all he ick wrist mist",
+        "answer": "Holly jolly Christmas",
+        "hint": "Burl Ives' cheerful festive standard"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Ice aww maw meek hissing sand duck laws",
+        "answer": "I saw Mommy kissing Santa Claus",
+        "hint": "Song about a child's shocking Christmas Eve discovery"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ease ace life ox",
+        "answer": "He's a sly fox",
+        "hint": "Description of a cunning one"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Stirring beak he knee",
+        "answer": "String bikini",
+        "hint": "Very small two-piece held together by knots"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Abe who beat wrap",
+        "answer": "A booby trap",
+        "hint": "Hidden prank that catches you out"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Dawned rink hand arrive",
+        "answer": "Don't drink & drive",
+        "hint": "Police campaign message, especially in December"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "You shore new dull",
+        "answer": "Use your noodle",
+        "hint": "Think it through, using your head"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Ape hand hub hair",
+        "answer": "A panda bear",
+        "hint": "Bamboo-munching black-and-white bear"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Pretty schack scent",
+        "answer": "British accent",
+        "hint": "What Americans hear in every Brit"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Bail heed ant sir",
+        "answer": "Belly dancer",
+        "hint": "Midriff-baring performer who shimmies"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Mike ranch healed wren",
+        "answer": "My grandchildren",
+        "hint": "Your children's children"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ale huck each arm",
+        "answer": "A lucky charm",
+        "hint": "Trinket kept for good fortune"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Weedy man done ant sir",
+        "answer": "We demand an answer",
+        "hint": "Impatient way to insist on a reply"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "How sweet this hound",
+        "answer": "How sweet the sound",
+        "hint": "Amazing Grace line about a wretch being saved"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Know sayer",
+        "answer": "Nose hair",
+        "hint": "Nostril sprout that needs trimming"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Span niche",
+        "answer": "Spanish",
+        "hint": "Language of Cervantes and tapas menus"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Oak ape hal",
+        "answer": "Ok pal",
+        "hint": "Dismissive two-word reply"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Dump hick yearn hose",
+        "answer": "Don't pick your nose",
+        "hint": "Manners reminder about fingers and nostrils"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Europe law sore mine",
+        "answer": "Your place or mine",
+        "hint": "Flirty question about where to go next"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "May pulls ear up",
+        "answer": "Maple syrup",
+        "hint": "Sticky Canadian drizzle for pancakes"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Eight her keyed inner",
+        "answer": "A turkey dinner",
+        "hint": "Festive plate with all the trimmings"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Abe an an appeal",
+        "answer": "A banana peel",
+        "hint": "Slip hazard left on the pavement"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Yura withered darrie",
+        "answer": "You're a wizard Harry",
+        "hint": "Hagrid's famous line to the boy under the stairs"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Gumstan body win dow",
+        "answer": "Go stand by the window",
+        "hint": "Direction to move towards the glass"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Hints toe crams starry",
+        "answer": "Instagram story",
+        "hint": "24-hour post with a ring round its picture"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Curls nuh eye doubt",
+        "answer": "Girls night out",
+        "hint": "Big evening with the girls"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Hoe plus row mand ick",
+        "answer": "Hopeless romantic",
+        "hint": "One who believes in grand gestures"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Graph tub here",
+        "answer": "Craft beer",
+        "hint": "Small-batch pint with a silly name"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Hid sprint heap itch",
+        "answer": "It's Britney bitch",
+        "hint": "Opening line of Gimme More"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Oh pin dew in dough",
+        "answer": "Open the window",
+        "hint": "Request for fresh air"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Pooh teal is shush",
+        "answer": "Bootylicious",
+        "hint": "Destiny's Child word that made the dictionary"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Lip prawn shames",
+        "answer": "LeBron James",
+        "hint": "NBA star of the Lakers"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Ipp stoned lye",
+        "answer": "Hips don't lie",
+        "hint": "Shakira insists yours cannot deceive"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "York hard as spinned eek lined",
+        "answer": "Your card has been declined",
+        "hint": "Embarrassing moment at the till"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Eye halved ush its",
+        "answer": "I have the shits",
+        "hint": "Unpleasant toilet confession"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Knepp bow pay bee",
+        "answer": "Nepo baby",
+        "hint": "Star who got a leg up from famous parents"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Ham a sauna lets uh",
+        "answer": "Amazon Alexa",
+        "hint": "Device you shout at for weather and timers"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Dock turd heat tomb he",
+        "answer": "Talk Dirty to Me",
+        "hint": "Poison's 1986 sleaze-rock hit"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ev fem male",
+        "answer": "FML",
+        "hint": "Text-speak for when everything goes wrong"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Law sand jealous",
+        "answer": "Los Angeles",
+        "hint": "Home of Hollywood"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Stab arcs calf fee",
+        "answer": "Starbucks coffee",
+        "hint": "Chain with your name misspelt on the cup"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Mare ill hymn on row",
+        "answer": "Marilyn Monroe",
+        "hint": "White dress over a subway grate"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Burr ache in bed",
+        "answer": "Breaking Bad",
+        "hint": "Walter White's drugs empire"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Tictac fay morse",
+        "answer": "TikTok famous",
+        "hint": "Known to millions thanks to one viral clip"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Us mellark chase",
+        "answer": "I smell like cheese",
+        "hint": "Whiffy confession after a long day"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Are win cat wait torse",
+        "answer": "I wink at waiters",
+        "hint": "Flirty dining habit confession"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Sell Indian",
+        "answer": "Celine Dion",
+        "hint": "Power-ballad voice of Titanic"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Corn field knife haze",
+        "answer": "Can't Feel My Face",
+        "hint": "The Weeknd hit about a numb face"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Plate hat thank emus ick",
+        "answer": "Play That Funky Music",
+        "hint": "Wild Cherry's disco-rock command"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Wobbly well yums",
+        "answer": "Robbie Williams",
+        "hint": "Take That star who sang Angels"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Tear Kimmy harm can tree rods",
+        "answer": "Take Me Home Country Roads",
+        "hint": "John Denver's West Virginia anthem"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Swede carrot lime",
+        "answer": "Sweet Caroline",
+        "hint": "The \"ba ba ba\" party singalong"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Stay they warn duh",
+        "answer": "Stevie Wonder",
+        "hint": "Blind genius behind Superstition"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ide on the stand",
+        "answer": "I don't understand",
+        "hint": "Complete bafflement in four words"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Corp herp hounder witch hes",
+        "answer": "Quarter pounder with cheese",
+        "hint": "Burger named after a weight of meat, plus cheese"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Youre a fish and song context",
+        "answer": "Eurovision Song Contest",
+        "hint": "Abba's launchpad with \"douze points\""
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Cold dench hours",
+        "answer": "Golden showers",
+        "hint": "Crude phrase that sounds like golden weather"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Red ring andle reeds pest full",
+        "answer": "Reading and Leeds Festival",
+        "hint": "Twin August music festivals in muddy fields"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Missed the bin",
+        "answer": "Mr Bean",
+        "hint": "Rowan Atkinson's silent sitcom character with a Mini"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Pep smacks",
+        "answer": "Pepsi Max",
+        "hint": "Zero-sugar cola with a blue logo"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Far stan four reals",
+        "answer": "Fast & Furious",
+        "hint": "Vin Diesel's car franchise about family"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Barb heed whole",
+        "answer": "Barbie doll",
+        "hint": "Pink plastic fashion icon"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Warm ken see",
+        "answer": "Will McKenzie",
+        "hint": "Briefcase-carrying Inbetweeners swot"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "The heffa gup",
+        "answer": "The FA Cup",
+        "hint": "Knockout trophy lifted at Wembley in May"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Wes mince strappy",
+        "answer": "Westminster Abbey",
+        "hint": "Coronation church beside Parliament"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "An gover fooled",
+        "answer": "Hangover food",
+        "hint": "Greasy fry-up the morning after"
+    },
+    {
+        "category": "Grown-Ups",
+        "gibberish": "Or nice esh",
+        "answer": "All night sesh",
+        "hint": "Drinking until sunrise, informally"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Kitten scene gulf aisle",
+        "answer": "Get in single file",
+        "hint": "Instruction to walk one behind the other"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Know Ozark",
+        "answer": "Noah's Ark",
+        "hint": "Two of every animal on one big boat"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Ladle rat rotten hut",
+        "answer": "Little Red Riding Hood",
+        "hint": "Basket-carrying girl and a wolf in a bonnet"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Law duff there inks",
+        "answer": "Lord of the Rings",
+        "hint": "Frodo's quest to Mount Doom"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Mare eek ate Danish lee hole sin",
+        "answer": "Mary-Kate and Ashley Olsen",
+        "hint": "Twin child stars of Full House"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Moes art",
+        "answer": "Mozart",
+        "hint": "Classical prodigy who wrote a Requiem"
+    },
+    {
+        "category": "Christmas",
+        "gibberish": "Ooze kid sing sand tough claws",
+        "answer": "Who's kissing Santa Claus",
+        "hint": "Festive song title asking who caught Santa's attention"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Pea sank white",
+        "answer": "Peace and quiet",
+        "hint": "What you crave in a house full of kids"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Pie rate softy care hip been",
+        "answer": "Pirates of the Caribbean",
+        "hint": "Jack Sparrow's swashbuckling films"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Pier steers",
+        "answer": "Pierced ears",
+        "hint": "Holes made for hoop earrings"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Rim him birth owl limbo",
+        "answer": "Remember the Alamo",
+        "hint": "Texas battle cry from 1836"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Thick hull foam heck sicko",
+        "answer": "The Gulf of Mexico",
+        "hint": "Sea between Florida and Mexico"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Wok lie canny chip shun",
+        "answer": "Walk Like an Egyptian",
+        "hint": "Bangles hit with an arms-out dance"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Yell hope hey jess",
+        "answer": "Yellow Pages",
+        "hint": "Old doorstop directory for finding a plumber"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Yore luke ink hood",
+        "answer": "You're looking good",
+        "hint": "Compliment on someone's appearance"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Ape haul oat hurt dean",
+        "answer": "Apollo 13",
+        "hint": "Mission famous for \"Houston, we have a problem\""
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Tote hall reek hall",
+        "answer": "Total Recall",
+        "hint": "Arnie sci-fi about implanted memories on Mars"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Zola reek lips",
+        "answer": "Solar eclipse",
+        "hint": "Moon blocks the sun, so don't stare"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Sell your laugh hone",
+        "answer": "Cellular phone",
+        "hint": "Old-fashioned name for a mobile"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Made divorce pea whiff ewe",
+        "answer": "May the force be with you",
+        "hint": "Star Wars blessing"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Doll may shuns",
+        "answer": "Dalmatians",
+        "hint": "Spotted dogs, 101 of them"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Lass twill ant taste a mint",
+        "answer": "Last will and testament",
+        "hint": "Document read out after someone dies"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Weed owns tan ditch ants",
+        "answer": "We don't stand a chance",
+        "hint": "Hopeless prediction before kick-off"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Wreck you lure hoard he calf",
+        "answer": "Regular or decaf",
+        "hint": "Coffee question at the till"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Tie man dug hen",
+        "answer": "Time and again",
+        "hint": "Repeatedly"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Bay beach hemp ooh",
+        "answer": "Baby shampoo",
+        "hint": "Tear-free product for bath time"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Come pew turf high russ",
+        "answer": "Computer virus",
+        "hint": "Arrives by a dodgy email attachment"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Caress peak reamed hone huts",
+        "answer": "Krispy Kreme doughnuts",
+        "hint": "Chain with a \"Hot Now\" neon sign"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Yang keyed ooh dealt andy",
+        "answer": "Yankee Doodle Dandy",
+        "hint": "Revolutionary tune about a macaroni"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Gasp earthy fur end lee coast",
+        "answer": "Casper the friendly ghost",
+        "hint": "Friendly spook of cartoon fame"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Day demand war kink",
+        "answer": "Dead Man Walking",
+        "hint": "Sean Penn death-row drama"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Art official ant heller gents",
+        "answer": "Artificial intelligence",
+        "hint": "Machines that learn, and now write essays"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Muff heater gold",
+        "answer": "My feet are cold",
+        "hint": "Complaint about chilly toes"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Says amys treat",
+        "answer": "Sesame Street",
+        "hint": "Big Bird's neighbourhood"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Strain jazzin dean height",
+        "answer": "Strangers in the Night",
+        "hint": "Sinatra ballad with a \"dooby dooby doo\""
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Free quaintly as quest shuns",
+        "answer": "Frequently asked questions",
+        "hint": "Help page section that never answers yours"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "These moe king hun",
+        "answer": "The smoking gun",
+        "hint": "Decisive piece of evidence"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Oz temp hours",
+        "answer": "Austin Powers",
+        "hint": "Mike Myers spy spoof: \"Yeah, baby!\""
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Swede hans hour poke",
+        "answer": "Sweet and sour pork",
+        "hint": "Battered Chinese takeaway favourite"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ran dumb max suck highness",
+        "answer": "Random acts of kindness",
+        "hint": "Good deeds done for no reward"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "En wipe he deep lou",
+        "answer": "NYPD Blue",
+        "hint": "Nineties cop drama in a New York precinct"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Sit jerk lock",
+        "answer": "Set your clock",
+        "hint": "What you do when the clocks change"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Dawn dutch mice tough",
+        "answer": "Don't touch my stuff",
+        "hint": "Territorial warning about your belongings"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Tray sure aisle hand",
+        "answer": "Treasure Island",
+        "hint": "Stevenson tale with a parrot and buried gold"
+    },
+    {
+        "category": "Famous Faces",
+        "gibberish": "Lee on hard odie cap rio",
+        "answer": "Leonardo DiCaprio",
+        "hint": "Titanic's Jack, who finally won an Oscar for a bear"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Canoes he wad ice he",
+        "answer": "Can you see what I see",
+        "hint": "I-spy question to the person beside you"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Eighth reap ease hoot",
+        "answer": "A three piece suit",
+        "hint": "Jacket, trousers and waistcoat"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Mare itch prop owes all",
+        "answer": "Marriage proposal",
+        "hint": "One-knee question"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "These hound doff moo sick",
+        "answer": "The Sound of Music",
+        "hint": "Von Trapp family singalong"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "These ask cough sore owe",
+        "answer": "The Mask of Zorro",
+        "hint": "Banderas swashbuckler about a masked swordsman"
+    },
+    {
+        "category": "Places",
+        "gibberish": "Gnu your cassidy",
+        "answer": "New York City",
+        "hint": "The Big Apple"
+    },
+    {
+        "category": "Kids",
+        "gibberish": "Im on stairs sink",
+        "answer": "Monsters, Inc.",
+        "hint": "Pixar film with Sulley and Mike Wazowski"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Nor thumb air reckon",
+        "answer": "North American",
+        "hint": "Someone from Canada or the USA"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Sadder dane height fee fur",
+        "answer": "Saturday Night Fever",
+        "hint": "Travolta in a white suit on a lit floor"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Haystack up hank aches",
+        "answer": "A stack of pancakes",
+        "hint": "Breakfast tower with syrup"
+    },
+    {
+        "category": "General Knowledge",
+        "gibberish": "Peek nicked ape bull",
+        "answer": "Picnic table",
+        "hint": "Slatted bench for eating outdoors"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Dozen may Kenny cents tomb me",
+        "answer": "Doesn't make any sense to me",
+        "hint": "Polite bafflement at a daft idea"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Sym bell has abe he sea",
+        "answer": "Simple as a b c",
+        "hint": "Dead easy, in three letters"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Mine Ore a teary port",
+        "answer": "Minority Report",
+        "hint": "Cruise sci-fi about pre-crime"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Rot into thick oar",
+        "answer": "Rotten to the core",
+        "hint": "Bad right through"
+    },
+    {
+        "category": "Songs",
+        "gibberish": "Why emcee hay",
+        "answer": "YMCA",
+        "hint": "Village People anthem with arm shapes"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "Rome he owe hand jewelry yet",
+        "answer": "Romeo & Juliet",
+        "hint": "Balcony scene and a family feud"
+    },
+    {
+        "category": "TV & Film",
+        "gibberish": "For dee hay towers",
+        "answer": "48 Hours",
+        "hint": "Eddie Murphy's 1982 cop comedy with Nick Nolte"
+    },
+    {
+        "category": "Food & Drink",
+        "gibberish": "Pink sin herb lank hit",
+        "answer": "Pigs in a blanket",
+        "hint": "Sausages wrapped in pastry or bacon"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Please sleeve amass itch",
+        "answer": "Please leave a message",
+        "hint": "Answerphone prompt after the beep"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Plea center Europe ass ward",
+        "answer": "Please enter your password",
+        "hint": "Login prompt before you can get in"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Fooled forth halt",
+        "answer": "Food for thought",
+        "hint": "Something worth pondering"
+    },
+    {
+        "category": "Everyday Phrases",
+        "gibberish": "Ace cam mar test",
+        "answer": "A scam artist",
+        "hint": "Con man with a convincing story"
+    },
+    {
+        "category": "Brands & Shops",
+        "gibberish": "Mass turk hard",
+        "answer": "Mastercard",
+        "hint": "Red and yellow circles on a payment card"
     }
 ]

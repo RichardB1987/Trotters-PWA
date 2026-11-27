@@ -110,6 +110,7 @@
             margin: 0;
             padding: 1rem 1rem 9rem;
             min-height: 100vh;
+            min-height: 100dvh;
             -webkit-tap-highlight-color: transparent;
         }
         /* Scattered pixel blocks along the bottom edge (drawn by the small script at the end of the page) */
@@ -307,6 +308,8 @@
         }
         .btn:hover { filter: brightness(1.1); }
         .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+        /* End-of-turn button: shown but dimmed and untappable for 4s after the timer hits zero */
+        .btn[disabled], .btn.locked { opacity: 0.5; filter: grayscale(0.35); cursor: not-allowed; pointer-events: none; }
         .btn-pass { background-color: #7a2fc0; }
         .btn-skip { background-color: var(--pass-color); }
         .btn-correct { background-color: var(--correct-color); }
@@ -557,6 +560,25 @@
             .lobbyBtns .btn, .qrBtn { width: 100%; justify-content: center; }
             .phrase-display { padding: 1.1rem 1rem 1.6rem; }
         }
+        /* Desktop / large touchscreen (laptop or TV): tighten the landing screen's vertical
+           spacing and keep the 8 player tokens on one row, so the Back button, title, player
+           grid, action buttons and pixel footer all fit one viewport with no vertical scroll.
+           Phones (under 760px wide) keep the roomier layout and scroll naturally. */
+        @media (min-width: 760px) and (min-height: 700px) {
+            body { padding: 0.55rem 1rem 8.5rem; }
+            .lockup { margin-top: 0; }
+            .title { font-size: clamp(2rem, 6vw, 3.5rem); }
+            .tagline { margin-top: 0.45rem; font-size: clamp(0.85rem, 2.2vw, 1.15rem); }
+            .sub { margin: 0.45rem 0 0.2rem; font-size: 0.92rem; }
+            #setup-screen { max-width: 960px; }
+            .order-selector-panel { padding: 0.5rem 0.85rem 0.7rem; gap: 0.35rem; }
+            .order-head-title { font-size: 0.78rem; }
+            .order-grid { flex-wrap: nowrap; gap: 0.45rem 0.9rem; padding-top: 0.35rem; }
+            .order-label { font-size: 0.72rem; }
+            .session-info { margin: 0.35rem 0 0; font-size: 0.75rem; }
+            .lobbyBtns { margin-top: 0.55rem; gap: 0.7rem; }
+            .lobbyBtns .btn, .lobbyBtns .qrBtn { padding: 0.6rem 1.15rem; font-size: 0.9rem; }
+        }
         @media (prefers-reduced-motion: reduce) {
             .order-token-wrap.active .order-token-btn::after { animation: none; }
         }
@@ -642,6 +664,7 @@
                             <button class="btn btn-correct" onclick="nextCard('correct')">Correct!</button>
                         </div>
                         <button id="play-again-btn" class="btn" style="display: none;" onclick="resetGame()">Play Again (Next Turn)</button>
+                        <button id="new-game-btn" class="btn btn-back" type="button" onclick="startNewGame()">New Game (Fresh Cards)</button>
                         <a href="../game-hub.html" class="btn btn-back link-btn" style="margin-top: 0;" onclick="exitToGameHub(event)">&larr; Exit to Game Hub</a>
                     </div>
                 </div>
@@ -726,6 +749,13 @@
         let gameRunning = false;
         let currentIndex = 0;
         let allCards = [];
+        // --- Session card tracking: a card is dealt once and is not repeated until every
+        //     card in the deck has been shown. The used set lives for the whole session
+        //     (across all rounds and players) and is only cleared when the remaining pool
+        //     is empty, or when a brand-new game is started. ---
+        let usedCardKeys = new Set();
+        let roundDeck = [];        // shuffled, not-yet-used cards for this 60-second round
+        let roundDeckIndex = 0;    // current position within roundDeck
         // peer is already declared in first script block
         let currentPeerId = '';
 
@@ -1050,6 +1080,42 @@
             return array;
         }
 
+        // --- Session card pool helpers -------------------------------------------------
+        // Stable identity for a card, used to remember which cards have been shown.
+        function cardKey(card) {
+            if (!card) return '';
+            const g = card.gibberish || card.phrase || card.text || card.question || '';
+            const a = card.answer || card.translation || '';
+            return g + '||' + a;
+        }
+
+        // Build the deck for one 60-second round: every card not shown yet this session,
+        // shuffled. Only when the whole deck has been used is the used set cleared.
+        function prepareRoundDeck() {
+            if (!allCards || allCards.length === 0) {
+                roundDeck = [];
+                roundDeckIndex = 0;
+                return;
+            }
+            let pool = allCards.filter(function (c) { return !usedCardKeys.has(cardKey(c)); });
+            if (pool.length === 0) {
+                usedCardKeys.clear();   // whole deck used: begin a fresh cycle
+                pool = allCards.slice();
+            }
+            roundDeck = shuffle(pool.slice());
+            roundDeckIndex = 0;
+            currentIndex = 0;
+            safeSetItem('gibberish_index', '0');
+        }
+
+        // Forget which cards have been shown (used when a brand-new game begins).
+        function resetCardPool() {
+            usedCardKeys.clear();
+            roundDeck = [];
+            roundDeckIndex = 0;
+            currentIndex = 0;
+        }
+
         // Removed duplicate declarations that were causing errors and conflicting with the global state defined at the top.
         // The variables are already declared in the global scope (lines 197-205).
         
@@ -1072,6 +1138,8 @@
         function startNewRound() {
             score = 0;
             updateScore();
+            primeTimeUpSound();    // a round is starting: make sure the time-up clip is unlocked
+            prepareRoundDeck();    // deal only cards not shown yet this session
             startTimer();
             showCurrentCard();
         }
@@ -1083,17 +1151,20 @@
         function showCurrentCard() {
             if (allCards.length === 0) return;
             
-            if (currentIndex >= allCards.length) {
-                allCards = shuffle(allCards);
-                currentIndex = 0;
-                const cardsJson = safeStringifyJSON(allCards);
-                if (cardsJson) {
-                    safeSetItem('gibberish_cards', cardsJson);
-                }
+            // Deal from this round's deck. When it runs out, every card has been shown
+            // this session, so prepareRoundDeck() starts a fresh cycle.
+            if (roundDeckIndex >= roundDeck.length) {
+                prepareRoundDeck();
             }
-            safeSetItem('gibberish_index', currentIndex.toString());
+            if (roundDeck.length === 0) return;
+            safeSetItem('gibberish_index', roundDeckIndex.toString());
             
-            const card = allCards[currentIndex];
+            const card = roundDeck[roundDeckIndex];
+            if (!card) return;
+
+            // Mark the card as shown so it is not dealt again until the deck is used up.
+            usedCardKeys.add(cardKey(card));
+            currentIndex = roundDeckIndex;
 
             
             // Fallback safety to grab text regardless of JSON property names
@@ -1134,9 +1205,81 @@
 
 
 
+        // --- Time-up sound: same clip and 0.5 volume as dumb-dumber-dumbest.html.
+        //     Relative path from /games/ so it resolves whether the app is served from the
+        //     site root or from a sub-path (public/sounds/times-up-sound.mp3). ---
+        var timeUpAudio = new Audio('../sounds/times-up-sound.mp3');
+        timeUpAudio.volume = 0.5;
+        timeUpAudio.preload = 'auto';
+        function playTimeUp() {
+            try {
+                timeUpAudio.currentTime = 0;
+                var p = timeUpAudio.play();
+                if (p && p.catch) p.catch(function () { /* ignore */ });
+            } catch (e) { /* ignore */ }
+        }
+        function stopTimeUp() {
+            try { timeUpAudio.pause(); timeUpAudio.currentTime = 0; } catch (e) { /* ignore */ }
+        }
+        // Browsers only allow sound after the user has interacted with the page. Prime the clip
+        // silently (muted) on the first tap/keypress and again when a game or round starts, so the
+        // time-up sound is allowed to play later without a fresh tap.
+        function primeTimeUpSound() {
+            try {
+                var wasMuted = timeUpAudio.muted;
+                timeUpAudio.muted = true;
+                timeUpAudio.currentTime = 0;
+                var p = timeUpAudio.play();
+                if (p && p.then) {
+                    p.then(function () {
+                        try { timeUpAudio.pause(); timeUpAudio.currentTime = 0; } catch (e) { /* ignore */ }
+                        timeUpAudio.muted = wasMuted;
+                    }).catch(function () { timeUpAudio.muted = wasMuted; });
+                } else {
+                    timeUpAudio.pause();
+                    timeUpAudio.muted = wasMuted;
+                }
+            } catch (e) { /* ignore */ }
+        }
+        document.addEventListener('pointerdown', primeTimeUpSound, { once: true });
+        document.addEventListener('keydown', primeTimeUpSound, { once: true });
+
+        // --- 4-second lockout on the end-of-turn button --------------------------------
+        // Shown immediately when time runs out, but disabled, dimmed and untappable for 4
+        // seconds (with a (4s) -> (1s) countdown) so nobody taps it by accident.
+        var END_TURN_LABEL = 'Play Again (Next Turn)';
+        var endTurnLockInterval = null;
+        function clearEndTurnLock() {
+            if (endTurnLockInterval) { clearInterval(endTurnLockInterval); endTurnLockInterval = null; }
+            var btn = document.getElementById('play-again-btn');
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('locked');
+                btn.textContent = END_TURN_LABEL;
+            }
+        }
+        function lockEndTurnButton() {
+            clearEndTurnLock();
+            var btn = document.getElementById('play-again-btn');
+            if (!btn) return;
+            var remaining = 4;
+            btn.disabled = true;
+            btn.classList.add('locked');
+            btn.textContent = END_TURN_LABEL + ' (' + remaining + 's)';
+            endTurnLockInterval = setInterval(function () {
+                remaining--;
+                if (remaining <= 0) {
+                    clearEndTurnLock();
+                } else {
+                    btn.textContent = END_TURN_LABEL + ' (' + remaining + 's)';
+                }
+            }, 1000);
+        }
+
         function startTimer() {
             if (gameRunning) return; // Don't reset if already running
             gameRunning = true;
+            stopTimeUp();          // new round: drop any time-up sound still ringing
             timeLeft = 60;
             updateTimerDisplay();
             // Clear any existing interval first
@@ -1165,6 +1308,7 @@
         }
 
         function handleTimeout() {
+            playTimeUp();                          // the 60-second timer has just hit zero
             const el = document.getElementById('phrase-val');
             if (el) {
                 el.innerText = 'TIME IS UP!';
@@ -1178,6 +1322,7 @@
 
             const playAgainBtn = document.getElementById('play-again-btn');
             if (playAgainBtn) playAgainBtn.style.display = 'block';
+            lockEndTurnButton();                   // visible at once, but untappable for 4s
 
             if (conn && conn.open) {
                 conn.send({ type: 'TIMEOUT' });
@@ -1193,7 +1338,7 @@
 
         function sendGameState() {
             if (conn && conn.open && allCards.length > 0) {
-                const card = allCards[currentIndex] || allCards[0];
+                const card = (roundDeck.length ? roundDeck[Math.min(roundDeckIndex, roundDeck.length - 1)] : null) || allCards[0];
                 if (card) {
                     const phraseText = card.gibberish || card.phrase || card.text || card.question || 'Loading...';
                     const categoryText = card.category || card.genre || 'Gibberish Party';
@@ -1241,6 +1386,21 @@
             advanceTurnToNextPlayer();
             if (conn && conn.open) {
                 conn.send({ type: 'RESET_GAME' });
+            }
+            doReset();
+        }
+
+        // A brand-new game: forget which cards have been shown so the whole deck is
+        // available again, reset the scores and round number, then start a fresh round.
+        function startNewGame() {
+            if (!window.confirm('Start a new game? Scores reset to 0 and every card becomes available again.')) return;
+            resetCardPool();
+            roundNumber = 1;
+            score = 0;
+            updateRoundBadge();
+            initializeZeroScores(true);
+            if (conn && conn.open) {
+                try { conn.send({ type: 'RESET_GAME' }); } catch (e) { /* ignore */ }
             }
             doReset();
         }
@@ -1308,6 +1468,8 @@
         }
 
         function doReset() {
+            clearEndTurnLock();                    // new round: release the end-of-turn lock
+            stopTimeUp();
             score = 0;
             updateScore();
             const phraseEl = document.getElementById('phrase-val');
@@ -1324,20 +1486,10 @@
             }
             gameRunning = false;
             
-            // Reset for new game - start at beginning 
-            currentIndex = 0;
+            // Next turn: keep the session's used-card set so no card repeats until the
+            // whole deck has been shown (prepareRoundDeck() deals only unused cards).
             // Note: roundNumber is managed by advanceTurnToNextPlayer()
             updateRoundBadge(); // Update round badge to show current round
-            
-            if (currentIndex >= allCards.length) {
-                allCards = shuffle(allCards);
-                currentIndex = 0;
-                const cardsJson = safeStringifyJSON(allCards);
-                if (cardsJson) {
-                    safeSetItem('gibberish_cards', cardsJson);
-                }
-            }
-            safeSetItem('gibberish_index', currentIndex.toString());
             
             // Preserve existing scores - don't reset to zero
             renderScoreboard();
@@ -1703,6 +1855,9 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
                 }
+                // Leaving the game screen: no time-up sound, no end-of-turn lock
+                stopTimeUp();
+                clearEndTurnLock();
                 
                 // Clear any peer connections with forced cleanup
                 if (conn) {
@@ -1731,6 +1886,7 @@
                 score = 0;
                 roundNumber = 1;
                 currentIndex = 0;
+                resetCardPool();
                 gameRunning = false;
                 timeLeft = 60;
                 
@@ -1805,7 +1961,7 @@
                 if (active) adjustScore(active, 1);
             }
             updateScore();
-            currentIndex++;
+            roundDeckIndex++;
             
             // Note: Round progression is handled by advanceTurnToNextPlayer() when resetting
             // This function just advances to the next card, not necessarily the next player turn
@@ -1814,7 +1970,7 @@
         }
 
         function nextCardData() {
-            currentIndex++;
+            roundDeckIndex++;
             showCurrentCard();
         }
 
@@ -1828,6 +1984,7 @@
         function startPassAndPlay() {
             // Mark that we're now in a game session
             isInGameSession = true;
+            primeTimeUpSound();    // this click doubles as the audio-unlock gesture
             
             // Reset local game score counter to 0 for fresh start
             score = 0;
@@ -1900,6 +2057,7 @@
             roundNumber = 1;
             score = 0;
             currentIndex = 0;
+            resetCardPool();
             gameRunning = false;
             timeLeft = 60;
             isInGameSession = false;
