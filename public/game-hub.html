@@ -36,6 +36,11 @@
             width: 100%;
             max-width: 800px;
             justify-content: center;
+            /* Every row gets the same compact height: the tallest tile in the
+               grid, which is the Gibberish / Hitster / Hitster Bingo group at
+               ~247px. All shorter tiles stretch to that height, so no tile is
+               taller than another and nothing is clipped. */
+            grid-auto-rows: 1fr;
         }
         .hub-card {
             background-color: var(--card-bg);
@@ -73,6 +78,8 @@
             --uno-yellow: #ffde00;
             position: relative;
             overflow: hidden;
+            /* Compact vertical padding so this tile matches the 247px tile height */
+            padding: 1.7rem 1.8rem 1.8rem;
             background: radial-gradient(circle at 50% 0%, rgba(237, 28, 36, 0.38) 0%, rgba(20, 20, 20, 0) 65%), linear-gradient(165deg, #2b0909 0%, #141414 100%);
             border: 1px solid rgba(255, 255, 255, 0.22);
         }
@@ -125,7 +132,7 @@
             --herd-yellow: #ffd23f;
             position: relative;
             overflow: hidden;
-            padding: 1.8rem 1.8rem 2.4rem;
+            padding: 1.5rem 1.8rem 2.2rem;
             color: var(--herd-ink);
             border: 3px solid var(--herd-ink);
             background-color: #2aa88f;
@@ -162,8 +169,8 @@
         }
         .herd-card .icon-box {
             flex: 0 0 auto;
-            width: 58px;
-            height: 58px;
+            width: 50px;
+            height: 50px;
             padding: 0;
             background: #eaf8f4;
             border: 3px solid var(--herd-ink);
@@ -601,7 +608,7 @@
             --dd-sky: #6bbbe3;
             position: relative;
             overflow: hidden;
-            padding: 2.1rem 1.8rem 2.4rem;
+            padding: 1.5rem 1.8rem 2.2rem;
             color: var(--dd-ink);
             border: 3px solid var(--dd-ink);
             background-color: var(--dd-cream);
@@ -630,8 +637,8 @@
         }
         .dumb-card .icon-box {
             flex: 0 0 auto;
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             padding: 0;
             background: transparent;
             border-radius: 0;
@@ -674,9 +681,105 @@
         .dumb-card:hover .card-footer { background: var(--dd-sky); color: var(--dd-ink); }
         /* Keep the tile legible on a 390px phone */
         @media (max-width: 420px) {
-            .dumb-card { padding: 1.9rem 1.2rem 2.2rem; }
+            .dumb-card { padding: 1.5rem 1.2rem 2.2rem; }
             .dumb-card h2 { font-size: 1.15rem; }
             .dumb-card .icon-box { width: 56px; height: 56px; }
+        }
+
+        /* Gibberish Party tile only: Incohearent white box (crisp white surface,
+           bold black frame, red/pink-yellow-cyan pixel strip and bottom pixel cluster). */
+        .gibberish-card {
+            --gib-ink: #111111;
+            --gib-red: #e8283c;
+            --gib-pink: #f0246a;
+            --gib-yellow: #ffd21f;
+            --gib-cyan: #0a9bd8;
+            position: relative;
+            overflow: hidden;
+            padding: 1.5rem 1.5rem 2.2rem;
+            color: var(--gib-ink);
+            border: 3px solid var(--gib-ink);
+            background-color: #ffffff;
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        /* Pixel-block strip sits under the title itself (like the Incohearent wordmark) */
+        .gibberish-card h2::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 10px;
+            background: linear-gradient(90deg,
+                #e8283c 0 8.33%, #c8203a 8.33% 16.66%, #f0246a 16.66% 25%, #d02a3c 25% 33.33%,
+                #ffd21f 33.33% 41.66%, #f6efc0 41.66% 50%, #ffd21f 50% 58.33%, #f6efc0 58.33% 66.66%,
+                #0a9bd8 66.66% 75%, #4cc7ee 75% 83.33%, #0a9bd8 83.33% 91.66%, #4cc7ee 91.66% 100%);
+            pointer-events: none;
+        }
+        .gibberish-card .icon-box {
+            flex: 0 0 auto;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            background: var(--gib-red);
+            border: 3px solid var(--gib-ink);
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+        }
+        .gibberish-card .icon-box svg { width: 30px; height: 30px; stroke: #ffffff; }
+        .gibberish-card h2 {
+            position: relative;
+            padding-bottom: 12px;
+            font-family: "Arial Black", Impact, "Arial Rounded MT Bold", system-ui, -apple-system, "Segoe UI", sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            color: var(--gib-ink);
+        }
+        .gibberish-card p {
+            color: #2b2b2b;
+            font-weight: 600;
+        }
+        .gibberish-card .card-footer {
+            position: relative;
+            z-index: 1;
+            align-self: flex-start;
+            padding: 0.35rem 0.85rem;
+            color: var(--gib-ink);
+            background: var(--gib-yellow);
+            border: 3px solid var(--gib-ink);
+            border-radius: 0.4rem;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+            font-family: "Arial Black", Impact, "Arial Rounded MT Bold", system-ui, -apple-system, "Segoe UI", sans-serif;
+            font-weight: 900;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        /* Red/pink, yellow and cyan/blue pixel blocks clustered along the bottom edge */
+        .gibberish-card::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 51px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='51' viewBox='0 0 340 51' shape-rendering='crispEdges'%3E%3Crect x='0' y='34' width='17' height='17' fill='%23e8283c'/%3E%3Crect x='0' y='17' width='17' height='17' fill='%23f0246a'/%3E%3Crect x='0' y='0' width='17' height='17' fill='%23d02a3c'/%3E%3Crect x='17' y='34' width='17' height='17' fill='%23f0246a'/%3E%3Crect x='17' y='17' width='17' height='17' fill='%23d02a3c'/%3E%3Crect x='17' y='0' width='17' height='17' fill='%23e8283c'/%3E%3Crect x='34' y='34' width='17' height='17' fill='%23d02a3c'/%3E%3Crect x='34' y='17' width='17' height='17' fill='%23d02a3c'/%3E%3Crect x='34' y='0' width='17' height='17' fill='%23f0246a'/%3E%3Crect x='51' y='34' width='17' height='17' fill='%23c8203a'/%3E%3Crect x='51' y='17' width='17' height='17' fill='%23c8203a'/%3E%3Crect x='51' y='0' width='17' height='17' fill='%23d02a3c'/%3E%3Crect x='68' y='34' width='17' height='17' fill='%23e8283c'/%3E%3Crect x='68' y='17' width='17' height='17' fill='%23f26a98'/%3E%3Crect x='85' y='34' width='17' height='17' fill='%23f0246a'/%3E%3Crect x='85' y='17' width='17' height='17' fill='%23e8283c'/%3E%3Crect x='102' y='34' width='17' height='17' fill='%23f0246a'/%3E%3Crect x='119' y='34' width='17' height='17' fill='%23f2c200'/%3E%3Crect x='119' y='17' width='17' height='17' fill='%23f2c200'/%3E%3Crect x='136' y='34' width='17' height='17' fill='%23ffe76a'/%3E%3Crect x='136' y='17' width='17' height='17' fill='%23ffe76a'/%3E%3Crect x='153' y='34' width='17' height='17' fill='%23f6efc0'/%3E%3Crect x='153' y='17' width='17' height='17' fill='%23f6efc0'/%3E%3Crect x='170' y='34' width='17' height='17' fill='%23f2c200'/%3E%3Crect x='170' y='17' width='17' height='17' fill='%23ffe76a'/%3E%3Crect x='170' y='0' width='17' height='17' fill='%23ffd21f'/%3E%3Crect x='187' y='34' width='17' height='17' fill='%23f2c200'/%3E%3Crect x='187' y='17' width='17' height='17' fill='%23ffe76a'/%3E%3Crect x='187' y='0' width='17' height='17' fill='%23ffe76a'/%3E%3Crect x='204' y='34' width='17' height='17' fill='%23f2c200'/%3E%3Crect x='204' y='17' width='17' height='17' fill='%23f2c200'/%3E%3Crect x='204' y='0' width='17' height='17' fill='%23f6efc0'/%3E%3Crect x='221' y='34' width='17' height='17' fill='%234cc7ee'/%3E%3Crect x='221' y='17' width='17' height='17' fill='%234cc7ee'/%3E%3Crect x='238' y='34' width='17' height='17' fill='%2319b4e6'/%3E%3Crect x='238' y='17' width='17' height='17' fill='%230877b0'/%3E%3Crect x='238' y='0' width='17' height='17' fill='%237fd6f3'/%3E%3Crect x='255' y='34' width='17' height='17' fill='%237fd6f3'/%3E%3Crect x='255' y='17' width='17' height='17' fill='%230a9bd8'/%3E%3Crect x='272' y='34' width='17' height='17' fill='%230a9bd8'/%3E%3Crect x='289' y='34' width='17' height='17' fill='%230a9bd8'/%3E%3Crect x='306' y='34' width='17' height='17' fill='%230877b0'/%3E%3Crect x='306' y='17' width='17' height='17' fill='%230a9bd8'/%3E%3Crect x='323' y='34' width='17' height='17' fill='%234cc7ee'/%3E%3Crect x='323' y='17' width='17' height='17' fill='%234cc7ee'/%3E%3Crect x='323' y='0' width='17' height='17' fill='%234cc7ee'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            background-size: 100% auto;
+            pointer-events: none;
+        }
+        .gibberish-card:hover {
+            background-color: #fffdf2;
+            border-color: var(--gib-ink);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 30px -5px rgba(0, 0, 0, 0.45);
+        }
+        .gibberish-card:hover .card-footer { background: var(--gib-cyan); color: var(--gib-ink); }
+        /* Keep the tile legible on a 390px phone */
+        @media (max-width: 420px) {
+            .gibberish-card { padding: 1.25rem 1.2rem 2.25rem; }
+            .gibberish-card h2 { font-size: 1rem; }
+            .gibberish-card .icon-box { width: 50px; height: 50px; }
         }
 
     </style>
@@ -750,15 +853,15 @@
         </a>
 
         <!-- Gibberish Party -->
-        <a href="games/gibberish-host.html" class="hub-card">
+        <a href="games/gibberish-host.html" class="hub-card gibberish-card">
             <div>
                 <div class="card-header">
                     <div class="icon-box">
-                        <svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     </div>
                     <h2>Gibberish Party</h2>
                 </div>
-                <p>Scan Once & Auto-Update party game. Translate phonetically mangled phrases with live phone judge sync.</p>
+                <p>Scan once and auto-update. Guess mangled phrases with live judge sync.</p>
             </div>
             <div class="card-footer">Play Gibberish &rarr;</div>
         </a>
@@ -811,7 +914,7 @@
                     </div>
                     <h2>Quiz Bingo</h2>
                 </div>
-                <p>Spin the category wheel, hear the question read aloud, and mark the matching colour on your bingo card.</p>
+                <p>Spin the wheel, hear the question, then mark your colour.</p>
             </div>
             <div class="card-footer">Play Quiz Bingo &rarr;</div>
         </a>
@@ -838,7 +941,7 @@
                     </div>
                     <h2>Herd <span class="mentality">Mentality</span></h2>
                 </div>
-                <p>Whatever you do, don't stand out! Match the herd's answer, dodge the Pink Cow, and be first to 8 points.</p>
+                <p>Match the herd, dodge the Pink Cow and be first to 8 points.</p>
             </div>
             <div class="card-footer">Play Herd Mentality &rarr;</div>
         </a>
@@ -906,7 +1009,7 @@
                     </div>
                     <h2>Dumb Dumber Dumbest</h2>
                 </div>
-                <p>Quick-fire general knowledge under pressure. Beat the 6-second clock, climb the IQ ladder and avoid being the Dumbest.</p>
+                <p>Beat the 6-second clock and climb the IQ ladder.</p>
             </div>
             <div class="card-footer">Play Dumb Dumber Dumbest &rarr;</div>
         </a>

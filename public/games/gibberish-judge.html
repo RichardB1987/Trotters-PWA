@@ -6,46 +6,81 @@
     <title>Judge Controller - Gibberish Party</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
+        /* Matches gibberish-host.html: Incohearent white box look (bold black wordmark, pixel bar, yellow tag, pixel blocks at the bottom)
+           with the Encrypted red / black / orange phrase card. */
         :root {
-            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc;
-            --text-muted: #94a3b8; --primary: #3b82f6; --correct-color: #22c55e; --pass-color: #ef4444;
+            --bg-color: #ffffff; --card-bg: #ffffff; --text-main: #111111;
+            --text-muted: #55505f; --primary: #0877b0; --correct-color: #138a3a; --pass-color: #d91e36;
+            --ink: #111111; --red: #e8283c; --yellow: #ffd21f; --face: #e8283c;
+            --font: "Arial Black", Impact, "Arial Rounded MT Bold", system-ui, -apple-system, "Segoe UI", sans-serif;
         }
-        body { font-family: system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 1.5rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; user-select: none; }
-        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 1.25rem; }
-        .status-banner { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: var(--primary); padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; text-align: center; }
-        .status-banner.connected { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: var(--correct-color); }
-        .status-banner.error { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: var(--pass-color); }
-        .card-panel { background-color: var(--card-bg); border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 1rem; border: 1px solid rgba(255,255,255,0.05); }
-        #judge-gibberish { font-size: 2.2rem; font-weight: 900; color: #facc15; line-height: 1.2; word-break: break-word; }
-        .answer-box { font-size: 1.3rem; font-weight: bold; color: var(--correct-color); min-height: 1.6rem; }
-        .hint-box { background: rgba(59,130,246,0.1); border-left: 3px solid var(--primary); padding: 0.75rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.95rem; }
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
-        .btn { border: none; padding: 1.5rem 1rem; font-size: 1.25rem; font-weight: bold; border-radius: 1rem; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .btn:active { transform: scale(0.96); }
+        body[data-theme="black"] { --face: #16131b; }
+        body[data-theme="orange"] { --face: #f39200; }
+        * { box-sizing: border-box; }
+        body { position: relative; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #ffffff; color: var(--text-main); margin: 0; padding: 0.9rem 0.8rem 7.5rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; user-select: none; -webkit-tap-highlight-color: transparent; }
+        /* Scattered pixel blocks along the bottom edge (drawn by the small script at the end of the page) */
+        #pixel-cluster { position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; overflow: hidden; line-height: 0; }
+        #pixel-cluster svg { display: block; }
+        .container { position: relative; z-index: 1; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.9rem; }
+        /* GIBBERISH and PARTY are the same size and font; the pixel bar is exactly as wide as the wordmark */
+        .brand { text-align: center; }
+        .lockup { display: inline-block; max-width: 100%; }
+        .brand-title { margin: 0; font-family: var(--font); font-weight: 900; font-size: clamp(2rem, 11vw, 2.8rem); text-transform: uppercase; line-height: 0.95; letter-spacing: -0.01em; color: #111; }
+        .brand-title span { display: block; }
+        .pixel-strip { width: 100%; aspect-ratio: 12 / 1; margin-top: 0.3rem; background: linear-gradient(90deg, #e8283c 0 8.33%, #c8203a 8.33% 16.66%, #f0246a 16.66% 25%, #d02a3c 25% 33.33%, #ffd21f 33.33% 41.66%, #f6efc0 41.66% 50%, #ffd21f 50% 58.33%, #f6efc0 58.33% 66.66%, #0a9bd8 66.66% 75%, #4cc7ee 75% 83.33%, #0a9bd8 83.33% 91.66%, #4cc7ee 91.66% 100%); }
+        .tagline { display: table; margin: 0.7rem auto 0; background: var(--yellow); color: #111; font-family: var(--font); font-size: 0.95rem; padding: 0.25rem 0.9rem; text-transform: uppercase; }
+        .status-banner { background: #e4f4fc; border: 2px solid #0877b0; color: #064e73; padding: 0.55rem 1rem; border-radius: 999px; font-weight: 700; text-align: center; font-size: 0.9rem; }
+        .status-banner.connected { background: #e2f6e8; border-color: #138a3a; color: #0c5c26; }
+        .status-banner.error { background: #fde6e9; border-color: #d91e36; color: #8f1224; }
+        .game-stats { display: flex; gap: 0.6rem; }
+        .stat-pill { flex: 1; display: flex; justify-content: center; align-items: center; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 0.35rem 0.8rem; font-family: var(--font); font-size: 1.15rem; text-transform: uppercase; }
+        #hud-score { color: #d9215f; }
+        #hud-timer { color: var(--primary); }
+        /* Encrypted-style card */
+        .card-panel { position: relative; background: var(--face); border: 4px solid var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 10px 22px rgba(17,17,17,0.2); display: flex; flex-direction: column; transition: background-color 0.3s; }
+        .cat-tab { align-self: center; background: #fff; color: var(--ink); font-family: var(--font); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; padding: 0.3rem 1.2rem 0.45rem; border-radius: 0 0 14px 14px; max-width: 90%; text-align: center; }
+        #judge-gibberish { font-family: var(--font); font-size: clamp(1.9rem, 9vw, 2.6rem); font-weight: 900; color: #fff; line-height: 1.1; word-break: break-word; padding: 1.1rem 1.1rem 1.7rem; min-height: 8.5rem; text-shadow: 2px 3px 0 rgba(0,0,0,0.25); transform: rotate(-2deg); transform-origin: 20% 50%; }
+        /* White wavy footer band holds the answer + hint (like the answer side of an Encrypted card) */
+        .card-foot { position: relative; background: #fff; color: var(--ink); padding: 0.9rem 1rem 1rem; margin-top: 12px; display: flex; flex-direction: column; gap: 0.5rem; }
+        .card-foot::before { content: ""; position: absolute; left: 0; right: 0; top: -11px; height: 12px; background: radial-gradient(circle at 12px 12px, #fff 12.5px, transparent 13px) 0 0 / 24px 12px repeat-x; }
+        .answer-box { font-family: var(--font); font-size: 1.15rem; color: #0c6e2e; min-height: 1.5rem; line-height: 1.2; }
+        .hint-box { background: #f4f1f8; border-left: 5px solid var(--face); padding: 0.55rem 0.7rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.92rem; color: #3b3347; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 0.2rem; }
+        .btn { border: 3px solid var(--ink); padding: 1.3rem 0.5rem; font-family: var(--font); font-size: 1.15rem; text-transform: uppercase; border-radius: 999px; cursor: pointer; color: white; box-shadow: 0 5px 0 var(--ink); }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
         .btn-skip { background-color: var(--pass-color); }
         .btn-correct { background-color: var(--correct-color); }
-        .game-stats { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.75rem; font-weight: bold; font-size: 1.1rem; }
-        .waiting-screen { text-align: center; padding: 3rem 1.5rem; background-color: var(--card-bg); border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .waiting-screen h1 { margin-top: 0; font-size: 2rem; }
+        .waiting-screen { text-align: center; padding: 2.2rem 1.2rem; background-color: #fff; border: 3px solid var(--ink); border-radius: 22px; box-shadow: 5px 6px 0 var(--red); }
+        .waiting-screen h1 { margin-top: 0; font-family: var(--font); font-size: 1.7rem; text-transform: uppercase; color: var(--ink); }
+        @media (max-width: 340px) { .action-buttons { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="brand">
+            <div class="lockup">
+                <h1 class="brand-title"><span>Gibberish</span><span>Party</span></h1>
+                <div class="pixel-strip" aria-hidden="true"></div>
+            </div>
+            <div class="tagline">Say it. Guess it.</div>
+        </div>
         <div id="status-banner" class="status-banner">Connecting...</div>
         <div id="waiting-panel" class="waiting-screen">
             <h1>Judge Controller</h1>
             <p id="connection-details" style="color: var(--text-muted);">Pairing...</p>
         </div>
-        <div id="active-panel" style="display: none; flex-direction: column; gap: 1.25rem;">
+        <div id="active-panel" style="display: none; flex-direction: column; gap: 0.9rem;">
             <div class="game-stats">
-                <div id="hud-score">Score: 0</div>
-                <div id="hud-timer">Time: 60s</div>
+                <div class="stat-pill" id="hud-score">Score: 0</div>
+                <div class="stat-pill" id="hud-timer">Time: 60s</div>
             </div>
             <div class="card-panel">
-                <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);" id="hud-category">Category</div>
+                <div class="cat-tab" id="hud-category">Category</div>
                 <div id="judge-gibberish">Waiting...</div>
-                <div class="answer-box" id="judge-answer"></div>
-                <div class="hint-box" id="judge-hint">Hint: ...</div>
+                <div class="card-foot">
+                    <div class="answer-box" id="judge-answer"></div>
+                    <div class="hint-box" id="judge-hint">Hint: ...</div>
+                </div>
             </div>
             <div class="action-buttons">
                 <button class="btn btn-skip" onclick="sendAction('skip')">SKIP &rarr;</button>
@@ -53,6 +88,49 @@
             </div>
         </div>
     </div>
+    <script>
+        // Visual only: card colour follows the category (same rule as the host screen) + Incohearent pixel-block cluster
+        (function () {
+            var THEMES = ['red', 'black', 'orange'];
+            document.addEventListener('DOMContentLoaded', function () {
+                var cat = document.getElementById('hud-category');
+                function applyTheme() {
+                    var s = (cat.textContent || '').trim(), h = 0, i;
+                    for (i = 0; i < s.length; i++) h = (h + s.charCodeAt(i)) % 997;
+                    document.body.setAttribute('data-theme', THEMES[h % THEMES.length]);
+                }
+                new MutationObserver(applyTheme).observe(cat, { childList: true, characterData: true, subtree: true });
+                applyTheme();
+
+                var host = document.createElement('div');
+                host.id = 'pixel-cluster';
+                host.setAttribute('aria-hidden', 'true');
+                document.body.appendChild(host);
+                var RED = ['#e8283c', '#c8203a', '#f0246a', '#f26a98', '#d02a3c'];
+                var YEL = ['#ffd21f', '#f6efc0', '#ffe76a', '#f2c200'];
+                var BLU = ['#0a9bd8', '#4cc7ee', '#19b4e6', '#7fd6f3', '#0877b0'];
+                function pick(a, r) { return a[Math.floor(r * a.length) % a.length]; }
+                function drawPixels() {
+                    var w = document.documentElement.clientWidth, s = w < 560 ? 22 : 30, cols = Math.ceil(w / s), rows = 5, h = rows * s, c, r, x, n = 20241126, out = '';
+                    function rnd() { n = (n * 16807 + 12345) % 2147483647; return n / 2147483647; }
+                    for (c = 0; c < cols; c++) {
+                        x = c / cols;
+                        var pal = x < 0.36 ? RED : (x < 0.64 ? YEL : BLU);
+                        var tall = 1.4 + 2 * (0.5 + 0.5 * Math.sin(c * 0.55 + 1)) + rnd() * 1.3;
+                        for (r = 0; r < rows; r++) {
+                            if (r < tall - 1 || (r < tall + 1.6 && rnd() < 0.3)) {
+                                out += '<rect x="' + (c * s) + '" y="' + (h - (r + 1) * s) + '" width="' + s + '" height="' + s + '" fill="' + pick(pal, rnd()) + '"/>';
+                            }
+                        }
+                    }
+                    host.style.height = h + 'px';
+                    host.innerHTML = '<svg width="' + (cols * s) + '" height="' + h + '" viewBox="0 0 ' + (cols * s) + ' ' + h + '" shape-rendering="crispEdges">' + out + '</svg>';
+                }
+                window.addEventListener('resize', drawPixels);
+                drawPixels();
+            });
+        })();
+    </script>
     <script>
         let peer = null, conn = null, hostId = '';
         window.addEventListener('DOMContentLoaded', () => {
