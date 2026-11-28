@@ -1,0 +1,62 @@
+[
+    {
+        "category": "Peckham Life",
+        "type": "straight",
+        "question": "What is the name of the pub where the Trotters drink?",
+        "answer": "The Nag's Head",
+        "hint": "It's named after a horse, and Mike runs it"
+    },
+    {
+        "category": "Peckham Life",
+        "type": "mcq",
+        "question": "What kind of vehicle is the Trotters' yellow van?",
+        "options": ["Ford Transit", "Reliant Regal Supervan III", "Bedford CF", "Morris Minor Van"],
+        "answer": "Reliant Regal Supervan III",
+        "hint": "It only has three wheels"
+    },
+    {
+        "category": "Characters",
+        "type": "straight",
+        "question": "What is Del Boy's full name?",
+        "answer": "Derek Edward Trotter",
+        "hint": "Starts with a D, just like his nickname"
+    },
+    {
+        "category": "Characters",
+        "type": "straight",
+        "question": "What is the name of Rodney's wife?",
+        "answer": "Cassandra",
+        "hint": "She works in a bank"
+    },
+    {
+        "category": "Quotes",
+        "type": "mcq",
+        "question": "Complete Del Boy's catchphrase: \"This time next year, we'll be ...\"",
+        "options": ["On holiday in Marbella", "Millionaires", "Driving a Rolls-Royce", "Out of business"],
+        "answer": "Millionaires",
+        "hint": "He says it before every get-rich-quick scheme"
+    },
+    {
+        "category": "Episodes",
+        "type": "mcq",
+        "question": "In which episode do Del and Rodney smash a chandelier while cleaning it?",
+        "options": ["Dates", "A Touch of Glass", "Time On Our Hands", "The Jolly Boys' Outing"],
+        "answer": "A Touch of Glass",
+        "hint": "The title is a pun about glass"
+    },
+    {
+        "category": "Scams & Schemes",
+        "type": "mcq",
+        "question": "What was the name of the \"spring water\" Del tried to sell, which was really tap water?",
+        "options": ["Brixton Bubbles", "Dulwich Dew", "Peckham Spring", "Nelson Natural"],
+        "answer": "Peckham Spring",
+        "hint": "Named after the Trotters' home patch"
+    },
+    {
+        "category": "Peckham Life",
+        "type": "straight",
+        "question": "Which tower block do the Trotters live in?",
+        "answer": "Nelson Mandela House",
+        "hint": "Named after a famous South African leader"
+    }
+]

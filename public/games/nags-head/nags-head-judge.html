@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge Controller - The Nag's Head Pub Quiz</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        /* Matches nags-head-host.html: Reliant-van yellow, a light leopard edge, ink outlines. Script font for decoration only;
+           questions, options, answer, hint, "1 of N" and the Correct / Wrong buttons are plain sans-serif. */
+        :root {
+            --bg: #ffd42a; --cream: #fff8dc; --ink: #1d1606; --text-muted: #5b4a12;
+            --red: #c8102e; --green: #1e8a3c; --blue: #1d5fbf; --face: #b3261e; --pc: #f2a900;
+            --font-script: "Mistral", "Segoe Script", "Brush Script MT", "Lucida Handwriting", "Apple Chancery", cursive;
+            --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        body { position: relative; font-family: var(--font-ui); background: var(--bg); color: var(--ink); margin: 0; padding: 30px 28px 34px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; min-height: 100dvh; user-select: none; -webkit-tap-highlight-color: transparent; }
+        /* Subtle leopard edge, outer rim only, behind everything. Multiply keeps the print's pale band a gold
+           that matches the yellow theme while the black rosettes composite to a deep, crisp black. */
+        body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; border-style: solid; border-color: transparent; border-width: 24px 25px 21px 24px; border-image-source: url("img/leopard-border.png"); border-image-slice: 80 82 70 80; border-image-repeat: round; mix-blend-mode: multiply; }
+        .container { position: relative; z-index: 1; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.8rem; }
+        .brand { text-align: center; }
+        .brand-title { margin: 0; font-family: var(--font-script); font-weight: 400; font-size: clamp(2.3rem, 11vw, 3rem); line-height: 1; color: var(--ink); text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.75); }
+        .tagline { display: table; margin: 0.3rem auto 0; background: var(--ink); color: var(--bg); font-family: var(--font-script); font-size: 1.3rem; padding: 0 1rem 0.1rem; border-radius: 0.4rem; transform: rotate(-1.5deg); }
+        .status-banner { background: #fff3b0; border: 2px solid #b58900; color: #4d3b00; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 700; text-align: center; font-size: 0.9rem; }
+        .status-banner.connected { background: #d9f3e0; border-color: var(--green); color: #0c5c26; }
+        .status-banner.error { background: #fde6e9; border-color: var(--red); color: #8f1224; }
+        .game-stats { display: flex; gap: 0.6rem; }
+        .stat-pill { flex: 1; display: flex; justify-content: center; align-items: center; gap: 0.4rem; background: var(--cream); border: 3px solid var(--ink); border-radius: 999px; padding: 0.35rem 0.8rem; font-family: var(--font-ui); font-weight: 800; font-size: 1.1rem; white-space: nowrap; overflow: hidden; }
+        .stat-pill .lab { font-family: var(--font-script); font-weight: 400; font-size: 1.25rem; color: var(--text-muted); }
+        #hud-player { flex: 1.3; }
+        #hud-player .dot { flex: 0 0 auto; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: var(--pc); border: 2px solid var(--ink); box-shadow: 0 0 8px var(--pc); }
+        #hud-player b { overflow: hidden; text-overflow: ellipsis; }
+        /* Card: colour follows the question's category (same rule as the host) */
+        .card-panel { position: relative; background: var(--face); border: 4px solid var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 10px 22px rgba(29, 22, 6, 0.25); display: flex; flex-direction: column; transition: background-color 0.3s; }
+        .cat-tab { align-self: center; background: var(--bg); color: var(--ink); font-family: var(--font-script); font-size: 1.3rem; line-height: 1.1; padding: 0.15rem 1.3rem 0.3rem; border: 3px solid var(--ink); border-top: none; border-radius: 0 0 14px 14px; max-width: 90%; text-align: center; }
+        #judge-question { font-family: var(--font-ui); font-weight: 800; font-size: clamp(1.3rem, 6vw, 1.7rem); line-height: 1.2; color: #fff; word-break: break-word; padding: 1rem 1rem 0.9rem; min-height: 6rem; text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.3); }
+        #judge-options { list-style: none; margin: 0; padding: 0 0.9rem 1rem; display: grid; grid-template-columns: 1fr; gap: 0.45rem; }
+        #judge-options li { display: flex; align-items: center; gap: 0.6rem; background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 0.7rem; padding: 0.45rem 0.7rem; font-family: var(--font-ui); font-weight: 700; font-size: 1.02rem; line-height: 1.2; }
+        #judge-options li.is-answer { background: #d9f3e0; border-color: var(--green); }
+        .opt-letter { flex: 0 0 auto; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--ink); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; }
+        .card-foot { background: var(--cream); color: var(--ink); padding: 0.8rem 1rem 0.9rem; border-top: 3px solid var(--ink); display: flex; flex-direction: column; gap: 0.5rem; font-family: var(--font-ui); }
+        .answer-box { font-weight: 800; font-size: 1.15rem; color: #0c6e2e; line-height: 1.25; }
+        .hint-box { background: #fff; border-left: 5px solid var(--face); padding: 0.5rem 0.7rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.95rem; color: #3b2f0a; line-height: 1.3; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 0.1rem; }
+        .btn { border: 3px solid var(--ink); padding: 1.3rem 0.5rem; font-family: var(--font-ui); font-weight: 800; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.03em; border-radius: 999px; cursor: pointer; color: #fff; box-shadow: 0 5px 0 var(--ink); touch-action: manipulation; }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+        .btn-wrong { background: var(--red); }
+        .btn-correct { background: var(--green); }
+        .waiting-screen { text-align: center; padding: 1.8rem 1.2rem; background: var(--cream); border: 3px solid var(--ink); border-radius: 22px; box-shadow: 5px 6px 0 var(--red); }
+        .waiting-screen h1 { margin: 0 0 0.4rem; font-family: var(--font-script); font-weight: 400; font-size: 2.2rem; color: var(--ink); }
+        .waiting-screen p { margin: 0.3rem 0; font-size: 1rem; font-weight: 600; color: var(--text-muted); }
+        .handoff-token { width: 130px; height: 130px; margin: 1.2rem auto; position: relative; border-radius: 50%; }
+        .handoff-token::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: var(--pc); box-shadow: 0 0 22px 6px var(--pc); }
+        .handoff-token img { position: relative; width: 100%; height: 100%; border-radius: 50%; background: #fff; display: block; }
+        .handoff-name { font-family: var(--font-ui); font-weight: 800; font-size: 1.5rem; color: var(--ink); }
+        .token-label { margin: 0.15rem 0 0.3rem; font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+        /* Start Turn: a script "minor button" so the judge can begin the next turn too.
+           It is dimmed and untappable for the first 3 seconds of the Turn Over card (same idea as Gibberish). */
+        .btn-start-turn { margin-top: 0.9rem; background: var(--green); font-family: var(--font-script); font-weight: 400; font-size: 1.6rem; text-transform: none; letter-spacing: 0; padding: 0.6rem 0.5rem 0.7rem; }
+        .btn-locked, .btn[disabled], .btn[disabled]:active { opacity: 0.4; pointer-events: none; box-shadow: 0 2px 0 var(--ink); transform: none; }
+        .handoff-hint { margin: 0.5rem 0 0; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        @media (max-width: 340px) { .action-buttons { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="brand">
+            <h1 class="brand-title">The Nag's Head</h1>
+            <div class="tagline">Judge Phone</div>
+        </div>
+        <div id="status-banner" class="status-banner">Connecting...</div>
+
+        <div id="waiting-panel" class="waiting-screen">
+            <h1>Judge Controller</h1>
+            <p id="connection-details">Pairing...</p>
+        </div>
+
+        <div id="handoff-panel" class="waiting-screen" hidden>
+            <h1>Turn Over!</h1>
+            <div class="handoff-token" id="handoff-token"><img id="handoff-img" src="img/token-1.png" alt=""></div>
+            <div class="handoff-name" id="handoff-name">Next player</div>
+            <p class="token-label" id="handoff-token-name"></p>
+            <p id="handoff-sub"></p>
+            <button id="start-turn-btn" class="btn btn-start-turn btn-locked" type="button" onclick="startTurnFromJudge()">Start Turn</button>
+            <p class="handoff-hint">Tap Start Turn when the next player is ready.</p>
+        </div>
+
+        <div id="active-panel" style="display: none; flex-direction: column; gap: 0.8rem;">
+            <div class="game-stats">
+                <div class="stat-pill" id="hud-player"><span class="dot"></span><b id="hud-player-name">-</b></div>
+                <div class="stat-pill" id="hud-score"><span class="lab">Score</span> <b id="hud-score-val">0</b></div>
+            </div>
+            <div class="game-stats">
+                <div class="stat-pill" id="hud-progress"><span class="lab">Question</span> <b id="hud-progress-val">- of -</b></div>
+            </div>
+            <div class="card-panel" id="card-panel">
+                <div class="cat-tab" id="hud-category">Category</div>
+                <div id="judge-question">Waiting...</div>
+                <ol id="judge-options" hidden></ol>
+                <div class="card-foot">
+                    <div class="answer-box" id="judge-answer"></div>
+                    <div class="hint-box" id="judge-hint">Hint: ...</div>
+                </div>
+            </div>
+            <div class="action-buttons" id="action-buttons">
+                <button class="btn btn-wrong" type="button" onclick="sendAction('wrong')">Wrong</button>
+                <button class="btn btn-correct" type="button" onclick="sendAction('correct')">Correct</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Same category -> colour rule as nags-head-host.html, so host and phone always match
+        const CATEGORY_COLORS = {
+            'peckham life': '#b3261e',
+            'characters': '#1f3a8a',
+            'quotes': '#1e7a3c',
+            'episodes': '#6b2fa0',
+            'scams & schemes': '#c75b0a'
+        };
+        const FALLBACK_COLORS = ['#b3261e', '#1f3a8a', '#1e7a3c', '#6b2fa0', '#c75b0a', '#0f766e', '#7a1f3d', '#6b4423'];
+        function categoryColor(cat) {
+            const key = String(cat || '').trim().toLowerCase();
+            if (CATEGORY_COLORS[key]) return CATEGORY_COLORS[key];
+            let h = 0;
+            for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 9973;
+            return FALLBACK_COLORS[h % FALLBACK_COLORS.length];
+        }
+        // Same player accent colours / token images as the host lobby
+        const COLORS = ['#f2a900', '#2b7fff', '#e63946', '#ec4899', '#22b25a', '#8b5cf6', '#12b5cb', '#ff7a1a'];
+        function tokenSrc(slotIdx) { return 'img/token-' + (((slotIdx % 8) + 8) % 8 + 1) + '.png'; }
+        // Same token names as the host lobby, so the phone labels the icon the way the big screen does
+        const TOKEN_NAMES = ['The Van', 'Chandelier', 'Batman', 'Doll', 'The Broom', 'Watch', 'Peckham Spring', 'Cocktail'];
+        // The judge can start the next turn too. Its Start Turn button is dimmed and untappable for the
+        // first 3 seconds of the Turn Over card (the host enforces the same 3-second cool-off).
+        const START_TURN_LABEL = 'Start Turn';
+        const START_TURN_LOCK_SECONDS = 3;
+
+        let peer = null, conn = null, hostId = '';
+        let lastAnswer = '';
+
+        function showPanel(name) {
+            document.getElementById('waiting-panel').hidden = name !== 'waiting';
+            document.getElementById('handoff-panel').hidden = name !== 'handoff';
+            document.getElementById('active-panel').style.display = name === 'active' ? 'flex' : 'none';
+        }
+        function setPlayer(d) {
+            const slot = d.playerSlot !== undefined ? d.playerSlot : 0;
+            document.documentElement.style.setProperty('--pc', COLORS[((slot % 8) + 8) % 8]);
+            document.getElementById('hud-player-name').innerText = d.playerName || '-';
+            if (d.playerScore !== undefined) document.getElementById('hud-score-val').innerText = d.playerScore;
+        }
+        // The judge keeps no counter of its own: "1 of N" is whatever the host sends
+        function setProgress(num, total) {
+            const el = document.getElementById('hud-progress-val');
+            if (!el) return;
+            el.innerText = (num !== undefined && total !== undefined) ? (num + ' of ' + total) : '- of -';
+        }
+        function renderOptions(options, answer) {
+            const list = document.getElementById('judge-options');
+            list.innerHTML = '';
+            if (!Array.isArray(options) || options.length === 0) { list.hidden = true; return; }
+            options.forEach((opt, i) => {
+                const li = document.createElement('li');
+                if (String(opt) === String(answer)) li.className = 'is-answer';
+                const letter = document.createElement('span');
+                letter.className = 'opt-letter';
+                letter.textContent = String.fromCharCode(65 + i);
+                const text = document.createElement('span');
+                text.textContent = opt;
+                li.appendChild(letter);
+                li.appendChild(text);
+                list.appendChild(li);
+            });
+            list.hidden = false;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            hostId = new URLSearchParams(window.location.search).get('id');
+            if (!hostId) {
+                document.getElementById('status-banner').className = 'status-banner error';
+                document.getElementById('status-banner').innerText = 'Error: No Session ID';
+                return;
+            }
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(hostId);
+                conn.on('open', () => {
+                    document.getElementById('status-banner').className = 'status-banner connected';
+                    document.getElementById('status-banner').innerText = 'Connected!';
+                    document.getElementById('connection-details').innerText = 'Waiting for the host to start the game...';
+                });
+                conn.on('close', () => {
+                    document.getElementById('status-banner').className = 'status-banner error';
+                    document.getElementById('status-banner').innerText = 'Disconnected from host';
+                });
+                conn.on('data', (d) => {
+                    if (d.type === 'STATE_UPDATE') {
+                        showPanel('active');
+                        document.getElementById('card-panel').style.setProperty('--face', categoryColor(d.category));
+                        document.getElementById('hud-category').innerText = d.category || 'Pub Quiz';
+                        document.getElementById('judge-question').innerText = d.question || 'Waiting for question...';
+                        lastAnswer = d.answer || 'N/A';
+                        document.getElementById('judge-answer').innerText = 'Answer: ' + lastAnswer;
+                        document.getElementById('judge-hint').innerText = 'Hint: ' + (d.hint || 'No hint available');
+                        renderOptions(d.qType === 'mcq' ? d.options : [], lastAnswer);
+                        setPlayer(d);
+                        setProgress(d.qNum, d.qTotal);
+                    } else if (d.type === 'SCORE_UPDATE') {
+                        setPlayer(d);
+                    } else if (d.type === 'HANDOFF') {
+                        showPanel('handoff');
+                        const slot = d.playerSlot !== undefined ? d.playerSlot : 0;
+                        const tokenName = TOKEN_NAMES[((slot % 8) + 8) % 8] || '';
+                        document.documentElement.style.setProperty('--pc', COLORS[((slot % 8) + 8) % 8]);
+                        document.getElementById('handoff-img').src = tokenSrc(slot);
+                        document.getElementById('handoff-img').alt = tokenName;
+                        document.getElementById('handoff-name').innerText = d.playerName || 'Next player';
+                        document.getElementById('handoff-token-name').innerText = tokenName;
+                        document.getElementById('handoff-sub').innerText = 'Round ' + (d.round || 1) + ' \u00B7 ' + (d.qTotal || '?') + ' question' + (d.qTotal === 1 ? '' : 's');
+                        lockStartTurnButton();     // shown at once, but untappable for 3 seconds
+                    } else if (d.type === 'GAME_OVER') {
+                        // The host is showing the final standings: this phone just says so
+                        clearStartTurnLock();
+                        showPanel('waiting');
+                        document.getElementById('connection-details').innerText = 'Game over - check the big screen for the final standings.';
+                    } else if (d.type === 'LOBBY') {
+                        clearStartTurnLock();
+                        showPanel('waiting');
+                        document.getElementById('connection-details').innerText = 'Waiting for the host to start the game...';
+                    }
+                });
+            });
+            peer.on('error', (err) => {
+                document.getElementById('status-banner').className = 'status-banner error';
+                document.getElementById('status-banner').innerText = 'Connection error: ' + (err && err.type ? err.type : 'unknown');
+            });
+        });
+        // --- Start Turn on the judge phone, with a 3-second cool-off --------------------------------
+        // The button appears the moment the Turn Over card does, but is dimmed and untappable while it
+        // counts down (3s) -> (1s). The host runs the same 3-second lock, so the two screens stay in step.
+        function clearStartTurnLock() {
+            const btn = document.getElementById('start-turn-btn');
+            if (!btn) return;
+            if (btn._lockInterval) { clearInterval(btn._lockInterval); btn._lockInterval = null; }
+            btn.disabled = false;
+            btn.classList.remove('btn-locked');
+            btn.textContent = START_TURN_LABEL;
+        }
+        function lockStartTurnButton() {
+            const btn = document.getElementById('start-turn-btn');
+            if (!btn) return;
+            if (btn._lockInterval) { clearInterval(btn._lockInterval); btn._lockInterval = null; }
+            let remaining = START_TURN_LOCK_SECONDS;
+            btn.disabled = true;
+            btn.classList.add('btn-locked');
+            btn.textContent = START_TURN_LABEL + ' (' + remaining + 's)';
+            btn._lockInterval = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(btn._lockInterval);
+                    btn._lockInterval = null;
+                    btn.disabled = false;
+                    btn.classList.remove('btn-locked');
+                    btn.textContent = START_TURN_LABEL;
+                } else {
+                    btn.textContent = START_TURN_LABEL + ' (' + remaining + 's)';
+                }
+            }, 1000);
+        }
+        // Tapping it asks the host to begin the next turn; the host ignores it while its own lock is on
+        function startTurnFromJudge() {
+            const btn = document.getElementById('start-turn-btn');
+            if (!btn || btn.disabled) return;
+            if (conn && conn.open) conn.send({ action: 'start-turn' });
+        }
+        function sendAction(a) {
+            // No score taps while the Turn Over card is up
+            if (!document.getElementById('handoff-panel').hidden) return;
+            if (conn && conn.open) conn.send({ action: a });
+        }
+    </script>
+</body>
+</html>

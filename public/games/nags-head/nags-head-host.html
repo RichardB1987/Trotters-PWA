@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Screen - The Nag's Head Pub Quiz</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* Only Fools and Horses look: Reliant-van yellow room, a light leopard-print edge, ink outlines.
+           Decorative text (titles, badges, ribbons, non-critical buttons) uses a Mistral-style script;
+           everything you need to read to play (questions, options, 1 of N, scores, Correct / Wrong) is plain sans-serif. */
+        :root {
+            --bg: #ffd42a;
+            --cream: #fff8dc;
+            --ink: #1d1606;
+            --text-muted: #5b4a12;
+            --red: #c8102e;
+            --green: #1e8a3c;
+            --blue: #1d5fbf;
+            --gold: #f2a900;
+            --face: #b3261e;
+            --font-script: "Mistral", "Segoe Script", "Brush Script MT", "Lucida Handwriting", "Apple Chancery", cursive;
+            --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        body {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            font-family: var(--font-ui);
+            background: var(--bg);
+            color: var(--ink);
+            margin: 0;
+            padding: 52px 56px 52px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            /* Nothing on this page is wider than the screen, so a stray wide row can never
+               introduce a sideways scrollbar (the game board is tuned to fit one screen). */
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Subtle leopard-print edge: outer 40px of the screen only, faded, behind all content, never clickable */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            border-style: solid;
+            border-color: transparent;
+            border-width: 40px 41px 35px 40px;
+            border-image-source: url("img/leopard-border.png");
+            border-image-slice: 80 82 70 80;
+            border-image-repeat: round;
+            /* Deeper, crisper black spots: multiply keeps the print's pale band a gold that matches the
+               yellow theme (so the edge stays subtle) while the black rosettes composite to true black.
+               The PNG's spots were darkened too. */
+            mix-blend-mode: multiply;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
+            flex: 1 0 auto;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .back {
+            display: inline-block;
+            text-decoration: none;
+            color: var(--ink);
+            background: var(--cream);
+            border: 3px solid var(--ink);
+            border-radius: 999px;
+            padding: 0.25rem 1rem;
+            font-family: var(--font-script);
+            font-size: 1.15rem;
+        }
+        .back:hover { background: #fff; }
+
+        /* ---------- Lobby ---------- */
+        #setup-screen { display: block; width: 100%; max-width: 900px; margin: 0 auto; text-align: center; }
+        .title {
+            margin: 0.3rem 0 0;
+            font-family: var(--font-script);
+            font-weight: 400;
+            font-size: clamp(2.8rem, 9vw, 5.2rem);
+            line-height: 1;
+            color: var(--ink);
+            text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.75);
+        }
+        .tagline {
+            display: table;
+            margin: 0.5rem auto 0;
+            background: var(--ink);
+            color: var(--bg);
+            font-family: var(--font-script);
+            font-size: clamp(1.2rem, 3.4vw, 1.7rem);
+            padding: 0.1rem 1.3rem 0.2rem;
+            border-radius: 0.4rem;
+            transform: rotate(-1.5deg);
+        }
+        .sub { font-size: 1rem; margin: 0.9rem 0 0.7rem; color: var(--ink); font-weight: 600; }
+        .sub b { color: var(--red); }
+        .panel-box {
+            width: 100%;
+            background: var(--cream);
+            border: 3px solid var(--ink);
+            border-radius: 1rem;
+            padding: 0.8rem 1rem 1.1rem;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 5px 0 rgba(29, 22, 6, 0.25);
+        }
+        .order-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+        .order-head-title { font-family: var(--font-script); font-size: 1.6rem; color: var(--ink); }
+        .order-head-hint { font-size: 0.78rem; color: var(--text-muted); margin-left: 0.4rem; }
+        .order-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1.6rem 1rem;
+            justify-items: center;
+            width: 100%;
+            padding: 0.6rem 0.4rem 0.3rem;
+        }
+        .order-token-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.65rem;
+            cursor: pointer;
+            user-select: none;
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--ink);
+            width: min(100%, 132px);
+            font: inherit;
+            touch-action: manipulation;
+        }
+        .order-token-wrap:hover .tok { transform: scale(1.05); }
+        .order-token-wrap:focus-visible { outline: 3px dashed var(--ink); outline-offset: 6px; border-radius: 12px; }
+
+        /* Round token (shared by lobby, question-count buttons and the game scoreboard).
+           Selected look follows "OFAH Player highlight": thick coloured rim + glowing aura in the player's own colour. */
+        .tok {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            transition: transform 0.15s ease;
+        }
+        .tok-img { position: relative; z-index: 2; width: 100%; height: 100%; display: block; border-radius: 50%; background: #fff; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+        .tok-ring, .tok-aura { display: none; position: absolute; border-radius: 50%; pointer-events: none; }
+        .tok-ring { inset: -9px; z-index: 1; border: 7px solid var(--pc, var(--gold)); background: var(--pc, var(--gold)); }
+        .tok-aura { inset: -16px; z-index: 0; background: var(--pc, var(--gold)); filter: blur(15px); opacity: 0.75; animation: auraPulse 1.8s ease-in-out infinite; }
+        .tok.on { transform: scale(1.06); }
+        .tok.on .tok-ring, .tok.on .tok-aura { display: block; }
+        .tok:not(.on) .tok-img { box-shadow: 0 0 0 3px rgba(29, 22, 6, 0.2); }
+        @keyframes auraPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.9; } }
+
+        .order-badge {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            z-index: 4;
+            color: #fff;
+            font-family: var(--font-ui);
+            font-weight: 800;
+            font-size: 1rem;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--ink);
+            background: var(--pc, var(--gold));
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+            line-height: 1;
+        }
+        .ribbon {
+            font-family: var(--font-script);
+            font-size: 1.08rem;
+            line-height: 1.1;
+            padding: 0.1rem 0.45rem 0.15rem;
+            border: 3px solid var(--ink);
+            border-radius: 0.4rem;
+            background: var(--cream);
+            color: var(--ink);
+            white-space: nowrap;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .order-token-wrap.active .ribbon, .score-card.active .ribbon { background: #fff; color: var(--ink); box-shadow: 0 0 0 3px var(--pc); }
+
+        /* Questions-per-turn selector: one compact strip - the script heading sits beside small round buttons
+           (same highlight style as the player tokens, each with its own accent colour), so it uses very little
+           height while every button still keeps a finger-sized touch target. */
+        .qc-panel { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0.45rem 1rem 0.5rem; }
+        .qc-panel .order-head-title { font-size: clamp(1.2rem, 2.4vh, 1.5rem); }
+        .qc-row { display: flex; justify-content: center; gap: 0.7rem; flex-wrap: wrap; }
+        .qc-wrap { background: none; border: none; padding: 4px; border-radius: 14px; cursor: pointer; font: inherit; color: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 0.2rem; touch-action: manipulation; min-width: 56px; }
+        .qc-wrap .tok { width: clamp(44px, 7vh, 54px); }
+        .qc-wrap:hover .tok { transform: scale(1.06); }
+        .qc-wrap .tok.on { transform: scale(1.08); }
+        .qc-wrap .tok-ring { inset: -7px; border-width: 5px; }
+        .qc-wrap .tok-aura { inset: -12px; }
+        .qc-wrap:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
+        .tok-face { position: absolute; inset: 0; z-index: 2; border-radius: 50%; background: #fff; border: 3px solid var(--ink); }
+        .qc-num { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; font-family: var(--font-ui); font-weight: 900; font-size: clamp(1.2rem, 2.6vh, 1.6rem); line-height: 1; color: var(--ink); }
+        .qc-label { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 700; color: var(--text-muted); line-height: 1; }
+        .qc-wrap.active .qc-label { color: var(--ink); }
+
+        .session-info { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin: 0.4rem 0 0; font-weight: 600; }
+        #start-msg { min-height: 1.3rem; margin: 0.4rem 0 0; font-size: 0.95rem; font-weight: 700; color: var(--red); }
+        .lobbyBtns { display: flex; justify-content: center; align-items: stretch; flex-wrap: wrap; gap: 1rem; margin-top: 0.6rem; }
+        .lobbyBtns .btn { width: auto; min-width: 12rem; }
+        .btn {
+            background-color: var(--blue);
+            color: #fff;
+            border: 3px solid var(--ink);
+            padding: 0.45rem 1.4rem 0.55rem;
+            font-family: var(--font-script);
+            font-size: 1.5rem;
+            line-height: 1.1;
+            border-radius: 999px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 0 var(--ink);
+            transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s;
+            touch-action: manipulation;
+        }
+        .btn:hover { filter: brightness(1.1); }
+        .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+        /* Game-critical controls: plain, high-legibility sans-serif */
+        .btn-ui { font-family: var(--font-ui); font-weight: 800; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.03em; padding: 1rem 0.5rem; }
+        .btn-start { background: var(--green); font-size: 1.9rem; }
+        .btn-qr { background: var(--cream); color: var(--ink); }
+        .btn-wrong { background: var(--red); }
+        .btn-correct { background: var(--green); }
+        .btn-back { background: var(--cream); color: var(--ink); box-shadow: none; border-width: 2px; font-size: 1.15rem; }
+        .btn-back:hover { background: #fff; filter: none; }
+        .btn-clear { width: auto; padding: 0.1rem 0.9rem 0.2rem; font-size: 1.1rem; }
+        /* Flow buttons (Start Turn / End Game). A locked button is dimmed and untappable while it cools off. */
+        .btn-start-turn { background: var(--green); }
+        .btn-end-game { background: var(--cream); color: var(--ink); }
+        .btn-locked, .btn[disabled], .btn[disabled]:hover { opacity: 0.4; pointer-events: none; filter: none; }
+        /* Secondary game controls sit in one compact wrapping row instead of four full-width stacks */
+        .game-controls-wrap { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
+        #game-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; width: 100%; }
+        #game-actions .btn { flex: 1 1 auto; width: auto; font-size: 1.05rem; padding: 0.3rem 0.85rem 0.4rem; white-space: nowrap; }
+        .link-btn { text-decoration: none; text-align: center; display: block; }
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(29, 22, 6, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        .panel {
+            background: var(--cream);
+            color: var(--ink);
+            border: 4px solid var(--ink);
+            border-radius: 22px;
+            box-shadow: 6px 8px 0 var(--red);
+            max-width: 440px;
+            width: 100%;
+            padding: 1.1rem 1.3rem 1.3rem;
+            text-align: center;
+        }
+        .panelTitle { margin: 0 0 0.6rem; font-family: var(--font-script); font-weight: 400; color: var(--ink); font-size: 2.2rem; }
+        #qrcode { background: #fff; border: 4px solid var(--ink); padding: 0.5rem; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; width: fit-content; max-width: 100%; margin: 0 auto 0.8rem; }
+        .input-group { width: 100%; display: flex; flex-direction: column; gap: 0.35rem; text-align: left; margin-bottom: 0.7rem; }
+        .input-group label { font-size: 0.82rem; font-weight: 700; }
+        .input-group input { background: #fff; border: 2px solid var(--ink); color: var(--ink); padding: 0.6rem; border-radius: 0.5rem; font-size: 0.95rem; width: 100%; }
+        .warning-box { background: #fff3b0; border: 2px solid #b58900; color: #4d3b00; padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; line-height: 1.3; text-align: left; width: 100%; margin-bottom: 0.8rem; }
+
+        /* The Turn Over card floats over the dimmed game screen, but only the card itself takes taps, so the
+           game screen's own Start Turn button stays reachable while it is up. Score taps are ignored anyway
+           while a turn is over (judgeAction / tapScore), so a stray tap changes nothing. */
+        #handoff { pointer-events: none; }
+        #handoff .panel { pointer-events: auto; }
+
+        /* ---------- Final standings (End Game) ---------- */
+        .panel-standings { max-width: 620px; max-height: 92dvh; display: flex; flex-direction: column; }
+        .standings-sub { flex: 0 0 auto; font-family: var(--font-ui); font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin: -0.2rem 0 0.7rem; }
+        .standings-list { list-style: none; margin: 0 0 0.9rem; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; text-align: left; overflow-y: auto; min-height: 0; }
+        .standings-row { display: flex; align-items: center; gap: 0.7rem; background: #fff; border: 3px solid var(--ink); border-radius: 0.8rem; padding: 0.35rem 0.7rem; }
+        .standings-row.is-winner { background: #fffbdc; box-shadow: 0 0 0 3px var(--gold); }
+        .standings-rank { flex: 0 0 auto; min-width: 3.4rem; text-align: center; font-family: var(--font-ui); font-weight: 900; font-size: 1rem; background: var(--ink); color: var(--bg); border-radius: 0.5rem; padding: 0.2rem 0.35rem; }
+        .standings-tok { flex: 0 0 auto; width: 44px; height: 44px; position: relative; border-radius: 50%; }
+        .standings-tok img { width: 100%; height: 100%; border-radius: 50%; background: #fff; display: block; border: 3px solid var(--pc, var(--gold)); }
+        .standings-info { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+        .standings-name { font-family: var(--font-ui); font-weight: 800; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .standings-token-name { font-family: var(--font-ui); font-size: 0.76rem; font-weight: 600; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .standings-score { flex: 0 0 auto; font-family: var(--font-ui); font-weight: 900; font-size: 1.5rem; font-variant-numeric: tabular-nums; min-width: 2.8rem; text-align: right; }
+        .standings-empty { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 600; color: var(--text-muted); text-align: center; }
+        .standings-btns { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .standings-btns .btn { flex: 1 1 10rem; width: auto; }
+
+        /* ---------- End Game confirmation (in-world card, replaces the browser confirm box) ---------- */
+        /* Same warm cream/ink card as the Final Standings overlay, with the pub's gold tag and a strip
+           of the leopard trim across the top, so ending a game stays inside the Nag's Head look. */
+        .panel-confirm { position: relative; max-width: 470px; overflow: hidden; padding-top: 1.5rem; }
+        .panel-confirm::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 16px;
+            background-image: url("img/leopard-border.png");
+            background-repeat: repeat-x;
+            background-position: center 42%;
+            background-size: auto 46px;
+            mix-blend-mode: multiply;
+            border-bottom: 3px solid var(--ink);
+        }
+        .panel-confirm .panelTitle { margin-bottom: 0.5rem; }
+        .confirm-tag {
+            display: table;
+            margin: 0 auto 0.5rem;
+            background: var(--gold);
+            color: var(--ink);
+            font-family: var(--font-script);
+            font-size: 1.15rem;
+            line-height: 1.1;
+            padding: 0.05rem 1rem 0.15rem;
+            border: 3px solid var(--ink);
+            border-radius: 0.4rem;
+            transform: rotate(-1.5deg);
+            white-space: nowrap;
+        }
+        .confirm-text { margin: 0 0 1.1rem; font-family: var(--font-ui); font-size: 0.95rem; font-weight: 600; color: var(--text-muted); line-height: 1.35; }
+        .confirm-btns { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .confirm-btns .btn { flex: 1 1 10rem; width: auto; font-size: 1.25rem; padding: 0.5rem 0.9rem 0.6rem; white-space: nowrap; }
+        .confirm-btns .btn-confirm { background: var(--green); }
+
+        /* ---------- Game screen ---------- */
+        #game-screen { width: 100%; flex-direction: column; gap: 0.7rem; margin-top: auto; margin-bottom: auto; }
+        .game-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        .mini-title { font-family: var(--font-script); font-size: 2.3rem; line-height: 1; color: var(--ink); text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.7); }
+        .round-badge { background: var(--ink); color: var(--bg); padding: 0.1rem 1.1rem 0.2rem; font-family: var(--font-script); font-size: 1.5rem; border-radius: 0.4rem; }
+        .game-container { display: grid; grid-template-columns: 1fr; gap: 1.25rem; width: 100%; align-items: start; }
+        @media (min-width: 900px) { .game-container { grid-template-columns: 1.1fr 1fr; gap: 1.6rem; } }
+        .game-main-col, .game-side-col { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; min-width: 0; }
+        .hud { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+        .pill {
+            flex: 1 1 9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--cream);
+            border: 3px solid var(--ink);
+            border-radius: 999px;
+            padding: 0.3rem 1.2rem;
+            font-family: var(--font-script);
+            font-size: 1.4rem;
+            color: var(--text-muted);
+        }
+        .pill b { font-family: var(--font-ui); font-size: 1.5rem; font-weight: 800; color: var(--ink); line-height: 1.1; }
+        .gcard {
+            position: relative;
+            width: 100%;
+            background: var(--face);
+            border: 4px solid var(--ink);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 10px 22px rgba(29, 22, 6, 0.25);
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s;
+        }
+        .gcard-tab {
+            align-self: center;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--font-script);
+            font-size: 1.5rem;
+            line-height: 1.1;
+            padding: 0.2rem 1.5rem 0.35rem;
+            border: 3px solid var(--ink);
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+            max-width: 90%;
+            text-align: center;
+        }
+        /* Question text: plain sans-serif for legibility */
+        .q-text {
+            font-family: var(--font-ui);
+            font-weight: 800;
+            font-size: clamp(1.45rem, 3.2vw, 2.3rem);
+            line-height: 1.2;
+            color: #fff;
+            text-align: left;
+            padding: 1.2rem 1.4rem 1rem;
+            min-height: clamp(6.5rem, 16vh, 10rem);
+            word-break: break-word;
+            text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.3);
+        }
+        .opts { list-style: none; margin: 0; padding: 0 1.2rem 1.2rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+        @media (min-width: 600px) { .opts { grid-template-columns: 1fr 1fr; } }
+        .opts li { display: flex; align-items: center; gap: 0.7rem; background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 0.8rem; padding: 0.55rem 0.8rem; font-family: var(--font-ui); font-weight: 700; font-size: clamp(1rem, 2vw, 1.3rem); line-height: 1.2; }
+        .opt-letter { flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%; background: var(--ink); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; }
+        .gcard-foot { position: relative; background: var(--cream); color: var(--ink); text-align: center; font-family: var(--font-script); font-size: 1.2rem; padding: 0.25rem 0 0.35rem; border-top: 3px solid var(--ink); }
+        .answer-reveal { background: #fff; border: 3px dashed var(--ink); border-radius: 0.8rem; padding: 0.6rem 0.9rem; font-family: var(--font-ui); font-size: 1.05rem; line-height: 1.35; }
+        .answer-reveal b { color: var(--green); }
+        #game-controls { display: flex; gap: 0.75rem; width: 100%; }
+        #game-controls .btn { flex: 1; }
+        .up-next-banner { width: 100%; background: var(--ink); color: var(--bg); border-radius: 0.6rem; padding: 0.3rem 1rem 0.4rem; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-script); font-size: 1.4rem; }
+        #up-next-player { font-family: var(--font-ui); font-weight: 800; font-size: 1rem; text-transform: uppercase; color: #fff; }
+        #scoreboard-container { width: 100%; background: var(--cream); border: 3px solid var(--ink); border-radius: 1rem; padding: 0.7rem 0.9rem 1.1rem; }
+        .scoreboard-title { font-family: var(--font-script); font-size: 1.7rem; color: var(--ink); }
+        .scoreboard-hint { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-left: 0.5rem; font-family: var(--font-ui); }
+        #players-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.8rem 1rem; padding: 1.1rem 0.4rem 0.2rem; justify-items: center; }
+        .score-card { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; width: min(100%, 150px); }
+        /* Big tappable token: top half = +1, bottom half = -1 */
+        .pt { cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+        .pt:active { transform: scale(0.97); }
+        .pt.on:active { transform: scale(1.03); }
+        .split-line { position: absolute; z-index: 3; left: 6%; right: 6%; top: 50%; border-top: 2px dashed rgba(29, 22, 6, 0.28); pointer-events: none; }
+        .pt-plus, .pt-minus { position: absolute; z-index: 4; left: 50%; width: 30px; height: 30px; margin-left: -15px; border-radius: 50%; border: 3px solid var(--ink); color: #fff; font-family: var(--font-ui); font-weight: 900; font-size: 1.1rem; line-height: 1; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+        .pt-plus { top: -14px; background: var(--green); }
+        .pt-minus { bottom: -14px; background: var(--red); }
+        .half-flash { position: absolute; z-index: 3; left: 0; right: 0; height: 50%; opacity: 0; pointer-events: none; }
+        .half-flash.top { top: 0; border-radius: 999px 999px 0 0; background: rgba(30, 138, 60, 0.75); }
+        .half-flash.bottom { bottom: 0; border-radius: 0 0 999px 999px; background: rgba(200, 16, 46, 0.75); }
+        .half-flash.go { animation: halfFlash 0.55s ease-out; }
+        @keyframes halfFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .float-pt { position: absolute; z-index: 6; left: 50%; top: 30%; font-family: var(--font-ui); font-weight: 900; font-size: 2.6rem; color: #fff; pointer-events: none; -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; animation: floatUp 0.95s ease-out forwards; }
+        .float-pt.plus { color: #8dff9c; }
+        .float-pt.minus { color: #ff8a9a; top: 48%; animation-name: floatDown; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(0.7); } 100% { opacity: 0; transform: translate(-50%, -60px) scale(1.3); } }
+        @keyframes floatDown { 0% { opacity: 1; transform: translate(-50%, 0) scale(0.7); } 100% { opacity: 0; transform: translate(-50%, 60px) scale(1.3); } }
+        .pt-score { font-family: var(--font-ui); font-weight: 900; font-size: 2.4rem; line-height: 1; color: var(--ink); background: #fff; border: 3px solid var(--ink); border-radius: 0.7rem; min-width: 3.4rem; text-align: center; padding: 0.15rem 0.6rem; font-variant-numeric: tabular-nums; }
+        .score-card.active .pt-score { background: var(--bg); }
+        .pt-score.pop { animation: scorePop 0.35s ease-out; }
+        @keyframes scorePop { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
+        .handoff-token { width: 170px; margin: 1.2rem auto 1.4rem; }
+        .handoff-name { font-family: var(--font-ui); font-weight: 800; font-size: 1.6rem; margin: 0.2rem 0 0.2rem; }
+        .handoff-sub { font-size: 1rem; margin: 0 0 1rem; color: var(--text-muted); font-weight: 600; }
+        @media (max-width: 600px) {
+            body { padding: 30px 30px 30px; }
+            body::before { border-width: 24px 25px 21px 24px; }
+            .order-grid { gap: 1.3rem 0.5rem; }
+            .lobbyBtns .btn { width: 100%; }
+            .q-text { padding: 1rem 1rem 0.8rem; }
+            /* Phones: heading above the buttons, and the secondary buttons sit two to a row */
+            .qc-panel { flex-direction: column; gap: 0.3rem; padding: 0.45rem 0.6rem 0.6rem; }
+            #game-actions .btn { flex: 1 1 45%; font-size: 1rem; }
+        }
+
+        /* 15.6" laptop / desktop / touchscreen (16:9): everything fits one screen with no scrolling.
+           Sizes are driven by viewport height where it helps (vh clamps), so a 1366x768 or 1920x1080
+           screen stays on one page. Phone widths are untouched and keep scrolling as before. */
+        @media (min-width: 900px) and (min-height: 640px) {
+            body { padding: 40px 46px 40px; }
+            .container { gap: 0.4rem; }
+            .back { font-size: 1rem; padding: 0.1rem 0.9rem 0.2rem; }
+            .title { font-size: clamp(2.15rem, 6.1vh, 3.4rem); margin-top: 0.1rem; }
+            .tagline { font-size: clamp(1rem, 2.4vh, 1.35rem); margin-top: 0.25rem; padding: 0.05rem 1.1rem 0.1rem; }
+            .sub { font-size: 0.9rem; margin: 0.3rem 0 0.3rem; }
+            .panel-box { padding: 0.4rem 0.9rem 0.55rem; margin-bottom: 0.4rem; }
+            .order-head { margin-bottom: 0.25rem; }
+            .order-head-title { font-size: clamp(1.15rem, 2.4vh, 1.45rem); }
+            .order-grid { gap: 0.7rem 0.6rem; padding: 0.25rem 0.3rem 0.05rem; }
+            .order-token-wrap { width: min(100%, clamp(78px, 11.6vh, 118px)); gap: 0.3rem; }
+            .ribbon { font-size: clamp(0.8rem, 1.7vh, 1rem); padding: 0.05rem 0.4rem 0.1rem; border-width: 2px; }
+            .order-badge { width: 25px; height: 25px; font-size: 0.85rem; top: -9px; right: -9px; border-width: 2px; }
+            .qc-panel { padding: 0.35rem 1rem 0.4rem; }
+            .session-info { font-size: 0.73rem; margin: 0.08rem 0 0; }
+            #start-msg { min-height: 0.8rem; margin: 0.08rem 0 0; font-size: 0.85rem; }
+            .lobbyBtns { gap: 0.7rem; margin-top: 0.3rem; }
+            .lobbyBtns .btn { min-width: 10rem; font-size: 1.35rem; padding: 0.3rem 1.2rem 0.4rem; }
+            /* Game screen */
+            #game-screen { gap: 0.5rem; }
+            .mini-title { font-size: clamp(1.5rem, 4.4vh, 2.3rem); }
+            .round-badge { font-size: 1.15rem; padding: 0.05rem 0.9rem 0.15rem; }
+            .game-container { gap: 1.1rem; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+            .game-main-col, .game-side-col { gap: 0.55rem; }
+            .hud { gap: 0.5rem; }
+            .pill { font-size: 1.15rem; padding: 0.2rem 1rem; }
+            .pill b { font-size: 1.25rem; }
+            .gcard-tab { font-size: 1.15rem; padding: 0.1rem 1.2rem 0.2rem; }
+            .q-text { font-size: clamp(1.35rem, 3vh + 0.5rem, 2.6rem); padding: 0.75rem 1.1rem 0.65rem; min-height: clamp(5rem, 12vh, 7.5rem); }
+            .opts { gap: 0.5rem; padding: 0 1rem 0.85rem; }
+            .opts li { font-size: clamp(1.05rem, 2.2vh, 1.6rem); padding: 0.45rem 0.8rem; }
+            .opt-letter { width: 1.9rem; height: 1.9rem; font-size: 1rem; }
+            .gcard-foot { font-size: 1rem; padding: 0.15rem 0 0.2rem; }
+            #game-controls { gap: 0.6rem; }
+            .btn-ui { font-size: 1.05rem; padding: 0.6rem 0.5rem; }
+            #game-actions .btn { font-size: 1.02rem; padding: 0.25rem 0.8rem 0.35rem; }
+            .up-next-banner { font-size: 1.15rem; padding: 0.2rem 0.9rem 0.25rem; }
+            #scoreboard-container { padding: 0.45rem 0.8rem 0.7rem; }
+            .scoreboard-title { font-size: 1.35rem; }
+            #players-list { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 0.9rem 0.6rem; padding: 0.5rem 0.3rem 0.1rem; }
+            .score-card { width: min(100%, clamp(80px, 11.4vh, 118px)); gap: 0.3rem; }
+            .pt-score { font-size: clamp(1.35rem, 3.4vh, 1.9rem); min-width: 2.5rem; padding: 0.05rem 0.5rem; }
+            .pt-plus, .pt-minus { width: 25px; height: 25px; margin-left: -12.5px; font-size: 0.95rem; }
+            .pt-plus { top: -11px; }
+            .pt-minus { bottom: -11px; }
+        }
+        /* Full desktop / TV (>=1200px wide): the question board takes the bigger share of the row.
+           The 92px scoreboard column above still fits four player tokens per row at this width, so
+           the scoreboard stays readable and the board never crowds it or overflows sideways. */
+        @media (min-width: 1200px) {
+            .game-container { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+        }
+        /* Short desktop windows (under 700px tall, e.g. a 900x640 or 1366x650 laptop): keep the older,
+           tighter board sizes and the 1.1fr/1fr split. These windows already scroll a little at that
+           height, and the bigger type would cost them another line or two of room. Every viewport from
+           700px tall up (1366x768, 1280x720, 1440x900, 1920x1080) gets the larger board. */
+        @media (min-width: 900px) and (min-height: 640px) and (max-height: 699px) {
+            .game-container { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+            .q-text { font-size: clamp(1.15rem, 2.4vh + 0.4rem, 1.9rem); padding: 0.7rem 1rem 0.6rem; min-height: clamp(4.4rem, 11vh, 7rem); }
+            .opts { gap: 0.45rem; padding: 0 0.9rem 0.8rem; }
+            .opts li { font-size: clamp(0.92rem, 1.9vh, 1.15rem); padding: 0.35rem 0.7rem; }
+            .opt-letter { width: 1.7rem; height: 1.7rem; font-size: 0.9rem; }
+            #players-list { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tok-aura { animation: none; }
+            .float-pt, .half-flash.go, .pt-score.pop { animation-duration: 0.01s; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Lobby -->
+        <div id="setup-screen">
+            <a href="../../game-hub.html" class="back" onclick="exitToGameHub(event)">&larr; Back to Game Hub</a>
+            <h1 class="title">The Nag's Head</h1>
+            <div class="tagline">Pub Quiz</div>
+            <p class="sub">Tap players in turn order. <b>1st tap goes first.</b></p>
+
+            <div class="panel-box">
+                <div class="order-head">
+                    <div>
+                        <span class="order-head-title">Choose Your Player!</span>
+                        <span class="order-head-hint">(1st = goes first)</span>
+                    </div>
+                    <button type="button" class="btn btn-back btn-clear" onclick="clearTapOrder()">Clear</button>
+                </div>
+                <div id="order-selector-grid" class="order-grid"></div>
+            </div>
+
+            <div class="panel-box qc-panel">
+                <span class="order-head-title">Questions Per Turn</span>
+                <div id="qcount-row" class="qc-row" aria-label="Questions per turn"></div>
+            </div>
+
+            <p id="judge-status" class="session-info">Judge phone: not connected</p>
+            <p id="session-info" class="session-info">Generating Session ID...</p>
+            <p id="start-msg" aria-live="polite"></p>
+
+            <div class="lobbyBtns">
+                <button id="qrBtn" class="btn btn-qr" type="button">Judge Phone QR</button>
+                <button id="startBtn" class="btn btn-start" type="button" onclick="startGame()">Start Game</button>
+            </div>
+
+            <div id="qrModal" class="overlay" hidden>
+                <div class="panel">
+                    <h2 class="panelTitle">Judge Phone</h2>
+                    <div id="qrcode"></div>
+                    <div class="warning-box">
+                        <strong>Scan with phone to judge:</strong> the phone shows each answer and hint, and taps Correct or Wrong to move on. You can also play on one screen without a phone.
+                    </div>
+                    <div class="input-group">
+                        <label for="network-ip">PC Network IP (Saved automatically):</label>
+                        <input type="text" id="network-ip" placeholder="e.g. 192.168.0.242" oninput="saveAndRefreshIP()">
+                    </div>
+                    <button id="qrClose" class="btn" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Game Screen -->
+        <div id="game-screen" style="display: none; width: 100%; flex-direction: column;">
+            <div class="game-head">
+                <div class="mini-title">The Nag's Head</div>
+                <div class="round-badge" id="round-badge">Round 1</div>
+            </div>
+            <div class="game-container">
+                <div class="game-main-col">
+                    <div class="hud">
+                        <div class="pill">Turn <b id="turn-player">-</b></div>
+                        <div class="pill">Question <b id="progress-val">1 of 2</b></div>
+                    </div>
+
+                    <div class="gcard">
+                        <div class="gcard-tab"><span id="category-val">Category</span></div>
+                        <div class="q-text" id="question-val">Ready?</div>
+                        <ol class="opts" id="options-val" hidden></ol>
+                        <div class="gcard-foot">The Nag's Head Pub Quiz</div>
+                    </div>
+
+                    <div id="answer-reveal" class="answer-reveal" hidden></div>
+
+                    <div class="game-controls-wrap">
+                        <div id="game-controls">
+                            <button id="wrong-btn" class="btn btn-ui btn-wrong" type="button" onclick="judgeAction('wrong')">Wrong</button>
+                            <button id="correct-btn" class="btn btn-ui btn-correct" type="button" onclick="judgeAction('correct')">Correct</button>
+                        </div>
+                        <div id="game-actions">
+                            <button id="start-turn-btn" class="btn btn-start-turn" type="button" onclick="startTurn()" hidden>Start Turn</button>
+                            <button id="reveal-btn" class="btn btn-back" type="button" onclick="toggleAnswer()">Show Answer</button>
+                            <button id="new-game-btn" class="btn btn-back" type="button" onclick="startNewGame(false)">New Game (Fresh Questions)</button>
+                            <button id="end-game-btn" class="btn btn-back btn-end-game" type="button" onclick="endGame()">End Game / Final Score</button>
+                            <a href="../../game-hub.html" class="btn btn-back link-btn" onclick="exitToGameHub(event)">&larr; Exit to Game Hub</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-side-col">
+                    <div class="up-next-banner">
+                        <span>Up Next:</span>
+                        <span id="up-next-player">-</span>
+                    </div>
+                    <div id="scoreboard-container">
+                        <span class="scoreboard-title">Scoreboard</span>
+                        <span class="scoreboard-hint">Tap top half +1 &middot; bottom half &minus;1</span>
+                        <div id="players-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual handoff between players: nothing starts until the host taps Start Turn -->
+    <div id="handoff" class="overlay" hidden>
+        <div class="panel">
+            <h2 class="panelTitle">Turn Over!</h2>
+            <div class="handoff-sub">Pass it on to...</div>
+            <div class="tok on handoff-token" id="handoff-token" style="--pc: #f2a900;">
+                <span class="tok-aura"></span><span class="tok-ring"></span>
+                <img class="tok-img" id="handoff-img" src="img/token-1.png" alt="">
+            </div>
+            <div class="handoff-name" id="handoff-name">Player 1</div>
+            <div class="handoff-sub" id="handoff-sub">Round 1</div>
+            <button id="handoff-btn" class="btn btn-ui btn-correct" type="button" onclick="startTurn()">Start Turn</button>
+        </div>
+    </div>
+
+    <!-- Final standings: opened from End Game / Final Score, after the in-world confirm card below. -->
+    <div id="standings" class="overlay" hidden>
+        <div class="panel panel-standings">
+            <h2 class="panelTitle">Final Standings</h2>
+            <p class="standings-sub">Highest score first &middot; tied players share a rank</p>
+            <ol id="standings-list" class="standings-list"></ol>
+            <div class="standings-btns">
+                <button id="standings-new-game" class="btn btn-start" type="button" onclick="startNewGame(true)">New Game / Play Again</button>
+                <button id="standings-close" class="btn btn-back" type="button" onclick="closeStandings()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- End Game / Final Score asks first: an in-world card instead of the browser's confirm box.
+         Cancel closes it and leaves the game exactly as it was; the confirm button shows the final
+         standings and tells the judge phone GAME_OVER, exactly as the old confirm did. -->
+    <div id="end-game-modal" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="end-game-title">
+        <div class="panel panel-confirm">
+            <div class="confirm-tag">Last Orders?</div>
+            <h2 class="panelTitle" id="end-game-title">Final Score</h2>
+            <p class="confirm-text">Show the final standings? Scores are kept, so you can start a new game or carry on afterwards.</p>
+            <div class="confirm-btns">
+                <button id="end-game-cancel" class="btn btn-back" type="button" onclick="closeEndGameModal()">Cancel</button>
+                <button id="end-game-confirm" class="btn btn-confirm" type="button" onclick="confirmEndGame()">End Game / Final Score</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---- Shared state + safe localStorage helpers (storage keys use a nagshead_ prefix so they never clash with other games) ----
+        let isInGameSession = false;
+        let peer = null;
+        let conn = null;
+        let roundNumber = 1;
+        const SCOREBOARD_KEY = 'nagshead_scoreboard';
+        const PLAYERS_KEY = 'nagshead_players';
+        const SLOTS_KEY = 'nagshead_player_slots';
+        const ACTIVE_PLAYER_KEY = 'nagshead_active_player';
+        // Questions each player answers per turn, picked in the lobby. Memory only, so every page load starts on 2.
+        const QUESTION_COUNTS = [1, 2, 3, 4];
+        const DEFAULT_QUESTIONS_PER_TURN = 2;
+        let questionsPerTurn = DEFAULT_QUESTIONS_PER_TURN;
+
+        // One accent colour + one sliced token image per slot (OFAH icons 4.jpg -> img/token-1..8.png)
+        const COLORS = ['#f2a900', '#2b7fff', '#e63946', '#ec4899', '#22b25a', '#8b5cf6', '#12b5cb', '#ff7a1a'];
+        const QC_COLORS = ['#e63946', '#2b7fff', '#22b25a', '#ff7a1a'];
+        const TOKEN_NAMES = ['The Van', 'Chandelier', 'Batman', 'Doll', 'The Broom', 'Watch', 'Peckham Spring', 'Cocktail'];
+        const ALL_SLOT_PLAYERS = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8'];
+        let fallbackPlayerSlots = [];
+
+        function tokenSrc(slotIdx) { return 'img/token-' + (((slotIdx % 8) + 8) % 8 + 1) + '.png'; }
+
+        function safeGetItem(key, defaultValue = null) {
+            try { const value = localStorage.getItem(key); return value !== null ? value : defaultValue; }
+            catch (e) { console.warn('localStorage access blocked for key:', key, e); return defaultValue; }
+        }
+        function safeSetItem(key, value) {
+            try { localStorage.setItem(key, value); return true; }
+            catch (e) { console.warn('localStorage access blocked for key:', key, e); return false; }
+        }
+        function safeRemoveItem(key) {
+            try { localStorage.removeItem(key); return true; }
+            catch (e) { console.warn('localStorage access blocked for key:', key, e); return false; }
+        }
+        function safeParseJSON(jsonString, defaultValue = null) {
+            try { return jsonString ? JSON.parse(jsonString) : defaultValue; }
+            catch (e) { console.warn('JSON parse error:', e); return defaultValue; }
+        }
+        function safeStringifyJSON(obj) {
+            try { return JSON.stringify(obj); }
+            catch (e) { console.warn('JSON stringify error:', e); return null; }
+        }
+
+        // ---- Category -> card colour. Same rule on host and judge, so a category always gets the same colour. ----
+        const CATEGORY_COLORS = {
+            'peckham life': '#b3261e',
+            'characters': '#1f3a8a',
+            'quotes': '#1e7a3c',
+            'episodes': '#6b2fa0',
+            'scams & schemes': '#c75b0a'
+        };
+        const FALLBACK_COLORS = ['#b3261e', '#1f3a8a', '#1e7a3c', '#6b2fa0', '#c75b0a', '#0f766e', '#7a1f3d', '#6b4423'];
+        function categoryColor(cat) {
+            const key = String(cat || '').trim().toLowerCase();
+            if (CATEGORY_COLORS[key]) return CATEGORY_COLORS[key];
+            let h = 0;
+            for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 9973;
+            return FALLBACK_COLORS[h % FALLBACK_COLORS.length];
+        }
+
+        // ---- Game state ----
+        let allQuestions = [];
+        let deck = [];
+        let deckPos = 0;
+        let qIndex = 0;            // 0-based position within the current turn
+        let currentQ = null;
+        let phase = 'lobby';       // 'lobby' | 'question' | 'handoff'
+        let currentPeerId = '';
+        let standingsOpen = false;
+        // End Game / Final Score confirmation card (memory only, never persisted)
+        let endGameModalOpen = false;
+        let endGameModalFocus = null;
+
+        // Start Turn (host button or judge phone) only becomes tappable 3 seconds after a turn ends,
+        // so the end of a turn can never be double-started by a stray tap. Same idea as the Gibberish
+        // end-of-turn lock.
+        const START_TURN_LABEL = 'Start Turn';
+        const START_TURN_LOCK_SECONDS = 3;
+        let startTurnLockInterval = null;
+        let startTurnLocked = false;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // A question is not repeated until every question has been asked
+        function resetCardPool() { deck = []; deckPos = 0; }
+        function dealQuestion() {
+            if (!allQuestions.length) return null;
+            if (deckPos >= deck.length) {
+                const last = deck.length ? deck[deck.length - 1] : null;
+                deck = shuffle(allQuestions.slice());
+                if (deck.length > 1 && deck[0] === last) { const t = deck[0]; deck[0] = deck[1]; deck[1] = t; }
+                deckPos = 0;
+            }
+            return deck[deckPos++];
+        }
+
+        fetch('./nags-head-questions.json')
+            .then(res => res.json())
+            .then(data => { allQuestions = Array.isArray(data) ? data : []; console.log('Questions loaded:', allQuestions.length); })
+            .catch(err => { console.error('Failed to load questions:', err); setStartMsg('Could not load nags-head-questions.json'); });
+
+        function setStartMsg(text) { const el = document.getElementById('start-msg'); if (el) el.textContent = text || ''; }
+
+        // ---- Lobby: player tokens ----
+        function renderTapOrderSelector() {
+            const grid = document.getElementById('order-selector-grid');
+            if (!grid) return;
+            const slots = getPlayerSlots();
+            grid.innerHTML = '';
+            ALL_SLOT_PLAYERS.forEach((defaultSlotName, idx) => {
+                const color = COLORS[idx];
+                const orderIdx = slots.findIndex(s => s.slotIndex === idx);
+                const isSelected = orderIdx !== -1;
+                const assignedNum = isSelected ? orderIdx + 1 : null;
+                const labelText = isSelected ? 'Player ' + assignedNum : TOKEN_NAMES[idx];
+
+                const wrap = document.createElement('button');
+                wrap.type = 'button';
+                wrap.className = 'order-token-wrap' + (isSelected ? ' active' : '');
+                wrap.style.setProperty('--pc', color);
+                wrap.title = isSelected ? labelText + ': turn #' + assignedNum + ' (tap to remove)' : 'Tap to select as Player ' + (slots.length + 1);
+                wrap.onclick = () => togglePlayerSlot(idx);
+                wrap.innerHTML =
+                    '<span class="tok' + (isSelected ? ' on' : '') + '">' +
+                        '<span class="tok-aura"></span><span class="tok-ring"></span>' +
+                        '<img class="tok-img" src="' + tokenSrc(idx) + '" alt="' + TOKEN_NAMES[idx] + '">' +
+                        (isSelected ? '<span class="order-badge">' + assignedNum + '</span>' : '') +
+                    '</span>' +
+                    '<span class="ribbon">' + labelText + '</span>';
+                grid.appendChild(wrap);
+            });
+        }
+
+        function togglePlayerSlot(slotIdx) {
+            try {
+                let slots = getPlayerSlots();
+                const existingIdx = slots.findIndex(s => s.slotIndex === slotIdx);
+                if (existingIdx !== -1) slots.splice(existingIdx, 1);
+                else slots.push({ slotIndex: slotIdx });
+                slots.forEach((s, i) => { s.name = 'Player ' + (i + 1); });
+                savePlayerSlots(slots);
+                if (slots.length > 0) safeSetItem(ACTIVE_PLAYER_KEY, slots[0].name);
+                else safeRemoveItem(ACTIVE_PLAYER_KEY);
+                const scores = getScores();
+                slots.forEach(s => { if (scores[s.name] === undefined) scores[s.name] = 0; });
+                const scoresJson = safeStringifyJSON(scores);
+                if (scoresJson) safeSetItem(SCOREBOARD_KEY, scoresJson);
+                setStartMsg('');
+                renderTapOrderSelector();
+            } catch (e) { console.error('Failed to toggle player tap order', e); }
+        }
+
+        function clearTapOrder() {
+            try {
+                fallbackPlayerSlots = [];
+                const emptyArrayJson = safeStringifyJSON([]);
+                if (emptyArrayJson) { safeSetItem(SLOTS_KEY, emptyArrayJson); safeSetItem(PLAYERS_KEY, emptyArrayJson); }
+                safeRemoveItem(ACTIVE_PLAYER_KEY);
+                renderTapOrderSelector();
+            } catch (e) { console.error('Failed to clear tap order', e); }
+        }
+
+        // ---- Lobby: questions per turn (1 / 2 / 3 / 4) ----
+        function renderQuestionCountSelector() {
+            const row = document.getElementById('qcount-row');
+            if (!row) return;
+            row.innerHTML = '';
+            QUESTION_COUNTS.forEach((n, idx) => {
+                const isSelected = (n === questionsPerTurn);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'qc-wrap' + (isSelected ? ' active' : '');
+                btn.style.setProperty('--pc', QC_COLORS[idx]);
+                btn.title = isSelected ? n + ' per turn (selected)' : 'Tap for ' + n + ' per turn';
+                btn.onclick = () => setQuestionsPerTurn(n);
+                btn.innerHTML =
+                    '<span class="tok' + (isSelected ? ' on' : '') + '">' +
+                        '<span class="tok-aura"></span><span class="tok-ring"></span>' +
+                        '<span class="tok-face"></span><span class="qc-num">' + n + '</span>' +
+                    '</span>' +
+                    '<span class="qc-label">' + (n === 1 ? 'question' : 'questions') + '</span>';
+                row.appendChild(btn);
+            });
+        }
+        function setQuestionsPerTurn(n) {
+            questionsPerTurn = n;
+            console.log('Questions per turn set to', n);
+            renderQuestionCountSelector();
+            updateProgressDisplay();
+        }
+
+        // ---- Player / score storage ----
+        function getPlayerSlots() {
+            const parsed = safeParseJSON(safeGetItem(SLOTS_KEY), []);
+            if (parsed !== null && Array.isArray(parsed) && parsed.length > 0) { fallbackPlayerSlots = parsed; return parsed; }
+            if (fallbackPlayerSlots.length > 0) return fallbackPlayerSlots;
+            return [];
+        }
+        function savePlayerSlots(slots) {
+            fallbackPlayerSlots = slots;
+            const slotsJson = safeStringifyJSON(slots);
+            if (slotsJson) safeSetItem(SLOTS_KEY, slotsJson);
+            const namesJson = safeStringifyJSON(slots.map(s => s.name));
+            if (namesJson) safeSetItem(PLAYERS_KEY, namesJson);
+        }
+        function getPlayers() {
+            try { return getPlayerSlots().map(s => s.name); } catch (e) { return []; }
+        }
+        function getScores() { return safeParseJSON(safeGetItem(SCOREBOARD_KEY), {}) || {}; }
+        function getActivePlayer() { return safeGetItem(ACTIVE_PLAYER_KEY, null); }
+        function slotIndexFor(name) {
+            const s = getPlayerSlots().find(x => x.name === name);
+            return s && s.slotIndex !== undefined ? s.slotIndex : 0;
+        }
+        function initializeZeroScores(forceReset = false) {
+            try {
+                const players = getPlayers();
+                const scores = forceReset ? {} : getScores();
+                players.forEach(p => { if (forceReset || scores[p] === undefined) scores[p] = 0; });
+                const json = safeStringifyJSON(scores);
+                if (json) safeSetItem(SCOREBOARD_KEY, json);
+            } catch (e) { console.error('Failed to initialize zero scores', e); }
+        }
+
+        // Change a player's score (+1 / -1 from the host taps, +1 from the judge's Correct), refresh the numbers
+        // in place and tell the judge phone, so the two screens always agree.
+        function adjustScore(playerName, delta) {
+            try {
+                const scores = getScores();
+                scores[playerName] = (scores[playerName] || 0) + delta;
+                const json = safeStringifyJSON(scores);
+                if (json) safeSetItem(SCOREBOARD_KEY, json);
+                updateScoreValues();
+                sendScoreUpdate();
+            } catch (e) { console.error('Failed to save score', e); }
+        }
+        function updateScoreValues() {
+            const scores = getScores();
+            document.querySelectorAll('[data-score-for]').forEach(el => {
+                el.textContent = scores[el.getAttribute('data-score-for')] || 0;
+            });
+        }
+
+        // ---- Scoreboard with big tappable tokens ----
+        function renderScoreboard() {
+            const list = document.getElementById('players-list');
+            if (!list) return;
+            const players = getPlayers();
+            const scores = getScores();
+            const activePlayer = getActivePlayer();
+            if (players.length === 0) {
+                list.innerHTML = '<div style="font-size:0.95rem;padding:0.5rem 0;text-align:center;grid-column:1/-1;">No players selected.</div>';
+                return;
+            }
+            list.innerHTML = '';
+            players.forEach(p => {
+                const slotIdx = slotIndexFor(p);
+                const isActive = (p === activePlayer);
+                const card = document.createElement('div');
+                card.className = 'score-card' + (isActive ? ' active' : '');
+                card.style.setProperty('--pc', COLORS[slotIdx]);
+                card.innerHTML =
+                    '<div class="tok pt' + (isActive ? ' on' : '') + '" title="' + p + ': tap top half +1, bottom half -1">' +
+                        '<span class="tok-aura"></span><span class="tok-ring"></span>' +
+                        '<img class="tok-img" src="' + tokenSrc(slotIdx) + '" alt="' + p + '">' +
+                        '<span class="half-flash top"></span><span class="half-flash bottom"></span>' +
+                        '<span class="split-line"></span>' +
+                        '<span class="pt-plus">+</span><span class="pt-minus">&minus;</span>' +
+                    '</div>' +
+                    '<div class="ribbon">' + p + '</div>' +
+                    '<div class="pt-score" data-score-for="' + p + '">' + (scores[p] || 0) + '</div>';
+                const tok = card.querySelector('.pt');
+                tok.addEventListener('click', (ev) => tapScore(ev, p, tok));
+                list.appendChild(card);
+            });
+            const upNextEl = document.getElementById('up-next-player');
+            if (upNextEl) upNextEl.innerText = getNextPlayerName();
+        }
+
+        // Top half of the token = +1, bottom half = -1. Ignored while a turn is over, so nothing can be
+        // scored by accident during the turn-over handoff.
+        function tapScore(ev, playerName, tok) {
+            if (phase !== 'question') return;
+            const rect = tok.getBoundingClientRect();
+            const isPlus = (ev.clientY - rect.top) < rect.height / 2;
+            adjustScore(playerName, isPlus ? 1 : -1);
+            showTapFeedback(tok, isPlus);
+        }
+        function showTapFeedback(tok, isPlus) {
+            const flash = tok.querySelector(isPlus ? '.half-flash.top' : '.half-flash.bottom');
+            if (flash) { flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go'); }
+            const f = document.createElement('span');
+            f.className = 'float-pt ' + (isPlus ? 'plus' : 'minus');
+            f.textContent = isPlus ? '+1' : '\u22121';
+            tok.appendChild(f);
+            f.addEventListener('animationend', () => f.remove());
+            setTimeout(() => { if (f.parentNode) f.remove(); }, 1300);
+            const sc = tok.parentNode.querySelector('.pt-score');
+            if (sc) { sc.classList.remove('pop'); void sc.offsetWidth; sc.classList.add('pop'); }
+        }
+
+        // ---- Turn order ----
+        function getNextPlayerName() {
+            try {
+                const players = getPlayers();
+                if (!players || players.length === 0) return 'None';
+                if (players.length === 1) return players[0];
+                const current = getActivePlayer();
+                const currentIdx = current ? players.indexOf(current) : -1;
+                if (currentIdx === -1) return players[0];
+                return players[(currentIdx + 1) % players.length];
+            } catch (e) { return 'None'; }
+        }
+        function advanceTurnToNextPlayer() {
+            try {
+                const players = getPlayers();
+                if (!players || players.length === 0) return;
+                const current = getActivePlayer();
+                let nextPlayer = players[0];
+                const currentIdx = current ? players.indexOf(current) : -1;
+                if (currentIdx !== -1) {
+                    const nextIdx = (currentIdx + 1) % players.length;
+                    nextPlayer = players[nextIdx];
+                    if (nextIdx === 0) { roundNumber++; }   // back to the first player: new round
+                }
+                safeSetItem(ACTIVE_PLAYER_KEY, nextPlayer);
+            } catch (e) { console.error('Failed to advance turn order', e); }
+        }
+        function updateRoundBadge() {
+            const el = document.getElementById('round-badge');
+            if (el) el.innerText = 'Round ' + roundNumber;
+        }
+
+        // ---- Game flow ----
+        function showScreen(name) {
+            const setupScreen = document.getElementById('setup-screen');
+            const gameScreen = document.getElementById('game-screen');
+            if (setupScreen) setupScreen.style.display = name === 'game' ? 'none' : 'block';
+            if (gameScreen) gameScreen.style.display = name === 'game' ? 'flex' : 'none';
+        }
+
+        function startGame() {
+            if (!allQuestions.length) { setStartMsg('Questions are still loading - try again in a moment.'); return; }
+            const players = getPlayers();
+            if (players.length === 0) { setStartMsg('Tap at least one player first!'); return; }
+            setStartMsg('');
+            isInGameSession = true;
+            roundNumber = 1;
+            resetCardPool();
+            initializeZeroScores(true);
+            safeSetItem(ACTIVE_PLAYER_KEY, players[0]);
+            showScreen('game');
+            hideHandoff();
+            beginTurn();
+        }
+
+        function beginTurn() {
+            qIndex = 0;
+            phase = 'question';
+            setScoreControlsEnabled(true);
+            showQuestion();
+        }
+
+        function showQuestion() {
+            currentQ = dealQuestion();
+            if (!currentQ) return;
+            const qType = currentQ.type === 'mcq' ? 'mcq' : 'straight';
+            document.getElementById('category-val').innerText = currentQ.category || 'Pub Quiz';
+            document.getElementById('question-val').innerText = currentQ.question || '';
+            document.querySelector('.gcard').style.setProperty('--face', categoryColor(currentQ.category));
+
+            const optsEl = document.getElementById('options-val');
+            optsEl.innerHTML = '';
+            if (qType === 'mcq' && Array.isArray(currentQ.options)) {
+                currentQ.options.forEach((opt, i) => {
+                    const li = document.createElement('li');
+                    const letter = document.createElement('span');
+                    letter.className = 'opt-letter';
+                    letter.textContent = String.fromCharCode(65 + i);
+                    const text = document.createElement('span');
+                    text.textContent = opt;
+                    li.appendChild(letter);
+                    li.appendChild(text);
+                    optsEl.appendChild(li);
+                });
+                optsEl.hidden = false;
+            } else {
+                optsEl.hidden = true;
+            }
+            // the answer is hidden again for every new question
+            document.getElementById('answer-reveal').hidden = true;
+            document.getElementById('reveal-btn').textContent = 'Show Answer';
+
+            renderAllUIElements();
+            sendGameState();
+        }
+
+        function toggleAnswer() {
+            if (!currentQ) return;
+            const reveal = document.getElementById('answer-reveal');
+            if (reveal.hidden) {
+                reveal.innerHTML = '';
+                const a = document.createElement('div');
+                a.innerHTML = '<b>Answer:</b> ';
+                a.appendChild(document.createTextNode(currentQ.answer || 'N/A'));
+                reveal.appendChild(a);
+                if (currentQ.hint) {
+                    const h = document.createElement('div');
+                    h.innerHTML = '<b>Hint:</b> ';
+                    h.appendChild(document.createTextNode(currentQ.hint));
+                    reveal.appendChild(h);
+                }
+                reveal.hidden = false;
+                document.getElementById('reveal-btn').textContent = 'Hide Answer';
+            } else {
+                reveal.hidden = true;
+                document.getElementById('reveal-btn').textContent = 'Show Answer';
+            }
+        }
+
+        // Judge phone (or the host's own Correct / Wrong buttons). Correct gives the active player +1.
+        // While a turn is over (phase 'handoff') nothing here runs, so Correct / Wrong taps are ignored.
+        function judgeAction(action) {
+            if (phase !== 'question') return;
+            if (action === 'correct') {
+                const active = getActivePlayer();
+                if (active) adjustScore(active, 1);
+            }
+            qIndex++;
+            if (qIndex >= questionsPerTurn) endTurn();
+            else showQuestion();
+        }
+
+        function endTurn() {
+            advanceTurnToNextPlayer();
+            phase = 'handoff';
+            setScoreControlsEnabled(false);   // Correct / Wrong are ignored between turns
+            renderAllUIElements();
+            showHandoff();
+            sendGameState();
+        }
+
+        function showHandoff() {
+            const name = getActivePlayer() || 'Player 1';
+            const slotIdx = slotIndexFor(name);
+            document.getElementById('handoff-token').style.setProperty('--pc', COLORS[slotIdx]);
+            document.getElementById('handoff-img').src = tokenSrc(slotIdx);
+            document.getElementById('handoff-name').textContent = name;
+            document.getElementById('handoff-sub').textContent = 'Round ' + roundNumber + ' \u00B7 ' + questionsPerTurn + (questionsPerTurn === 1 ? ' question' : ' questions');
+            document.getElementById('handoff').hidden = false;
+            updateStartTurnVisibility();
+            lockStartTurnButtons();           // visible at once, but untappable for 3 seconds
+        }
+        function hideHandoff() {
+            document.getElementById('handoff').hidden = true;
+            clearStartTurnLock();
+            updateStartTurnVisibility();
+        }
+
+        function startTurn() {
+            if (phase !== 'handoff') return;     // only between turns
+            if (startTurnLocked) return;         // 3-second cool-off after the turn ended
+            clearStartTurnLock();
+            hideHandoff();
+            beginTurn();
+        }
+
+        // ---- Start Turn button (host) + 3-second cool-off -------------------------------------------------
+        // Both Start Turn buttons (the one on the game screen and the one in the Turn Over card) share one
+        // lock, so the host can start the next turn from either place and the judge phone can do it too.
+        function startTurnButtons() {
+            return ['handoff-btn', 'start-turn-btn'].map(id => document.getElementById(id)).filter(Boolean);
+        }
+        function clearStartTurnLock() {
+            if (startTurnLockInterval) { clearInterval(startTurnLockInterval); startTurnLockInterval = null; }
+            startTurnLocked = false;
+            startTurnButtons().forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('btn-locked');
+                btn.textContent = START_TURN_LABEL;
+            });
+        }
+        function lockStartTurnButtons() {
+            clearStartTurnLock();
+            const btns = startTurnButtons();
+            if (!btns.length) return;
+            let remaining = START_TURN_LOCK_SECONDS;
+            startTurnLocked = true;
+            btns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('btn-locked');
+                btn.textContent = START_TURN_LABEL + ' (' + remaining + 's)';
+            });
+            startTurnLockInterval = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    clearStartTurnLock();
+                } else {
+                    btns.forEach(btn => { btn.textContent = START_TURN_LABEL + ' (' + remaining + 's)'; });
+                }
+            }, 1000);
+        }
+        // The game screen only shows its Start Turn button while a turn is over
+        function updateStartTurnVisibility() {
+            const btn = document.getElementById('start-turn-btn');
+            if (btn) btn.hidden = (phase !== 'handoff');
+        }
+        function setScoreControlsEnabled(enabled) {
+            ['wrong-btn', 'correct-btn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.disabled = !enabled;
+                btn.classList.toggle('btn-locked', !enabled);
+            });
+        }
+
+        // skipConfirm is passed explicitly (true from the final standings, false from the game screen) so the
+        // inline onclick never accidentally hands over the click event as an argument.
+        function startNewGame(skipConfirm) {
+            if (!skipConfirm && !window.confirm('Start a new game? Scores reset to 0 and every question becomes available again.')) return;
+            const players = getPlayers();
+            if (standingsOpen) closeStandings(true);
+            const standingsEl = document.getElementById('standings');
+            if (standingsEl) standingsEl.hidden = true;
+            clearStartTurnLock();
+            resetCardPool();
+            roundNumber = 1;
+            qIndex = 0;
+            initializeZeroScores(true);
+            if (players.length) safeSetItem(ACTIVE_PLAYER_KEY, players[0]);
+            isInGameSession = true;
+            showScreen('game');
+            hideHandoff();
+            beginTurn();
+        }
+
+        // ---- End Game: final standings, highest score first, ties share a rank (T-1st, T-2nd, ...) ----
+        function ordinalLabel(n) {
+            const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+        function computeStandings() {
+            const scores = getScores();
+            const rows = getPlayers().map(name => {
+                const slot = slotIndexFor(name);
+                return { name: name, slot: slot, tokenName: TOKEN_NAMES[((slot % 8) + 8) % 8] || name, score: scores[name] || 0 };
+            });
+            rows.sort((a, b) => (b.score - a.score) || a.name.localeCompare(b.name));
+            const counts = {};
+            rows.forEach(r => { counts[r.score] = (counts[r.score] || 0) + 1; });
+            let lastScore = null, lastRank = 0;
+            rows.forEach((r, i) => {
+                if (lastScore !== null && r.score === lastScore) r.rank = lastRank;
+                else { r.rank = i + 1; lastRank = r.rank; }
+                lastScore = r.score;
+                r.tied = counts[r.score] > 1;
+            });
+            return rows;
+        }
+        function renderStandings() {
+            const list = document.getElementById('standings-list');
+            if (!list) return;
+            const rows = computeStandings();
+            list.innerHTML = '';
+            if (rows.length === 0) {
+                list.innerHTML = '<li class="standings-empty">No players selected.</li>';
+                return;
+            }
+            rows.forEach(r => {
+                const li = document.createElement('li');
+                li.className = 'standings-row' + (r.rank === 1 ? ' is-winner' : '');
+                li.style.setProperty('--pc', COLORS[((r.slot % 8) + 8) % 8]);
+                li.title = (r.tied ? 'Joint ' : '') + ordinalLabel(r.rank) + ' place with ' + r.score + ' point' + (r.score === 1 ? '' : 's');
+                li.innerHTML =
+                    '<span class="standings-rank">' + (r.tied ? 'T-' : '') + ordinalLabel(r.rank) + '</span>' +
+                    '<span class="standings-tok"><img src="' + tokenSrc(r.slot) + '" alt=""></span>' +
+                    '<span class="standings-info">' +
+                        '<span class="standings-name">' + r.name + '</span>' +
+                        '<span class="standings-token-name">' + r.tokenName + '</span>' +
+                    '</span>' +
+                    '<span class="standings-score">' + r.score + '</span>';
+                list.appendChild(li);
+            });
+        }
+        function sendGameOver() {
+            if (!(conn && conn.open)) return;
+            try { conn.send({ type: 'GAME_OVER' }); } catch (err) { console.error('Failed to send game over:', err); }
+        }
+        function openStandings() {
+            if (phase === 'handoff') hideHandoff();    // never leave two overlays up at once
+            standingsOpen = true;
+            renderStandings();
+            const el = document.getElementById('standings');
+            if (el) el.hidden = false;
+            sendGameOver();
+        }
+        // silent = used when a new game is about to start, so the judge is not told "game over" again
+        function closeStandings(silent) {
+            const wasOpen = standingsOpen;
+            const el = document.getElementById('standings');
+            const wasVisible = !!el && !el.hidden;
+            standingsOpen = false;
+            if (el) el.hidden = true;
+            if (silent) return;
+            if (!wasOpen && !wasVisible) return;       // nothing was showing: leave the game as it is
+            if (!isInGameSession) return;
+            if (phase === 'handoff') showHandoff();    // back to waiting for the next turn
+            else sendGameState();                      // still mid-turn: put the judge back on the question
+        }
+        // ---- End Game / Final Score: an in-world confirm card instead of a browser confirm box ----
+        // Cancel simply closes the card, leaving the game (question, handoff, scores) untouched.
+        // The confirm button does exactly what the old window.confirm did: opens the final standings
+        // and sends GAME_OVER to the judge phone.
+        function endGame() {
+            if (!isInGameSession) return;
+            openEndGameModal();
+        }
+        function openEndGameModal() {
+            const el = document.getElementById('end-game-modal');
+            if (!el) return;
+            endGameModalOpen = true;
+            endGameModalFocus = document.activeElement;      // so focus can go back to End Game on close
+            el.hidden = false;
+            const confirmBtn = document.getElementById('end-game-confirm');
+            if (confirmBtn && confirmBtn.focus) { try { confirmBtn.focus(); } catch (err) { /* ignore */ } }
+        }
+        function closeEndGameModal() {
+            const el = document.getElementById('end-game-modal');
+            if (el) el.hidden = true;
+            endGameModalOpen = false;
+            const stored = endGameModalFocus;
+            endGameModalFocus = null;
+            // Back to whatever had focus before (the End Game button in normal use). A touchscreen tap
+            // may not have focused anything, so fall back to that button so keyboard/tab users are not
+            // left on a hidden control.
+            const restore = (stored && stored.focus && stored !== document.body) ? stored : document.getElementById('end-game-btn');
+            if (restore && restore.focus) { try { restore.focus(); } catch (err) { /* ignore */ } }
+        }
+        function confirmEndGame() {
+            closeEndGameModal();
+            openStandings();
+        }
+
+        function updateProgressDisplay() {
+            const el = document.getElementById('progress-val');
+            if (el) el.innerText = Math.min(qIndex + 1, questionsPerTurn) + ' of ' + questionsPerTurn;
+        }
+        function renderAllUIElements() {
+            renderScoreboard();
+            updateProgressDisplay();
+            updateRoundBadge();
+            updateStartTurnVisibility();
+            const turnEl = document.getElementById('turn-player');
+            if (turnEl) turnEl.innerText = getActivePlayer() || '-';
+            const upNextEl = document.getElementById('up-next-player');
+            if (upNextEl) upNextEl.innerText = getNextPlayerName();
+        }
+
+        // ---- Judge phone sync (PeerJS) ----
+        function playerInfo(name) {
+            const scores = getScores();
+            return { playerName: name || '-', playerSlot: slotIndexFor(name), playerScore: name ? (scores[name] || 0) : 0 };
+        }
+        function sendGameState() {
+            if (!(conn && conn.open)) return;
+            try {
+                if (standingsOpen) {
+                    // Final standings are on the big screen: the judge shows the game-over note
+                    conn.send({ type: 'GAME_OVER' });
+                    return;
+                }
+                if (phase === 'question' && currentQ) {
+                    conn.send(Object.assign({
+                        type: 'STATE_UPDATE',
+                        category: currentQ.category || 'Pub Quiz',
+                        qType: currentQ.type === 'mcq' ? 'mcq' : 'straight',
+                        question: currentQ.question || '',
+                        options: Array.isArray(currentQ.options) ? currentQ.options : [],
+                        answer: currentQ.answer || 'N/A',
+                        hint: currentQ.hint || 'No hint available',
+                        qNum: Math.min(qIndex + 1, questionsPerTurn),
+                        qTotal: questionsPerTurn
+                    }, playerInfo(getActivePlayer())));
+                } else if (phase === 'handoff') {
+                    conn.send(Object.assign({ type: 'HANDOFF', round: roundNumber, qTotal: questionsPerTurn }, playerInfo(getActivePlayer())));
+                } else {
+                    conn.send({ type: 'LOBBY' });
+                }
+            } catch (err) { console.error('Failed to send game state:', err); }
+        }
+        function sendScoreUpdate() {
+            if (!(conn && conn.open)) return;
+            try { conn.send(Object.assign({ type: 'SCORE_UPDATE' }, playerInfo(getActivePlayer()))); }
+            catch (err) { console.error('Failed to send score:', err); }
+        }
+        function setJudgeStatus(connected) {
+            const el = document.getElementById('judge-status');
+            if (el) el.textContent = connected ? 'Judge phone: connected \u2713' : 'Judge phone: not connected';
+        }
+
+        function initPeer() {
+            if (peer) { try { peer.destroy(); } catch (err) { console.warn('Failed to destroy existing peer during init', err); } peer = null; }
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const randomId = 'nagshead-' + Math.random().toString(36).substring(2, 8);
+                    try { peer = new Peer(randomId); }
+                    catch (err) {
+                        console.error('Failed to create Peer instance:', err);
+                        document.getElementById('session-info').innerText = 'PeerJS Init Failed. Play on one screen.';
+                        resolve(false);
+                        return;
+                    }
+                    peer.on('open', (id) => {
+                        currentPeerId = id;
+                        let savedIp = safeGetItem('trotters_host_ip', '');
+                        const hostname = window.location.hostname;
+                        if (savedIp) document.getElementById('network-ip').value = savedIp;
+                        else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                            document.getElementById('network-ip').value = hostname;
+                            safeSetItem('trotters_host_ip', hostname);
+                        }
+                        setTimeout(updateQRCode, 100);
+                        setTimeout(() => {
+                            const info = document.getElementById('session-info');
+                            if (info) info.innerText = 'Ready! Scan the QR code to connect a judge phone (optional).';
+                        }, 500);
+                        resolve(true);
+                    });
+                    peer.on('connection', (connection) => { conn = connection; setupConnection(); });
+                    peer.on('error', (err) => {
+                        console.error('PeerJS error:', err);
+                        const info = document.getElementById('session-info');
+                        if (info) { info.innerText = 'Offline / PeerJS error. You can still play on one screen.'; info.style.color = '#c8102e'; }
+                        const qrContainer = document.getElementById('qrcode');
+                        if (qrContainer) qrContainer.innerHTML = '<div style="color:#c8102e;font-size:0.9rem;text-align:center;padding:1rem;">Connection error<br>Play on one screen instead</div>';
+                        resolve(false);
+                    });
+                }, 50);
+            });
+        }
+
+        function saveAndRefreshIP() {
+            const ipInput = document.getElementById('network-ip').value.trim();
+            if (ipInput) safeSetItem('trotters_host_ip', ipInput);
+            updateQRCode();
+        }
+
+        function updateQRCode() {
+            if (!currentPeerId) { setTimeout(() => { if (currentPeerId) updateQRCode(); }, 300); return; }
+            if (typeof QRCode === 'undefined') { setTimeout(updateQRCode, 200); return; }
+            const ipInput = document.getElementById('network-ip').value.trim();
+            const host = ipInput || window.location.hostname || 'localhost';
+            const port = window.location.port ? ':' + window.location.port : '';
+            const judgeUrl = window.location.protocol + '//' + host + port + window.location.pathname.replace('nags-head-host.html', 'nags-head-judge.html') + '?id=' + currentPeerId;
+            const qrContainer = document.getElementById('qrcode');
+            if (!qrContainer) return;
+            try {
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, { text: judgeUrl, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            } catch (error) {
+                console.error('Failed to generate QR code:', error);
+                qrContainer.innerHTML = '<div style="color:#c8102e;font-size:0.9rem;padding:1rem;text-align:center;">QR code failed<br>Please refresh the page</div>';
+            }
+        }
+
+        // A judge phone joined: the host screen stays as it is, and just starts talking to the phone
+        function setupConnection() {
+            console.log('Judge connected!');
+            setJudgeStatus(true);
+            if (conn.open) sendGameState();
+            conn.on('open', () => { setJudgeStatus(true); sendGameState(); });
+            conn.on('data', (data) => {
+                // The judge phone can start the next turn just like the host can
+                if (data.action === 'start-turn') { startTurn(); return; }
+                // Score taps are ignored while a turn is over (phase 'handoff')
+                if (phase !== 'question') return;
+                if (data.action === 'correct') judgeAction('correct');
+                else if (data.action === 'wrong' || data.action === 'skip') judgeAction('wrong');
+            });
+            conn.on('close', () => { console.log('Judge disconnected'); setJudgeStatus(false); });
+            conn.on('error', (err) => { console.error('Connection error:', err); setJudgeStatus(false); });
+        }
+
+        function exitToGameHub(e) {
+            if (e) e.preventDefault();
+            try {
+                safeRemoveItem(SLOTS_KEY);
+                safeRemoveItem(PLAYERS_KEY);
+                safeRemoveItem(ACTIVE_PLAYER_KEY);
+                safeRemoveItem(SCOREBOARD_KEY);
+                fallbackPlayerSlots = [];
+                isInGameSession = false;
+                standingsOpen = false;
+                closeEndGameModal();
+                clearStartTurnLock();
+                const standingsEl = document.getElementById('standings');
+                if (standingsEl) standingsEl.hidden = true;
+                if (conn) { try { conn.close(); } catch (err) { console.warn('Failed to close connection', err); } conn = null; }
+                if (peer) { try { peer.destroy(); } catch (err) { console.warn('Failed to destroy peer', err); } peer = null; }
+            } catch (err) { console.error('Failed to clear session data on exit', err); }
+            setTimeout(() => { window.location.href = '../../game-hub.html'; }, 100);
+        }
+
+        // ---- Start-up ----
+        (function () {
+            var modal = document.getElementById('qrModal');
+            function openQr() { if (modal) modal.hidden = false; }
+            function closeQr() { if (modal) modal.hidden = true; }
+            document.getElementById('qrBtn').addEventListener('click', openQr);
+            document.getElementById('qrClose').addEventListener('click', closeQr);
+            modal.addEventListener('click', function (e) { if (e.target === modal) closeQr(); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeEndGameModal(); closeQr(); closeStandings(false); } });
+            // Tapping the dimmed backdrop behind the End Game card cancels it, like a tap on Cancel
+            var endGameModal = document.getElementById('end-game-modal');
+            if (endGameModal) endGameModal.addEventListener('click', function (e) { if (e.target === endGameModal) closeEndGameModal(); });
+        })();
+
+        async function initializeApp() {
+            // Fresh page load = fresh game
+            safeRemoveItem(SLOTS_KEY);
+            safeRemoveItem(PLAYERS_KEY);
+            safeRemoveItem(ACTIVE_PLAYER_KEY);
+            safeRemoveItem(SCOREBOARD_KEY);
+            fallbackPlayerSlots = [];
+            roundNumber = 1;
+            resetCardPool();
+            questionsPerTurn = DEFAULT_QUESTIONS_PER_TURN;
+            phase = 'lobby';
+            standingsOpen = false;
+            closeEndGameModal();
+            clearStartTurnLock();
+            const standingsEl = document.getElementById('standings');
+            if (standingsEl) standingsEl.hidden = true;
+            showScreen('setup');
+            renderTapOrderSelector();
+            renderQuestionCountSelector();
+            await initPeer();
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeApp().catch(err => console.error('Failed to initialize app:', err));
+        });
+    </script>
+</body>
+</html>
