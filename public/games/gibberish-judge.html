@@ -35,7 +35,11 @@
         .game-stats { display: flex; gap: 0.6rem; }
         .stat-pill { flex: 1; display: flex; justify-content: center; align-items: center; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 0.35rem 0.8rem; font-family: var(--font); font-size: 1.15rem; text-transform: uppercase; }
         #hud-score { color: #d9215f; }
-        #hud-timer { color: var(--primary); }
+        #hud-timer { color: var(--primary); font-size: 1.35rem; }
+        /* Countdown running low (10s or less). The judge keeps no timer of its own: the
+           value always comes from the host's tick, so the two screens cannot drift. */
+        #hud-timer.low { color: var(--pass-color); }
+        .stat-pill.low { background: #fde6e9; border-color: var(--pass-color); }
         /* Encrypted-style card */
         .card-panel { position: relative; background: var(--face); border: 4px solid var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 10px 22px rgba(17,17,17,0.2); display: flex; flex-direction: column; transition: background-color 0.3s; }
         .cat-tab { align-self: center; background: #fff; color: var(--ink); font-family: var(--font); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; padding: 0.3rem 1.2rem 0.45rem; border-radius: 0 0 14px 14px; max-width: 90%; text-align: center; }
@@ -74,7 +78,7 @@
         <div id="active-panel" style="display: none; flex-direction: column; gap: 0.9rem;">
             <div class="game-stats">
                 <div class="stat-pill" id="hud-score">Score: 0</div>
-                <div class="stat-pill" id="hud-timer">Time: 60s</div>
+                <div class="stat-pill" id="hud-timer">Time: --</div>
             </div>
             <div class="card-panel">
                 <div class="cat-tab" id="hud-category">Category</div>
@@ -154,17 +158,18 @@
                 conn.on('data', (d) => {
                     if (d.type === 'STATE_UPDATE') {
                         if (d.isTickUpdate) {
-                            document.getElementById('hud-timer').innerText = `Time: ${d.timeLeft !== undefined ? d.timeLeft + 's' : '--'}`;
+                            // Host sends its own countdown value every second
+                            setTimerDisplay(d.timeLeft);
                         } else {
                             document.getElementById('hud-category').innerText = d.category || 'Unknown Category';
                             document.getElementById('judge-gibberish').innerText = d.gibberish || 'Waiting for phrase...';
                             document.getElementById('judge-answer').innerText = `Answer: ${d.answer || 'N/A'}`;
                             document.getElementById('judge-hint').innerText = `Hint: ${d.hint || 'No hint available'}`;
                             document.getElementById('hud-score').innerText = `Score: ${d.score !== undefined ? d.score : 0}`;
-                            document.getElementById('hud-timer').innerText = `Time: ${d.timeLeft !== undefined ? d.timeLeft + 's' : '--'}`;
+                            setTimerDisplay(d.timeLeft);
                         }
                     } else if (d.type === 'TIMEOUT') {
-                        document.getElementById('hud-timer').innerText = 'Time: 0s';
+                        setTimerDisplay(0);
                         document.getElementById('judge-gibberish').innerText = 'TIME IS UP!';
                         // Hide active buttons
                         const actionContainer = document.querySelector('.action-buttons');
@@ -204,7 +209,8 @@
                         }
                         document.getElementById('judge-answer').innerText = '(Hidden)';
                         document.getElementById('hud-score').innerText = 'Score: 0';
-                        document.getElementById('hud-timer').innerText = 'Time: 60s';
+                        // Host sends the lobby turn length it is about to start with
+                        setTimerDisplay(d.timeLeft !== undefined ? d.timeLeft : 60);
                     }
                 });
             });
@@ -231,6 +237,19 @@
                     btn.textContent = 'PLAY AGAIN (' + remaining + 's)';
                 }
             }, 1000);
+        }
+        // Live countdown display. The judge never counts down on its own: the host sends
+        // its timeLeft value every second, so both screens always show the same number.
+        function setTimerDisplay(seconds) {
+            const el = document.getElementById('hud-timer');
+            if (!el) return;
+            if (seconds === undefined || seconds === null) {
+                el.innerText = 'Time: --';
+                el.classList.remove('low');
+                return;
+            }
+            el.innerText = `Time: ${seconds}s`;
+            el.classList.toggle('low', seconds <= 10);
         }
         function sendAction(a) { if (conn && conn.open) conn.send({ action: a }); }
     </script>
