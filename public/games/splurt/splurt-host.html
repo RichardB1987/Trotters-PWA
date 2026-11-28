@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splurt - Party Game</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* Splurt host: hot magenta, chunky yellow, matte black cards, shouting-mouth motif. All art is inline SVG/CSS. */
+        :root {
+            --pink: #ec1a9c; --pink-deep: #b10e76; --yellow: #f6ea2c; --black: #19171c; --ink: #120610;
+            --green: #22b25a; --red: #e63946;
+            --font-display: "Arial Black", Impact, system-ui, sans-serif;
+            --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html, body { margin: 0; height: 100%; overflow: hidden; }
+        body { font-family: var(--font-ui); color: #fff; background: radial-gradient(ellipse at 50% 40%, #8a1068 0%, #3a0c37 55%, #1c0620 100%); user-select: none; -webkit-tap-highlight-color: transparent; }
+        .screen { position: fixed; inset: 0; overflow-x: hidden; }
+        #lobby-screen { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; padding: 12px 16px 18px; overflow-y: auto; }
+        #game-screen { display: none; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+
+        /* Buttons */
+        .btn { border: 3px solid var(--ink); border-radius: 999px; background: var(--yellow); color: var(--ink); font: 800 1rem var(--font-ui); padding: 0.6rem 1.2rem; cursor: pointer; box-shadow: 0 4px 0 var(--ink); text-transform: uppercase; letter-spacing: 0.03em; touch-action: manipulation; text-decoration: none; display: inline-block; text-align: center; white-space: nowrap; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+        .btn[disabled] { opacity: 0.45; pointer-events: none; }
+        .btn-pink { background: var(--pink); color: #fff; }
+        .btn-dark { background: #fff; color: var(--ink); }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.8rem; }
+        .btn-big { font-size: 1.4rem; padding: 0.75rem 2.2rem; }
+
+        /* Wordmark + mouth logo */
+        .logo { display: flex; align-items: center; justify-content: center; gap: 0.8rem; }
+        .logo svg { width: clamp(72px, 13vh, 118px); height: auto; }
+        .wordmark { margin: 0; font: 900 clamp(2.6rem, 10.5vh, 5.2rem)/1 var(--font-display); color: var(--yellow); letter-spacing: -0.02em; text-shadow: 3px 3px 0 var(--ink), -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 0 6px 0 var(--pink-deep); }
+        .wordmark span { display: inline-block; }
+        .wordmark span:nth-child(1) { transform: rotate(-6deg); }
+        .wordmark span:nth-child(2) { transform: rotate(4deg) translateY(-3px); }
+        .wordmark span:nth-child(3) { transform: rotate(-3deg) translateY(5px) scale(1.14); }
+        .wordmark span:nth-child(4) { transform: rotate(5deg); }
+        .wordmark span:nth-child(5) { transform: rotate(-4deg) translateY(2px); }
+        .wordmark span:nth-child(6) { transform: rotate(6deg) translateY(-4px); }
+        .tagline { background: var(--ink); color: #fff; font: 800 clamp(0.8rem, 2.4vh, 1.05rem) var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3rem 1.1rem; border-radius: 999px; border: 2px solid var(--pink); }
+        .lobby-top { width: min(860px, 100%); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 0.6rem; }
+
+        /* Lobby panels */
+        .lpanel { width: min(860px, 100%); background: rgba(18, 6, 16, 0.78); border: 3px solid var(--pink); border-radius: 22px; padding: 0.7rem 1rem 0.9rem; }
+        .lp-title { font: 900 0.95rem var(--font-display); text-transform: uppercase; color: var(--yellow); letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+        .lp-title small { font: 600 0.8rem var(--font-ui); color: #f3c4e3; letter-spacing: 0; text-transform: none; margin-left: 0.4rem; }
+        #token-row { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(6px, 1.2vw, 14px); }
+        .sel-tok { position: relative; width: clamp(54px, 9vh, 76px); aspect-ratio: 1; border: 0; background: none; padding: 0; cursor: pointer; opacity: 0.7; touch-action: manipulation; }
+        .sel-tok svg { width: 100%; height: 100%; display: block; }
+        .sel-tok.on { opacity: 1; filter: drop-shadow(0 0 8px var(--yellow)); transform: scale(1.06); }
+        .ord { position: absolute; right: -4px; bottom: -4px; min-width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--ink); color: var(--yellow); border: 2px solid var(--yellow); font: 900 0.85rem/1.25rem var(--font-ui); text-align: center; }
+        #name-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px 10px; margin-top: 0.6rem; }
+        .nrow { display: flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.1); border-radius: 999px; padding: 3px 10px 3px 4px; }
+        .nrow .mini { flex: 0 0 auto; width: 34px; height: 34px; }
+        .nrow input { flex: 1; min-width: 0; background: transparent; border: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.4); color: #fff; font: 700 1rem var(--font-ui); padding: 0.2rem 0.2rem; outline: none; user-select: text; }
+        .nrow input:focus { border-bottom-color: var(--yellow); }
+        #target-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; }
+        .opt { border: 3px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); font: 800 1rem var(--font-ui); padding: 0.4rem 1.1rem; cursor: pointer; touch-action: manipulation; }
+        .opt.on { background: var(--yellow); box-shadow: 0 0 0 3px var(--pink); }
+        #custom-target { width: 4.6rem; font: 800 1.1rem var(--font-ui); padding: 0.35rem 0.5rem; border-radius: 12px; border: 3px solid var(--yellow); background: #fff; color: var(--ink); text-align: center; user-select: text; }
+        .lobby-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem; margin-top: 0.2rem; }
+        .status { margin: 0; font-weight: 700; font-size: 0.9rem; color: #f3c4e3; text-align: center; }
+        #start-msg { min-height: 1.2rem; color: var(--yellow); }
+
+        /* Game screen: top bar */
+        .topbar { display: flex; align-items: center; gap: 0.6rem; padding: 8px 14px; background: rgba(18, 6, 16, 0.88); border-bottom: 3px solid var(--pink); }
+        .chips { flex: 1; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
+        .chip { background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 999px; padding: 0.15rem 0.85rem; font-weight: 800; font-size: 0.9rem; white-space: nowrap; }
+        .chip-target { background: var(--yellow); }
+        .remote-badge { display: inline-flex; align-items: center; gap: 0.4rem; border: 3px solid var(--ink); border-radius: 999px; background: #fde6e9; color: #8f1224; font: 800 0.85rem var(--font-ui); padding: 0.2rem 0.8rem 0.2rem 0.5rem; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+        .remote-badge.on { background: #d9f3e0; color: #0c5c26; }
+        .dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: currentColor; }
+        /* Lobby QR pill: same chunky look as the other lobby buttons, with a live status dot */
+        .qr-pill { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .qr-pill .dot { width: 0.8em; height: 0.8em; border-radius: 50%; background: var(--red); flex: 0 0 auto; }
+        .qr-pill.on .dot { background: var(--green); }
+
+        /* Stage: two upright cards (pink Category left, black Rule right) */
+        .stage { container-type: size; min-height: 0; display: flex; align-items: center; justify-content: center; gap: clamp(14px, 4vw, 64px); padding: 8px; }
+        .card { --h: min(94cqh, calc(43cqw * 1.4)); position: relative; flex: 0 0 auto; height: var(--h); width: calc(var(--h) * 5 / 7); perspective: 1400px; container-type: inline-size; }
+        .flip { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .card.up .flip { transform: rotateY(180deg); }
+        .face { position: absolute; inset: 0; border-radius: 7cqw; border: 1.2cqw solid #fff; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 1.5cqw 4cqw rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; align-items: center; }
+        .face::after { content: ""; position: absolute; inset: 3.2cqw; border: 0.7cqw solid rgba(255, 255, 255, 0.35); border-radius: 4cqw; pointer-events: none; }
+        .front { transform: rotateY(180deg); }
+        .back-pink { background: var(--pink); justify-content: center; }
+        .back-pink svg, .back-black svg { width: 66cqw; height: auto; }
+        .back-black { background: var(--black); justify-content: center; }
+        .front-pink { background: var(--pink); padding: 15cqw 8cqw 8cqw; justify-content: space-between; text-align: center; }
+        .cat-text { font: 800 11cqw/1.12 var(--font-ui); color: #fff; word-break: break-word; text-shadow: 0.5cqw 0.7cqw 0 rgba(0, 0, 0, 0.18); }
+        .mini-brand { font: 900 7cqw var(--font-display); color: #fff; opacity: 0.9; letter-spacing: -0.02em; }
+        .front-black { background: var(--black); padding: 13cqw 7cqw 6cqw; justify-content: flex-start; text-align: center; }
+        .rule-label { font: 700 9.5cqw/1.12 var(--font-ui); color: #fff; }
+        .rule-letter { flex: 1; display: flex; align-items: center; justify-content: center; font: 900 74cqw/1 var(--font-display); color: var(--yellow); text-shadow: 1.5cqw 1.5cqw 0 var(--pink-deep); }
+
+        /* Bottom: scoreboard strip + backup controls */
+        .bottom { background: rgba(18, 6, 16, 0.88); border-top: 3px solid var(--pink); padding: 6px 12px 8px; }
+        #players-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 8px; }
+        .pl { flex: 1 1 128px; max-width: 210px; display: flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.1); border: 3px solid transparent; border-radius: 16px; padding: 3px 8px; min-width: 0; }
+        .pl .tok { position: relative; flex: 0 0 auto; width: clamp(38px, 5.6vh, 56px); height: clamp(38px, 5.6vh, 56px); cursor: pointer; border: 0; background: none; padding: 0; touch-action: manipulation; }
+        .pl .tok svg { width: 100%; height: 100%; display: block; }
+        .pl .meta { min-width: 0; display: flex; flex-direction: column; line-height: 1.05; }
+        .pl .nm { font-weight: 700; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pl .sc { font: 900 clamp(1.4rem, 3.8vh, 2.1rem)/1.05 var(--font-display); color: var(--yellow); }
+        .pl.lead { border-color: var(--yellow); background: rgba(246, 234, 44, 0.16); }
+        .pl.lead .tok::after { content: "\265B"; position: absolute; top: -12px; right: -8px; color: var(--yellow); font-size: 1.25rem; text-shadow: 0 0 3px #000, 1px 1px 0 #000; }
+        .pl.hit { border-color: #fff; background: var(--pink); animation: hitpulse 0.9s ease-in-out infinite alternate; }
+        @keyframes hitpulse { from { box-shadow: 0 0 0 0 rgba(246, 234, 44, 0.9); } to { box-shadow: 0 0 14px 4px rgba(246, 234, 44, 0.9); } }
+        .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 6px; }
+        .hint { font-size: 0.75rem; font-weight: 600; color: #f3c4e3; margin-left: 0.4rem; }
+
+        /* Overlays and panels */
+        .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(10, 2, 12, 0.82); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; overflow-x: hidden; }
+        .panel { position: relative; background: #fff; color: var(--ink); border: 4px solid var(--ink); border-radius: 24px; box-shadow: 8px 8px 0 var(--pink); padding: 1.1rem 1.3rem 1.3rem; width: min(520px, 100%); text-align: center; max-height: 100%; overflow-y: auto; }
+        .panelTitle { margin: 0.1rem 0 0.5rem; font: 900 clamp(1.5rem, 5vw, 2.1rem)/1.05 var(--font-display); color: var(--pink); text-transform: uppercase; text-shadow: 2px 2px 0 var(--yellow); }
+        .panel p { margin: 0.3rem 0; font-weight: 600; color: #4a3144; }
+        .panel .row-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin-top: 0.9rem; }
+        #qrcode { display: flex; justify-content: center; margin: 0.6rem 0; min-height: 200px; }
+        #qrcode img, #qrcode canvas { max-width: 100%; height: auto; }
+        .ip-row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 700; font-size: 0.85rem; }
+        .ip-row input { width: 9.5rem; font: 700 0.95rem var(--font-ui); border: 2px solid var(--ink); border-radius: 10px; padding: 0.25rem 0.5rem; user-select: text; }
+        .confirm-tag { display: inline-block; background: var(--yellow); color: var(--ink); border: 3px solid var(--ink); border-radius: 999px; padding: 0.1rem 0.9rem; font: 900 0.85rem var(--font-display); text-transform: uppercase; transform: rotate(-2deg); margin-bottom: 0.3rem; }
+        .standings-list { list-style: none; margin: 0.6rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+        .standings-list li { display: grid; grid-template-columns: 3.4rem 44px 1fr auto; align-items: center; gap: 0.6rem; background: #f7e6f1; border: 3px solid var(--ink); border-radius: 14px; padding: 4px 10px; text-align: left; font-weight: 800; }
+        .standings-list li.first { background: var(--yellow); box-shadow: 0 0 0 3px var(--pink); }
+        .standings-list .rk { font: 900 1.15rem var(--font-display); color: var(--pink-deep); }
+        .standings-list .tk svg { width: 44px; height: 44px; display: block; }
+        .standings-list .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .standings-list .sc { font: 900 1.5rem var(--font-display); }
+
+        /* Phones and short screens */
+        @media (max-width: 700px) {
+            .topbar { flex-wrap: wrap; gap: 0.4rem; padding: 6px 10px; }
+            .chips { order: 3; flex-basis: 100%; }
+            .remote-badge { margin-left: auto; }
+            .hint { display: none; }
+            .pl { flex-basis: 44%; max-width: none; }
+            .btn { font-size: 0.85rem; padding: 0.5rem 0.9rem; }
+            .btn-big { font-size: 1.2rem; }
+            .chip { font-size: 0.8rem; }
+        }
+        @media (max-height: 700px) and (min-width: 701px) {
+            #lobby-screen { gap: 0.4rem; padding-top: 8px; }
+            .logo svg { width: 70px; }
+            .wordmark { font-size: 2.8rem; }
+            .btn-big { font-size: 1.2rem; padding: 0.55rem 1.8rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .flip { transition: none; }
+            .pl.hit { animation: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared shouting-mouth art (inline SVG, no image files) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+        <symbol id="mouth" viewBox="0 0 140 100">
+            <g stroke="#120610" stroke-width="3" stroke-linejoin="round">
+                <path d="M14 46Q22 8 64 10Q106 8 114 46Q112 92 64 92Q16 92 14 46Z" fill="#f0481f"/>
+                <path d="M26 46Q30 20 64 21Q98 20 102 46Q100 78 64 79Q28 78 26 46Z" fill="#4a0d1c"/>
+                <path d="M30 40Q32 24 64 24Q96 24 98 40Q64 34 30 40Z" fill="#fff"/>
+                <path d="M42 66Q64 50 86 66Q82 78 64 78Q46 78 42 66Z" fill="#f06ab0"/>
+            </g>
+            <g stroke="#f6ea2c" stroke-width="5" stroke-linecap="round" fill="none"><path d="M122 24l14-8M124 46h14M122 68l14 8"/></g>
+        </symbol>
+    </defs></svg>
+
+    <!-- LOBBY -->
+    <div id="lobby-screen" class="screen">
+        <div class="lobby-top">
+            <a class="btn btn-dark btn-sm" href="../../game-hub.html" onclick="exitToGameHub(event)">&larr; Back to Games Hub</a>
+            <button id="qrBtn" class="remote-badge" type="button" title="Show the Splurt Remote QR code"><span class="dot"></span><span id="lobby-remote-text">Remote: not connected</span></button>
+        </div>
+        <div class="logo">
+            <svg viewBox="0 0 140 100" aria-hidden="true"><use href="#mouth"/></svg>
+            <h1 class="wordmark" aria-label="Splurt"><span>S</span><span>P</span><span>L</span><span>U</span><span>R</span><span>T</span></h1>
+        </div>
+        <div class="tagline">Think fast, say it first!</div>
+
+        <div class="lpanel">
+            <div class="lp-title">Players <small>tap icons in turn order (2 to 8), then rename if you like</small></div>
+            <div id="token-row"></div>
+            <div id="name-list"></div>
+        </div>
+        <div class="lpanel">
+            <div class="lp-title">Win target <small>cards needed to win</small></div>
+            <div id="target-row">
+                <button class="opt" type="button" data-t="10">10</button>
+                <button class="opt" type="button" data-t="15">15</button>
+                <button class="opt" type="button" data-t="20">20</button>
+                <button class="opt" type="button" data-t="custom">Custom</button>
+                <input id="custom-target" type="number" min="1" max="99" value="12" inputmode="numeric" aria-label="Custom target" hidden>
+                <button class="opt" type="button" data-t="open">End Game / Final Score</button>
+            </div>
+        </div>
+        <p id="session-info" class="status">Generating session...</p>
+        <p id="start-msg" class="status" aria-live="polite"></p>
+        <div class="lobby-actions">
+            <button id="start-btn" class="btn btn-pink btn-big" type="button" onclick="startGame()">Start Game</button>
+            <button id="qr-btn-bottom" class="btn btn-dark btn-big qr-pill" type="button" title="Show the Splurt Remote QR code" aria-label="Show the Splurt Remote QR code"><span class="dot"></span><span id="qr-btn-bottom-text">Remote QR</span></button>
+        </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="game-screen" class="screen">
+        <div class="topbar">
+            <a class="btn btn-dark btn-sm" href="../../game-hub.html" onclick="exitToGameHub(event)">&larr; Back to Games Hub</a>
+            <div class="chips">
+                <span id="chip-target" class="chip chip-target">First to 10</span>
+                <span id="chip-deck" class="chip">Deck 0 &middot; Recycled 0</span>
+            </div>
+            <button id="remote-badge" class="remote-badge" type="button" title="Show the Splurt Remote QR code"><span class="dot"></span><span id="remote-text">Remote: not connected</span></button>
+        </div>
+        <div class="stage">
+            <div id="card-cat" class="card">
+                <div class="flip">
+                    <div class="face back-pink"><svg viewBox="0 0 140 100" aria-hidden="true"><use href="#mouth"/></svg></div>
+                    <div class="face front front-pink"><div id="cat-text" class="cat-text"></div><div class="mini-brand">SPLURT!</div></div>
+                </div>
+            </div>
+            <div id="card-rule" class="card">
+                <div class="flip">
+                    <div class="face back-black"><svg viewBox="0 0 100 100" aria-hidden="true"><text x="50" y="82" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="96" fill="#ec1a9c" stroke="#000" stroke-width="2">?</text></svg></div>
+                    <div class="face front front-black"><div id="rule-label" class="rule-label"></div><div id="rule-letter" class="rule-letter"></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom">
+            <div id="players-list"></div>
+            <div class="controls">
+                <button id="next-btn" class="btn btn-pink btn-sm" type="button" onclick="nextCard()">Reveal Card</button>
+                <button id="recycle-btn" class="btn btn-sm" type="button" onclick="recycleCard()" disabled>Recycle</button>
+                <button id="end-btn" class="btn btn-red btn-sm" type="button" onclick="endGame()">End Game / Final Score</button>
+                <span class="hint">Tap a player icon: top half +1 &middot; bottom half &minus;1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR modal -->
+    <div id="qrModal" class="overlay" hidden>
+        <div class="panel">
+            <h2 class="panelTitle">Splurt Remote</h2>
+            <p>Scan with a phone on the same Wi-Fi to use it as the remote.</p>
+            <div id="qrcode"></div>
+            <div class="ip-row"><label for="network-ip">Laptop IP</label><input id="network-ip" type="text" placeholder="192.168.0.242" onchange="saveAndRefreshIP()"></div>
+            <p id="qr-url" style="font-size:0.75rem;word-break:break-all;"></p>
+            <div class="row-btns"><button id="qrClose" class="btn btn-pink" type="button">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Target reached -->
+    <div id="target-modal" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="target-title">
+        <div class="panel">
+            <div class="confirm-tag">Target reached!</div>
+            <h2 id="target-title" class="panelTitle">Splurt!</h2>
+            <p id="target-sub"></p>
+            <ol id="target-list" class="standings-list"></ol>
+            <div class="row-btns">
+                <button id="keep-playing-btn" class="btn btn-green" type="button" onclick="keepPlaying()">Keep Playing</button>
+                <button class="btn btn-pink" type="button" onclick="endFromTarget()">End Game / Final Standings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- End Game confirm (in-world card, never window.confirm) -->
+    <div id="end-game-modal" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="end-game-title">
+        <div class="panel">
+            <div class="confirm-tag">Time's up?</div>
+            <h2 id="end-game-title" class="panelTitle">Final Score</h2>
+            <p>End the game now and show the final standings?</p>
+            <div class="row-btns">
+                <button id="end-cancel-btn" class="btn btn-dark" type="button" onclick="closeEndGameModal()">Cancel</button>
+                <button id="end-confirm-btn" class="btn btn-red" type="button" onclick="confirmEndGame()">End Game / Final Score</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final standings -->
+    <div id="standings" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="standings-title">
+        <div class="panel">
+            <h2 id="standings-title" class="panelTitle">Final Standings</h2>
+            <p>Highest score first &middot; tied players share a rank</p>
+            <ol id="standings-list" class="standings-list"></ol>
+            <div class="row-btns">
+                <button class="btn btn-green" type="button" onclick="startNewGame()">New Game / Play Again</button>
+                <button class="btn btn-dark" type="button" onclick="closeStandings()">Back to Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------------
+        // Constants and small helpers
+        // ---------------------------------------------------------------
+        const REVEAL_CAT_MS = 1000;     // blank cards -> pink Category card flips
+        const REVEAL_RULE_MS = 3000;    // ...then the black Rule card flips this long afterwards
+        const TAP_GUARD_MS = 400;       // taps closer together than this are treated as an accident
+        const DECK_SIZE = 120;
+        const MIN_PLAYERS = 2, MAX_PLAYERS = 8;
+        const INK = '#120610';
+        const ICON_COLORS = ['#ec1a9c', '#f6ea2c', '#22b8e8', '#ff7a1a', '#22b25a', '#8b5cf6', '#e63946', '#12b5a0'];
+        const G = 'fill="' + INK + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+        const L = 'fill="none" stroke="' + INK + '" stroke-width="6" stroke-linecap="round"';
+        const GLYPHS = [
+            '<polygon ' + G + ' points="50,20 58,40 80,42 63,56 68,78 50,66 32,78 37,56 20,42 42,40"/>',
+            '<path ' + G + ' d="M56 18L30 56H48L42 82L70 42H52Z"/>',
+            '<path ' + G + ' d="M50 78C20 56 24 28 40 28C46 28 50 34 50 38C50 34 54 28 60 28C76 28 80 56 50 78Z"/>',
+            '<path ' + G + ' d="M24 30H76V62H52L38 76V62H24Z"/>',
+            '<circle ' + G + ' cx="38" cy="66" r="9"/><path ' + L + ' d="M46 64V28L68 34"/>',
+            '<path ' + G + ' d="M24 66L28 36L42 52L50 32L58 52L72 36L76 66Z"/>',
+            '<circle ' + G + ' cx="64" cy="50" r="13"/><path ' + L + ' d="M24 50H44M28 33L44 43M28 67L44 57"/>',
+            '<circle cx="50" cy="50" r="25" fill="none" stroke="' + INK + '" stroke-width="5"/><circle ' + G + ' cx="41" cy="43" r="3"/><circle ' + G + ' cx="59" cy="43" r="3"/><path ' + L + ' d="M38 58Q50 70 62 58"/>'
+        ];
+        // Round player token: coloured ring, white face, glyph (same look on the remote)
+        function tokenSvg(idx) {
+            const i = ((idx % 8) + 8) % 8;
+            return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="' + ICON_COLORS[i] + '" stroke="' + INK + '" stroke-width="4"/><circle cx="50" cy="50" r="34" fill="#fff" stroke="' + INK + '" stroke-width="3"/>' + GLYPHS[i] + '</svg>';
+        }
+        function $(id) { return document.getElementById(id); }
+        function safeGetItem(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+        function safeSetItem(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+        function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+        function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+        function setStartMsg(t) { $('start-msg').textContent = t || ''; }
+
+        // ---------------------------------------------------------------
+        // Prompt deck: a category (pink card) + a rule (black card)
+        // ---------------------------------------------------------------
+        let prompts = null;
+        function aOrAn(letter) { return 'AEFHILMNORSX'.indexOf(letter) >= 0 ? 'an' : 'a'; }
+        function buildDeck(count) {
+            const cats = prompts.categories, rules = prompts.rules;
+            const out = [], seen = new Set();
+            let bag = [], lastCat = '', lastRule = '', guard = 0;
+            while (out.length < count && guard++ < count * 30) {
+                if (!bag.length) bag = shuffle(cats.slice());
+                const cat = bag.pop();
+                if (cat.text === lastCat && cats.length > 1) continue;
+                const skip = cat.skip || [];
+                const types = Object.keys(rules).filter(t => skip.indexOf(t) < 0);
+                if (!types.length) continue;
+                let r = Math.random() * types.reduce((s, t) => s + (rules[t].weight || 1), 0), type = types[0];
+                for (let k = 0; k < types.length; k++) { r -= (rules[types[k]].weight || 1); if (r <= 0) { type = types[k]; break; } }
+                const bad = (cat.avoid && cat.avoid[type]) || '';
+                const letters = rules[type].letters.split('').filter(l => bad.indexOf(l) < 0);
+                if (!letters.length) continue;
+                const letter = pick(letters);
+                const key = cat.text + '|' + type + letter;
+                if (seen.has(key) || (type + letter) === lastRule) continue;
+                seen.add(key); lastCat = cat.text; lastRule = type + letter;
+                out.push({ cat: cat.text, type: type, letter: letter, label: rules[type].label + (type === 'notContaining' ? ' ' + aOrAn(letter) : '') });
+            }
+            return out;
+        }
+
+        // ---------------------------------------------------------------
+        // Lobby: pick players in turn order, names, win target
+        // ---------------------------------------------------------------
+        let selected = [];          // icon indexes in tap order
+        const names = {};           // icon index -> typed name
+        let targetMode = '10';      // '10' | '15' | '20' | 'custom' | 'open'
+        function toggleIcon(idx) {
+            const at = selected.indexOf(idx);
+            if (at >= 0) selected.splice(at, 1);
+            else if (selected.length < MAX_PLAYERS) selected.push(idx);
+            setStartMsg('');
+            renderLobby();
+        }
+        function renderLobby() {
+            const row = $('token-row');
+            row.innerHTML = '';
+            ICON_COLORS.forEach((c, idx) => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'sel-tok'; b.innerHTML = tokenSvg(idx);
+                b.setAttribute('aria-label', 'Player icon ' + (idx + 1));
+                const at = selected.indexOf(idx);
+                if (at >= 0) { b.classList.add('on'); const o = document.createElement('span'); o.className = 'ord'; o.textContent = at + 1; b.appendChild(o); }
+                b.addEventListener('click', () => toggleIcon(idx));
+                row.appendChild(b);
+            });
+            const list = $('name-list');
+            list.innerHTML = '';
+            selected.forEach((idx, n) => {
+                const d = document.createElement('div'); d.className = 'nrow';
+                const m = document.createElement('span'); m.className = 'mini'; m.innerHTML = tokenSvg(idx);
+                const inp = document.createElement('input');
+                inp.type = 'text'; inp.maxLength = 14; inp.placeholder = 'Player ' + (n + 1); inp.value = names[idx] || '';
+                inp.setAttribute('aria-label', 'Name for player ' + (n + 1));
+                inp.addEventListener('input', () => { names[idx] = inp.value; });
+                d.appendChild(m); d.appendChild(inp); list.appendChild(d);
+            });
+        }
+        function setTargetMode(mode) {
+            targetMode = mode;
+            document.querySelectorAll('#target-row .opt').forEach(b => b.classList.toggle('on', b.getAttribute('data-t') === mode));
+            $('custom-target').hidden = mode !== 'custom';
+            setStartMsg('');
+        }
+        // number = first to N cards, null = open play, undefined = invalid custom value
+        function readTarget() {
+            if (targetMode === 'open') return null;
+            if (targetMode === 'custom') {
+                const v = Number($('custom-target').value);
+                if (!Number.isInteger(v) || v < 1 || v > 99) { setStartMsg('Custom target must be a whole number from 1 to 99.'); return undefined; }
+                return v;
+            }
+            return Number(targetMode);
+        }
+
+        // ---------------------------------------------------------------
+        // Game state
+        // ---------------------------------------------------------------
+        let players = [];           // [{ name, icon, score }]
+        let target = null;          // number or null (open play)
+        let deck = [];
+        let recycledCount = 0;
+        let current = null;         // the card on the table
+        // phase: 'lobby' | 'blank' (face-down) | 'revealing' (stagger running) | 'revealed'
+        let phase = 'lobby';
+        let revealToken = 0;        // bumped to cancel stale stagger timers
+        let revealTimers = [];
+        let lastTapAt = 0;
+        let inGame = false;
+        let standingsOpen = false, endModalOpen = false, targetOpen = false;
+        let hitSet = new Set();     // players who already triggered the target pop-up (so it shows once each)
+        let hitNow = new Set();     // players highlighted right now
+
+        function clearRevealTimers() { revealTimers.forEach(clearTimeout); revealTimers = []; revealToken++; }
+        function tapAllowed() {
+            const now = Date.now();
+            if (now - lastTapAt < TAP_GUARD_MS) return false;
+            lastTapAt = now;
+            return true;
+        }
+        function drawCard() {
+            if (deck.length < 5) deck = deck.concat(buildDeck(DECK_SIZE));
+            return deck.shift() || null;
+        }
+
+        // Both cards go face-down, then the pink card flips (after REVEAL_CAT_MS) and the black one REVEAL_RULE_MS later.
+        // Prompt text is only written into a card at the moment it flips.
+        function showCard(card) {
+            clearRevealTimers();
+            const token = revealToken;
+            current = card;
+            $('card-cat').classList.remove('up');
+            $('card-rule').classList.remove('up');
+            phase = 'revealing';
+            revealTimers.push(setTimeout(() => {
+                if (token !== revealToken) return;
+                $('cat-text').textContent = card.cat;
+                $('card-cat').classList.add('up');
+            }, REVEAL_CAT_MS));
+            revealTimers.push(setTimeout(() => {
+                if (token !== revealToken) return;
+                finishReveal();
+            }, REVEAL_CAT_MS + REVEAL_RULE_MS));
+            refreshUi();
+        }
+        function finishReveal() {
+            if (!current) return;
+            clearRevealTimers();
+            $('cat-text').textContent = current.cat;
+            $('rule-label').textContent = current.label;
+            $('rule-letter').textContent = current.letter;
+            $('card-cat').classList.add('up');
+            $('card-rule').classList.add('up');
+            phase = 'revealed';
+            refreshUi();
+        }
+
+        // Reveal Card / Next Card (host button and remote)
+        function nextCard() {
+            if (!inGame || standingsOpen || endModalOpen || targetOpen) return;
+            if (!tapAllowed()) return;                      // accidental quick double-tap: ignored
+            if (phase === 'revealing') { finishReveal(); return; }   // an intentional second tap completes the reveal
+            const card = drawCard();
+            if (!card) return;
+            showCard(card);
+        }
+        // Recycle: the card on the table goes to the bottom of the deck, then the next one is drawn
+        function recycleCard() {
+            if (!inGame || standingsOpen || endModalOpen || targetOpen) return;
+            if (phase !== 'revealed' || !current) return;
+            if (!tapAllowed()) return;
+            deck.push(current);
+            recycledCount++;
+            showCard(drawCard());
+        }
+
+        // ---------------------------------------------------------------
+        // Scoring, leader, target and standings
+        // ---------------------------------------------------------------
+        function changeScore(slot, delta) {
+            if (!inGame || standingsOpen || !players[slot]) return;
+            const p = players[slot];
+            const before = p.score;
+            p.score = Math.max(0, Math.min(999, p.score + delta));
+            if (p.score === before) return;
+            if (target !== null && p.score < target) { hitSet.delete(slot); hitNow.delete(slot); }
+            renderPlayers();
+            sendState();
+            checkTarget();
+        }
+        function leaders() {
+            if (!players.length) return [];
+            const top = Math.max.apply(null, players.map(p => p.score));
+            return top > 0 ? players.map((p, i) => i).filter(i => players[i].score === top) : [];
+        }
+        // Rank with shared ranks for ties: 1st, 1st, 3rd ...
+        function rankedPlayers() {
+            const order = players.map((p, i) => i).sort((a, b) => players[b].score - players[a].score || a - b);
+            let rank = 0, prevScore = null;
+            return order.map((slot, n) => {
+                if (players[slot].score !== prevScore) { rank = n + 1; prevScore = players[slot].score; }
+                return { slot: slot, rank: rank, p: players[slot] };
+            });
+        }
+        function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+        function fillStandings(listEl, rows) {
+            listEl.innerHTML = '';
+            const counts = {};
+            rows.forEach(r => { counts[r.rank] = (counts[r.rank] || 0) + 1; });
+            rows.forEach(r => {
+                const li = document.createElement('li');
+                if (r.rank === 1) li.className = 'first';
+                const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = ordinal(r.rank) + (counts[r.rank] > 1 ? '=' : '');
+                const tk = document.createElement('span'); tk.className = 'tk'; tk.innerHTML = tokenSvg(r.p.icon);
+                const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.p.name;
+                const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.p.score;
+                li.appendChild(rk); li.appendChild(tk); li.appendChild(nm); li.appendChild(sc);
+                listEl.appendChild(li);
+            });
+        }
+        // Reaching the target: show who hit it, with Keep Playing / End Game / Final Standings
+        function checkTarget() {
+            if (target === null || targetOpen || standingsOpen || endModalOpen) return;
+            const fresh = [];
+            players.forEach((p, i) => { if (p.score >= target && !hitSet.has(i)) fresh.push(i); });
+            if (!fresh.length) return;
+            fresh.forEach(i => hitSet.add(i));
+            hitNow = new Set(players.map((p, i) => i).filter(i => players[i].score >= target));
+            renderPlayers();
+            openTargetModal();
+        }
+        function openTargetModal() {
+            const rows = rankedPlayers();
+            const hit = rows.filter(r => r.p.score >= target);
+            $('target-sub').textContent = hit.map(r => r.p.name).join(' & ') + (hit.length > 1 ? ' have' : ' has') + ' reached ' + target + ' cards!';
+            fillStandings($('target-list'), rows);
+            targetOpen = true;
+            $('target-modal').hidden = false;
+            const k = $('keep-playing-btn'); if (k) k.focus();
+            sendState();
+        }
+        function keepPlaying() {
+            targetOpen = false;
+            $('target-modal').hidden = true;
+            sendState();
+        }
+        function endFromTarget() {
+            targetOpen = false;
+            $('target-modal').hidden = true;
+            openStandings();
+        }
+
+        // End Game / Final Score: in-world confirm card first, then the ranked standings
+        function endGame() {
+            if (!inGame || standingsOpen || endModalOpen) return;
+            openEndGameModal();
+        }
+        function openEndGameModal() {
+            $('end-game-modal').hidden = false;
+            endModalOpen = true;
+            sendState();
+            const b = $('end-confirm-btn'); if (b) b.focus();
+        }
+        function closeEndGameModal() {
+            const el = $('end-game-modal');
+            if (el) el.hidden = true;
+            if (!endModalOpen) return;
+            endModalOpen = false;
+            sendState();
+            const btn = $('end-btn'); if (btn && inGame) { try { btn.focus(); } catch (e) { /* ignore */ } }
+        }
+        function confirmEndGame() {
+            closeEndGameModal();
+            targetOpen = false;
+            $('target-modal').hidden = true;
+            openStandings();
+        }
+        function openStandings() {
+            clearRevealTimers();
+            if (phase === 'revealing') finishReveal();
+            standingsOpen = true;
+            fillStandings($('standings-list'), rankedPlayers());
+            $('standings').hidden = false;
+            send({ type: 'GAME_OVER', players: publicPlayers() });
+            refreshUi();
+        }
+        function closeStandings() {
+            if (!standingsOpen) return;
+            standingsOpen = false;
+            $('standings').hidden = true;
+            sendState();
+            refreshUi();
+        }
+        // Play Again: same players and target, scores zeroed, fresh deck, cards face-down
+        function startNewGame() {
+            standingsOpen = false; targetOpen = false;
+            $('standings').hidden = true;
+            $('target-modal').hidden = true;
+            closeEndGameModal();
+            players.forEach(p => { p.score = 0; });
+            hitSet = new Set(); hitNow = new Set();
+            beginRound();
+        }
+
+        // ---------------------------------------------------------------
+        // Rendering the game screen
+        // ---------------------------------------------------------------
+        function renderPlayers() {
+            const list = $('players-list');
+            list.innerHTML = '';
+            const lead = new Set(leaders());
+            players.forEach((p, i) => {
+                const d = document.createElement('div');
+                d.className = 'pl' + (lead.has(i) ? ' lead' : '') + (hitNow.has(i) ? ' hit' : '');
+                const tok = document.createElement('button');
+                tok.type = 'button'; tok.className = 'tok'; tok.innerHTML = tokenSvg(p.icon);
+                tok.setAttribute('aria-label', p.name + ': tap top half for +1, bottom half for minus 1');
+                tok.addEventListener('click', (e) => {
+                    const r = tok.getBoundingClientRect();
+                    changeScore(i, (e.clientY - r.top) < r.height / 2 ? 1 : -1);
+                });
+                const meta = document.createElement('div'); meta.className = 'meta';
+                const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name;
+                const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = p.score;
+                meta.appendChild(nm); meta.appendChild(sc);
+                d.appendChild(tok); d.appendChild(meta);
+                list.appendChild(d);
+            });
+        }
+        function refreshUi() {
+            $('chip-target').textContent = target === null ? 'Open Play' : 'First to ' + target;
+            $('chip-deck').textContent = 'Deck ' + deck.length + ' \u00B7 Recycled ' + recycledCount;
+            $('next-btn').textContent = phase === 'blank' ? 'Reveal Card' : (phase === 'revealing' ? 'Show Now' : 'Next Card');
+            $('recycle-btn').disabled = phase !== 'revealed';
+            sendState();
+        }
+
+        // ---------------------------------------------------------------
+        // Start / exit
+        // ---------------------------------------------------------------
+        function showScreen(name) {
+            $('lobby-screen').style.display = name === 'lobby' ? 'flex' : 'none';
+            $('game-screen').style.display = name === 'game' ? 'grid' : 'none';
+        }
+        // Fresh deck, both cards face-down, scores kept as they are
+        function beginRound() {
+            clearRevealTimers();
+            deck = buildDeck(DECK_SIZE);
+            recycledCount = 0;
+            current = null;
+            phase = 'blank';
+            $('card-cat').classList.remove('up');
+            $('card-rule').classList.remove('up');
+            $('cat-text').textContent = '';
+            $('rule-label').textContent = '';
+            $('rule-letter').textContent = '';
+            renderPlayers();
+            refreshUi();
+        }
+        function startGame() {
+            if (!prompts) { setStartMsg('Cards are still loading - try again in a moment.'); return; }
+            if (selected.length < MIN_PLAYERS) { setStartMsg('Pick at least ' + MIN_PLAYERS + ' players (tap the icons in turn order).'); return; }
+            const t = readTarget();
+            if (t === undefined) return;
+            target = t;
+            setStartMsg('');
+            players = selected.map((idx, n) => ({ name: (names[idx] || '').trim() || ('Player ' + (n + 1)), icon: idx, score: 0 }));
+            hitSet = new Set(); hitNow = new Set();
+            inGame = true; standingsOpen = false; targetOpen = false; endModalOpen = false;
+            showScreen('game');
+            beginRound();
+        }
+        function exitToGameHub(e) {
+            if (e) e.preventDefault();
+            try {
+                inGame = false;
+                clearRevealTimers();
+                if (conn) { try { conn.close(); } catch (err) { console.warn('Failed to close connection', err); } conn = null; }
+                if (peer) { try { peer.destroy(); } catch (err) { console.warn('Failed to destroy peer', err); } peer = null; }
+            } catch (err) { console.error('Failed to clean up on exit', err); }
+            setTimeout(() => { window.location.href = '../../game-hub.html'; }, 100);
+        }
+
+        // ---------------------------------------------------------------
+        // PeerJS remote. The remote never receives card text, only names, icons, scores and counts.
+        // ---------------------------------------------------------------
+        let peer = null, conn = null, currentPeerId = '';
+        function publicPlayers() { return players.map(p => ({ name: p.name, icon: p.icon, score: p.score })); }
+        function send(msg) { if (conn && conn.open) { try { conn.send(msg); } catch (err) { console.error('Failed to send to remote:', err); } } }
+        function sendState() {
+            if (!inGame) { send({ type: 'LOBBY' }); return; }
+            if (standingsOpen) return;
+            send({ type: 'STATE', phase: phase, deckLeft: deck.length, recycled: recycledCount, target: target, players: publicPlayers(), locked: targetOpen || endModalOpen });
+        }
+        function setRemoteStatus(connected) {
+            const txt = connected ? 'Remote: connected \u2713' : 'Remote: not connected';
+            ['remote-text', 'lobby-remote-text'].forEach(id => { const el = $(id); if (el) el.textContent = txt; });
+            const pill = $('qr-btn-bottom-text'); if (pill) pill.textContent = connected ? 'Remote QR \u2713' : 'Remote QR';
+            ['remote-badge', 'qrBtn', 'qr-btn-bottom'].forEach(id => { const el = $(id); if (el) el.classList.toggle('on', connected); });
+        }
+        function initPeer() {
+            return new Promise((resolve) => {
+                const randomId = 'splurt-' + Math.random().toString(36).substring(2, 8);
+                try { peer = new Peer(randomId); }
+                catch (err) {
+                    console.error('Failed to create Peer instance:', err);
+                    $('session-info').textContent = 'PeerJS init failed. You can still play on one screen.';
+                    resolve(false); return;
+                }
+                peer.on('open', (id) => {
+                    currentPeerId = id;
+                    const savedIp = safeGetItem('trotters_host_ip', '');
+                    const hostname = window.location.hostname;
+                    if (savedIp) $('network-ip').value = savedIp;
+                    else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') { $('network-ip').value = hostname; safeSetItem('trotters_host_ip', hostname); }
+                    setTimeout(updateQRCode, 100);
+                    $('session-info').textContent = 'Ready! Tap Remote QR to show the QR code for the phone remote (optional).';
+                    resolve(true);
+                });
+                peer.on('connection', (c) => {
+                    if (conn && conn !== c) { try { conn.close(); } catch (err) { /* ignore */ } }
+                    conn = c; setupConnection();
+                });
+                peer.on('error', (err) => {
+                    console.error('PeerJS error:', err);
+                    $('session-info').textContent = 'Offline / PeerJS error. You can still play on one screen.';
+                    $('qrcode').innerHTML = '<div style="color:#c8102e;font-size:0.9rem;padding:1rem;">Connection error<br>Play on one screen instead</div>';
+                    resolve(false);
+                });
+            });
+        }
+        function saveAndRefreshIP() {
+            const v = $('network-ip').value.trim();
+            if (v) safeSetItem('trotters_host_ip', v);
+            updateQRCode();
+        }
+        function updateQRCode() {
+            if (!currentPeerId) { setTimeout(() => { if (currentPeerId) updateQRCode(); }, 300); return; }
+            if (typeof QRCode === 'undefined') { setTimeout(updateQRCode, 300); return; }
+            const host = $('network-ip').value.trim() || window.location.hostname || 'localhost';
+            const port = window.location.port ? ':' + window.location.port : '';
+            const url = window.location.protocol + '//' + host + port + window.location.pathname.replace('splurt-host.html', 'splurt-remote.html') + '?id=' + currentPeerId;
+            const box = $('qrcode');
+            try {
+                box.innerHTML = '';
+                new QRCode(box, { text: url, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                $('qr-url').textContent = url;
+            } catch (error) {
+                console.error('Failed to generate QR code:', error);
+                box.innerHTML = '<div style="color:#c8102e;padding:1rem;">QR code failed<br>Please refresh the page</div>';
+            }
+        }
+        function setupConnection() {
+            const c = conn;
+            setRemoteStatus(c.open);
+            if (c.open) sendState();
+            c.on('open', () => { setRemoteStatus(true); sendState(); });
+            c.on('data', (d) => {
+                if (!d || c !== conn) return;
+                if (d.action === 'next') nextCard();
+                else if (d.action === 'recycle') recycleCard();
+                else if (d.action === 'score') { const slot = Number(d.slot), delta = Number(d.delta); if (Number.isInteger(slot) && (delta === 1 || delta === -1)) changeScore(slot, delta); }
+                else if (d.action === 'end') endGame();
+                else if (d.action === 'sync') sendState();
+            });
+            c.on('close', () => { if (c === conn) { setRemoteStatus(false); conn = null; } });
+            c.on('error', (err) => { console.error('Connection error:', err); if (c === conn) setRemoteStatus(false); });
+        }
+
+        // ---------------------------------------------------------------
+        // Start-up
+        // ---------------------------------------------------------------
+        (function () {
+            const modal = $('qrModal');
+            function openQr() { modal.hidden = false; updateQRCode(); }
+            function closeQr() { modal.hidden = true; }
+            $('qrBtn').addEventListener('click', openQr);
+            $('qr-btn-bottom').addEventListener('click', openQr);
+            $('remote-badge').addEventListener('click', openQr);
+            $('qrClose').addEventListener('click', closeQr);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeQr(); });
+            const endModal = $('end-game-modal');
+            endModal.addEventListener('click', (e) => { if (e.target === endModal) closeEndGameModal(); });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') { closeEndGameModal(); closeQr(); if (standingsOpen) closeStandings(); }
+            });
+            document.querySelectorAll('#target-row .opt').forEach(b => b.addEventListener('click', () => setTargetMode(b.getAttribute('data-t'))));
+        })();
+
+        fetch('./splurt-prompts.json')
+            .then(res => res.json())
+            .then(data => { prompts = data; })
+            .catch(err => { console.error('Failed to load prompts:', err); setStartMsg('Could not load splurt-prompts.json'); });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            inGame = false; phase = 'lobby';
+            showScreen('lobby');
+            setTargetMode('10');
+            renderLobby();
+            setRemoteStatus(false);
+            initPeer().catch(err => console.error('Failed to initialise PeerJS:', err));
+        });
+    </script>
+</body>
+</html>

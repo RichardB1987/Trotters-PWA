@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splurt Remote</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        /* Splurt remote: same magenta / yellow / black look as splurt-host.html. It never shows card text. */
+        :root {
+            --pink: #ec1a9c; --pink-deep: #b10e76; --yellow: #f6ea2c; --ink: #120610; --green: #22b25a; --red: #e63946;
+            --font-display: "Arial Black", Impact, system-ui, sans-serif;
+            --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html, body { margin: 0; min-height: 100%; overflow-x: hidden; }
+        body { font-family: var(--font-ui); color: #fff; background: radial-gradient(ellipse at 50% 0%, #8a1068 0%, #3a0c37 55%, #1c0620 100%) fixed; min-height: 100dvh; padding: 12px 14px 20px; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .wrap { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.7rem; }
+        .brand { text-align: center; font: 900 2.4rem/1 var(--font-display); color: var(--yellow); letter-spacing: -0.02em; text-shadow: 2px 2px 0 var(--ink), 0 4px 0 var(--pink-deep); }
+        .brand small { display: block; margin-top: 0.3rem; font: 800 0.75rem var(--font-ui); letter-spacing: 0.12em; text-transform: uppercase; color: #fff; text-shadow: none; }
+        .banner { text-align: center; font-weight: 800; font-size: 0.9rem; padding: 0.4rem 1rem; border-radius: 999px; border: 3px solid var(--ink); background: #fff3b0; color: #4d3b00; }
+        .banner.ok { background: #d9f3e0; color: #0c5c26; }
+        .banner.bad { background: #fde6e9; color: #8f1224; }
+        .panel { background: rgba(18, 6, 16, 0.78); border: 3px solid var(--pink); border-radius: 22px; padding: 1rem; text-align: center; }
+        .panel h2 { margin: 0 0 0.3rem; font: 900 1.5rem var(--font-display); color: var(--yellow); text-transform: uppercase; }
+        .panel p { margin: 0.3rem 0; font-weight: 600; color: #f3c4e3; }
+        .stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
+        .chip { background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 999px; padding: 0.1rem 0.8rem; font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
+        .chip.t { background: var(--yellow); }
+        .btn { width: 100%; border: 3px solid var(--ink); border-radius: 999px; background: var(--yellow); color: var(--ink); font: 900 1.15rem var(--font-ui); text-transform: uppercase; letter-spacing: 0.03em; padding: 0.9rem 0.5rem; cursor: pointer; box-shadow: 0 5px 0 var(--ink); touch-action: manipulation; }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+        .btn[disabled] { opacity: 0.4; pointer-events: none; box-shadow: 0 2px 0 var(--ink); }
+        .btn-main { background: var(--pink); color: #fff; font-size: clamp(1.5rem, 8vw, 2rem); padding: 1.7rem 0.5rem; }
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-dark { background: #fff; color: var(--ink); }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+        #players { display: flex; flex-direction: column; gap: 6px; }
+        .pl { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto auto; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.1); border: 3px solid transparent; border-radius: 16px; padding: 4px 8px; }
+        .pl.lead { border-color: var(--yellow); background: rgba(246, 234, 44, 0.16); }
+        .pl .tk svg { width: 44px; height: 44px; display: block; }
+        .pl .nm { font-weight: 800; font-size: 1rem; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pl .sc { font: 900 1.7rem/1 var(--font-display); color: var(--yellow); min-width: 2.2ch; text-align: center; }
+        .sbtn { width: 3rem; height: 3rem; border-radius: 50%; border: 3px solid var(--ink); font: 900 1.5rem/1 var(--font-ui); cursor: pointer; box-shadow: 0 3px 0 var(--ink); touch-action: manipulation; }
+        .sbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+        .sbtn.plus { background: var(--green); color: #fff; }
+        .sbtn.minus { background: #fff; color: var(--ink); }
+        .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(10, 2, 12, 0.85); display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .card { background: #fff; color: var(--ink); border: 4px solid var(--ink); border-radius: 24px; box-shadow: 6px 6px 0 var(--pink); padding: 1.1rem; width: min(360px, 100%); text-align: center; }
+        .card h2 { margin: 0 0 0.4rem; font: 900 1.6rem var(--font-display); color: var(--pink); text-transform: uppercase; text-shadow: 2px 2px 0 var(--yellow); }
+        .card p { margin: 0.3rem 0 0.8rem; font-weight: 600; color: #4a3144; }
+        @media (max-width: 340px) { .pl { grid-template-columns: 36px minmax(0, 1fr) auto auto auto; gap: 0.3rem; } .sbtn { width: 2.6rem; height: 2.6rem; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="brand">SPLURT<small>Remote</small></div>
+        <div id="banner" class="banner">Connecting...</div>
+
+        <div id="waiting" class="panel">
+            <h2>Remote</h2>
+            <p id="waiting-text">Waiting for the host to start the game...</p>
+        </div>
+
+        <div id="active" hidden style="display:none;flex-direction:column;gap:0.7rem;">
+            <div class="stats"><span id="chip-target" class="chip t">First to 10</span><span id="chip-deck" class="chip">Deck 0</span><span id="chip-rec" class="chip">Recycled 0</span></div>
+            <button id="next-btn" class="btn btn-main" type="button">Reveal Card</button>
+            <button id="recycle-btn" class="btn btn-dark" type="button" disabled>Recycle</button>
+            <div id="players"></div>
+            <button id="end-btn" class="btn btn-red" type="button">End Game / Final Score</button>
+        </div>
+
+        <div id="over" class="panel" hidden>
+            <h2>Game Over</h2>
+            <p>Check the big screen for the final standings.</p>
+            <div id="over-list" style="margin-top:0.6rem;"></div>
+        </div>
+    </div>
+
+    <!-- In-page confirm card for End Game (never window.confirm) -->
+    <div id="end-modal" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="end-title">
+        <div class="card">
+            <h2 id="end-title">Final Score?</h2>
+            <p>This asks the big screen to end the game.</p>
+            <div class="row2">
+                <button id="end-cancel" class="btn btn-dark" type="button">Cancel</button>
+                <button id="end-confirm" class="btn btn-red" type="button">End Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // The remote only ever receives names, icons, scores and counts. It is never sent the category or rule,
+        // so whoever holds the phone gets no head start.
+        const INK = '#120610';
+        const ICON_COLORS = ['#ec1a9c', '#f6ea2c', '#22b8e8', '#ff7a1a', '#22b25a', '#8b5cf6', '#e63946', '#12b5a0'];
+        const G = 'fill="' + INK + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+        const L = 'fill="none" stroke="' + INK + '" stroke-width="6" stroke-linecap="round"';
+        const GLYPHS = [
+            '<polygon ' + G + ' points="50,20 58,40 80,42 63,56 68,78 50,66 32,78 37,56 20,42 42,40"/>',
+            '<path ' + G + ' d="M56 18L30 56H48L42 82L70 42H52Z"/>',
+            '<path ' + G + ' d="M50 78C20 56 24 28 40 28C46 28 50 34 50 38C50 34 54 28 60 28C76 28 80 56 50 78Z"/>',
+            '<path ' + G + ' d="M24 30H76V62H52L38 76V62H24Z"/>',
+            '<circle ' + G + ' cx="38" cy="66" r="9"/><path ' + L + ' d="M46 64V28L68 34"/>',
+            '<path ' + G + ' d="M24 66L28 36L42 52L50 32L58 52L72 36L76 66Z"/>',
+            '<circle ' + G + ' cx="64" cy="50" r="13"/><path ' + L + ' d="M24 50H44M28 33L44 43M28 67L44 57"/>',
+            '<circle cx="50" cy="50" r="25" fill="none" stroke="' + INK + '" stroke-width="5"/><circle ' + G + ' cx="41" cy="43" r="3"/><circle ' + G + ' cx="59" cy="43" r="3"/><path ' + L + ' d="M38 58Q50 70 62 58"/>'
+        ];
+        function tokenSvg(idx) {
+            const i = ((idx % 8) + 8) % 8;
+            return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="' + ICON_COLORS[i] + '" stroke="' + INK + '" stroke-width="4"/><circle cx="50" cy="50" r="34" fill="#fff" stroke="' + INK + '" stroke-width="3"/>' + GLYPHS[i] + '</svg>';
+        }
+        function $(id) { return document.getElementById(id); }
+        const TAP_GUARD_MS = 400;
+        let peer = null, conn = null, hostId = '';
+        let lastTapAt = 0;
+        let locked = false;
+
+        function setBanner(text, kind) { const b = $('banner'); b.textContent = text; b.className = 'banner' + (kind ? ' ' + kind : ''); }
+        function showPanel(name) {
+            $('waiting').hidden = name !== 'waiting';
+            $('over').hidden = name !== 'over';
+            const a = $('active');
+            a.hidden = name !== 'active';
+            a.style.display = name === 'active' ? 'flex' : 'none';
+        }
+        function sendAction(msg) { if (conn && conn.open) conn.send(msg); }
+        function tapOk() { const n = Date.now(); if (n - lastTapAt < TAP_GUARD_MS) return false; lastTapAt = n; return true; }
+
+        function renderPlayers(list, box, withButtons) {
+            box.innerHTML = '';
+            const top = Math.max.apply(null, list.map(p => p.score));
+            list.forEach((p, i) => {
+                const d = document.createElement('div');
+                d.className = 'pl' + (top > 0 && p.score === top ? ' lead' : '');
+                const tk = document.createElement('span'); tk.className = 'tk'; tk.innerHTML = tokenSvg(p.icon);
+                const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name;
+                const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = p.score;
+                d.appendChild(tk); d.appendChild(nm); d.appendChild(sc);
+                if (withButtons) {
+                    const m = document.createElement('button'); m.type = 'button'; m.className = 'sbtn minus'; m.textContent = '\u2212';
+                    m.setAttribute('aria-label', 'Minus one for ' + p.name);
+                    m.addEventListener('click', () => { if (!locked) sendAction({ action: 'score', slot: i, delta: -1 }); });
+                    const a = document.createElement('button'); a.type = 'button'; a.className = 'sbtn plus'; a.textContent = '+1';
+                    a.setAttribute('aria-label', 'Plus one for ' + p.name);
+                    a.addEventListener('click', () => { if (!locked) sendAction({ action: 'score', slot: i, delta: 1 }); });
+                    d.appendChild(m); d.appendChild(a);
+                } else { d.style.gridTemplateColumns = '44px minmax(0, 1fr) auto'; }
+                box.appendChild(d);
+            });
+        }
+        function applyState(d) {
+            locked = !!d.locked;
+            showPanel('active');
+            $('chip-target').textContent = d.target === null ? 'Open Play' : 'First to ' + d.target;
+            $('chip-deck').textContent = 'Deck ' + d.deckLeft;
+            $('chip-rec').textContent = 'Recycled ' + d.recycled;
+            const nb = $('next-btn');
+            nb.textContent = d.phase === 'blank' ? 'Reveal Card' : (d.phase === 'revealing' ? 'Show Now' : 'Next Card');
+            nb.disabled = locked;
+            $('recycle-btn').disabled = locked || d.phase !== 'revealed';
+            $('end-btn').disabled = locked;
+            renderPlayers(d.players || [], $('players'), true);
+        }
+        function connect() {
+            if (!hostId) { setBanner('Error: no session id. Scan the QR code on the big screen.', 'bad'); return; }
+            setBanner('Connecting...', '');
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(hostId, { reliable: true });
+                conn.on('open', () => { setBanner('Connected!', 'ok'); sendAction({ action: 'sync' }); });
+                conn.on('close', () => { setBanner('Disconnected from host - reload to reconnect', 'bad'); });
+                conn.on('data', (d) => {
+                    if (!d) return;
+                    if (d.type === 'STATE') applyState(d);
+                    else if (d.type === 'GAME_OVER') {
+                        showPanel('over');
+                        renderPlayers((d.players || []).slice().sort((a, b) => b.score - a.score), $('over-list'), false);
+                    } else if (d.type === 'LOBBY') {
+                        showPanel('waiting');
+                        $('waiting-text').textContent = 'Waiting for the host to start the game...';
+                    }
+                });
+            });
+            peer.on('error', (err) => { setBanner('Connection error: ' + (err && err.type ? err.type : 'unknown'), 'bad'); });
+        }
+        function closeEnd() { $('end-modal').hidden = true; }
+        window.addEventListener('DOMContentLoaded', () => {
+            hostId = new URLSearchParams(window.location.search).get('id') || '';
+            $('next-btn').addEventListener('click', () => { if (tapOk()) sendAction({ action: 'next' }); });
+            $('recycle-btn').addEventListener('click', () => { if (tapOk()) sendAction({ action: 'recycle' }); });
+            $('end-btn').addEventListener('click', () => { $('end-modal').hidden = false; $('end-confirm').focus(); });
+            $('end-cancel').addEventListener('click', closeEnd);
+            $('end-confirm').addEventListener('click', () => { closeEnd(); sendAction({ action: 'end' }); });
+            $('end-modal').addEventListener('click', (e) => { if (e.target === $('end-modal')) closeEnd(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeEnd(); });
+            connect();
+        });
+    </script>
+</body>
+</html>

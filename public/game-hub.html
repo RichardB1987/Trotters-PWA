@@ -686,6 +686,162 @@
             .dumb-card .icon-box { width: 56px; height: 56px; }
         }
 
+        /* The Nag's Head Pub Quiz tile only: Reliant-van yellow with a light leopard-print edge (reuses the game's own
+           leopard image), a pub-sign icon and script lettering. Same compact padding as the other themed tiles so it
+           stays exactly the same size as every other tile in the grid. */
+        .nags-card {
+            --nh-yellow: #ffd42a;
+            --nh-ink: #1d1606;
+            --nh-red: #c8102e;
+            position: relative;
+            overflow: hidden;
+            padding: 1.5rem 1.8rem 1.9rem;
+            color: var(--nh-ink);
+            border: 3px solid var(--nh-ink);
+            background-color: var(--nh-yellow);
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .nags-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-style: solid;
+            border-color: transparent;
+            border-width: 14px;
+            border-image-source: url("games/nags-head/img/leopard-border.png");
+            border-image-slice: 80 82 70 80;
+            border-image-repeat: round;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .nags-card > * { position: relative; z-index: 1; }
+        .nags-card .icon-box {
+            flex: 0 0 auto;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+        }
+        .nags-card .icon-box svg { width: 100%; height: 100%; stroke: none; overflow: visible; }
+        .nags-card h2 {
+            font-family: "Mistral", "Segoe Script", "Brush Script MT", "Lucida Handwriting", "Apple Chancery", cursive;
+            font-weight: 400;
+            font-size: 2rem;
+            line-height: 1;
+            color: var(--nh-ink);
+            text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.7);
+        }
+        .nags-card p {
+            color: var(--nh-ink);
+            font-weight: 700;
+        }
+        .nags-card .card-footer {
+            align-self: flex-start;
+            padding: 0.25rem 0.9rem 0.3rem;
+            color: var(--nh-yellow);
+            background: var(--nh-ink);
+            border: 3px solid var(--nh-ink);
+            border-radius: 999px;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+            font-family: "Mistral", "Segoe Script", "Brush Script MT", "Lucida Handwriting", "Apple Chancery", cursive;
+            font-weight: 400;
+            font-size: 1.25rem;
+            line-height: 1.1;
+        }
+        .nags-card:hover {
+            background-color: #ffdd55;
+            border-color: var(--nh-ink);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 30px -5px rgba(0, 0, 0, 0.45);
+        }
+        .nags-card:hover .card-footer { background: var(--nh-red); color: #fff; }
+        /* Keep the tile legible on a 390px phone */
+        @media (max-width: 420px) {
+            .nags-card { padding: 1.5rem 1.2rem 1.9rem; }
+            .nags-card h2 { font-size: 1.7rem; }
+        }
+
+        /* Splurt tile only: hot magenta with a matte black card, chunky yellow lettering and a shouting-mouth icon
+           (matches games/splurt). Same compact padding as the other themed tiles so it stays the same size. */
+        .splurt-card {
+            --sp-pink: #ec1a9c;
+            --sp-yellow: #f6ea2c;
+            --sp-ink: #120610;
+            position: relative;
+            overflow: hidden;
+            padding: 1.5rem 1.8rem 1.9rem;
+            color: #fff;
+            border: 3px solid var(--sp-ink);
+            background:
+                linear-gradient(115deg, transparent 0 62%, rgba(25, 23, 28, 0.92) 62% 100%),
+                var(--sp-pink);
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .splurt-card::before {
+            content: "";
+            position: absolute;
+            right: 14px; top: 12px;
+            width: 34px; height: 48px;
+            border-radius: 6px;
+            background: #19171c;
+            border: 2px solid #fff;
+            transform: rotate(9deg);
+            box-shadow: -26px 6px 0 -2px var(--sp-pink), -26px 6px 0 0 #fff;
+            pointer-events: none;
+        }
+        .splurt-card > * { position: relative; z-index: 1; }
+        .splurt-card .icon-box {
+            flex: 0 0 auto;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+        }
+        .splurt-card .icon-box svg { width: 100%; height: 100%; stroke: none; overflow: visible; }
+        .splurt-card h2 {
+            font-family: "Arial Black", Impact, system-ui, sans-serif;
+            font-weight: 900;
+            font-size: 1.9rem;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            color: var(--sp-yellow);
+            text-shadow: -1px -1px 0 var(--sp-ink), 1px -1px 0 var(--sp-ink), -1px 1px 0 var(--sp-ink), 1px 1px 0 var(--sp-ink), 0 3px 0 #b10e76;
+        }
+        .splurt-card p {
+            color: #fff;
+            font-weight: 700;
+            text-shadow: 0 1px 0 rgba(18, 6, 16, 0.5);
+        }
+        .splurt-card .card-footer {
+            align-self: flex-start;
+            padding: 0.25rem 0.9rem 0.3rem;
+            color: var(--sp-ink);
+            background: var(--sp-yellow);
+            border: 3px solid var(--sp-ink);
+            border-radius: 999px;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+            font-family: "Arial Black", Impact, system-ui, sans-serif;
+            font-weight: 900;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+        .splurt-card:hover {
+            background:
+                linear-gradient(115deg, transparent 0 62%, rgba(25, 23, 28, 0.92) 62% 100%),
+                #f52fac;
+            border-color: var(--sp-ink);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 30px -5px rgba(0, 0, 0, 0.45);
+        }
+        .splurt-card:hover .card-footer { background: #fff; }
+        /* Keep the tile legible on a 390px phone */
+        @media (max-width: 420px) {
+            .splurt-card { padding: 1.5rem 1.2rem 1.9rem; }
+            .splurt-card h2 { font-size: 1.6rem; }
+        }
+
+
         /* Gibberish Party tile only: Incohearent white box (crisp white surface,
            bold black frame, red/pink-yellow-cyan pixel strip and bottom pixel cluster). */
         .gibberish-card {
@@ -1013,6 +1169,50 @@
             </div>
             <div class="card-footer">Play Dumb Dumber Dumbest &rarr;</div>
         </a>
+
+        <!-- The Nag's Head Pub Quiz -->
+        <a href="games/nags-head/nags-head-host.html" class="hub-card nags-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 100 100" aria-hidden="true">
+                            <path d="M6 14H94" fill="none" stroke="#1d1606" stroke-width="6" stroke-linecap="round"></path>
+                            <path d="M30 14V30M70 14V30" fill="none" stroke="#1d1606" stroke-width="3.5" stroke-linecap="round"></path>
+                            <rect x="16" y="30" width="68" height="62" rx="6" fill="#1d1606" stroke="#1d1606" stroke-width="3"></rect>
+                            <rect x="21" y="35" width="58" height="52" rx="3" fill="#fff6c8"></rect>
+                            <path d="M36 80V58Q36 46 45 42L47 32L53 39Q64 38 68 48L74 58Q72 63 66 62L62 60Q61 71 59 80Z" fill="#1d1606"></path>
+                            <circle cx="56" cy="47" r="2.2" fill="#fff6c8"></circle>
+                        </svg>
+                    </div>
+                    <h2>The Nag's Head</h2>
+                </div>
+                <p>Pub quiz with Only Fools and Horses questions. Lovely jubbly!</p>
+            </div>
+            <div class="card-footer">Play Pub Quiz &rarr;</div>
+        </a>
+
+        <!-- Splurt -->
+        <a href="games/splurt/splurt-host.html" class="hub-card splurt-card">
+            <div>
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 140 100" aria-hidden="true">
+                            <g stroke="#120610" stroke-width="3" stroke-linejoin="round">
+                                <path d="M14 46Q22 8 64 10Q106 8 114 46Q112 92 64 92Q16 92 14 46Z" fill="#f0481f"></path>
+                                <path d="M26 46Q30 20 64 21Q98 20 102 46Q100 78 64 79Q28 78 26 46Z" fill="#4a0d1c"></path>
+                                <path d="M30 40Q32 24 64 24Q96 24 98 40Q64 34 30 40Z" fill="#fff"></path>
+                                <path d="M42 66Q64 50 86 66Q82 78 64 78Q46 78 42 66Z" fill="#f06ab0"></path>
+                            </g>
+                            <g stroke="#f6ea2c" stroke-width="6" stroke-linecap="round" fill="none"><path d="M122 24l14-8M124 46h14M122 68l14 8"></path></g>
+                        </svg>
+                    </div>
+                    <h2>Splurt</h2>
+                </div>
+                <p>Think fast, say it first! Shout answers to the category and rule.</p>
+            </div>
+            <div class="card-footer">Play Splurt &rarr;</div>
+        </a>
+
 
 
 
